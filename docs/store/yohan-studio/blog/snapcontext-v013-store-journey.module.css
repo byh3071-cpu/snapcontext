@@ -1,0 +1,389 @@
+/* Yohan Studio v2 — SnapContext journey post (Editorial × Soft Brutalism) */
+/* Copy to Yohan Studio: src/app/blog/posts/ or co-locate with MDX */
+
+.journey {
+  --ys-bg: #f4f1ea;
+  --ys-ink: #0a0a0a;
+  --ys-muted: #5c5c5c;
+  --ys-accent: #ff5c28;
+  --ys-surface: #fffdf8;
+  --ys-border: 1.5px solid var(--ys-ink);
+  --ys-shadow: 4px 4px 0 var(--ys-ink);
+  font-family: Pretendard, "Malgun Gothic", sans-serif;
+  color: var(--ys-ink);
+  line-height: 1.7;
+}
+
+:global([data-theme="dark"]) .journey {
+  --ys-bg: #0a0a0a;
+  --ys-ink: #f4f1ea;
+  --ys-muted: #a3a3a3;
+  --ys-surface: #141414;
+  --ys-shadow: 4px 4px 0 #f4f1ea;
+}
+
+.journey a {
+  color: var(--ys-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.journey .lead {
+  font-size: 1.125rem;
+  max-width: 42rem;
+  margin: 1.25rem 0 2rem;
+}
+
+.journey h2 {
+  font-family: Inter, Pretendard, sans-serif;
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  font-weight: 800;
+  margin: 3rem 0 1rem;
+  letter-spacing: -0.02em;
+}
+
+.journey h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.75rem;
+}
+
+.journey .eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ys-accent);
+  border: var(--ys-border);
+  padding: 0.35rem 0.65rem;
+  box-shadow: 2px 2px 0 var(--ys-ink);
+  background: var(--ys-surface);
+}
+
+.journey .tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.journey .tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border: var(--ys-border);
+  background: var(--ys-surface);
+}
+
+.journey .statGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 640px) {
+  .journey .statGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.journey .statCard {
+  border: var(--ys-border);
+  box-shadow: var(--ys-shadow);
+  background: var(--ys-surface);
+  padding: 1rem 0.75rem;
+  text-align: center;
+  border-radius: 0;
+}
+
+.journey .statCard strong {
+  display: block;
+  font-family: Inter, sans-serif;
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.journey .statCard span {
+  font-size: 0.75rem;
+  color: var(--ys-muted);
+}
+
+.journey .tableWrap {
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  border: var(--ys-border);
+  box-shadow: var(--ys-shadow);
+}
+
+.journey table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: var(--ys-surface);
+}
+
+.journey th,
+.journey td {
+  border: var(--ys-border);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+}
+
+.journey th {
+  background: var(--ys-bg);
+  font-weight: 700;
+}
+
+.journey .statusOk {
+  color: #0d7a4f;
+  font-weight: 700;
+}
+
+:global([data-theme="dark"]) .journey .statusOk {
+  color: #06d6a0;
+}
+
+.journey .statusWait {
+  color: #b45309;
+  font-weight: 700;
+}
+
+:global([data-theme="dark"]) .journey .statusWait {
+  color: #ffd166;
+}
+
+.journey .ideaGrid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+@media (min-width: 640px) {
+  .journey .ideaGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.journey .ideaCard {
+  border: var(--ys-border);
+  box-shadow: var(--ys-shadow);
+  background: var(--ys-surface);
+  padding: 1rem;
+  border-radius: 0;
+}
+
+.journey .ideaCard h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.journey .ideaCard p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ys-muted);
+}
+
+.journey .mergeDiagram {
+  margin: 2rem 0;
+  padding: 1rem;
+  border: var(--ys-border);
+  box-shadow: var(--ys-shadow);
+  background: var(--ys-surface);
+}
+
+.journey .mergeDiagram svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.journey .timeline {
+  position: relative;
+  margin: 2rem 0;
+  padding-left: 1.25rem;
+  border-left: 3px solid var(--ys-accent);
+}
+
+.journey .phase {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: var(--ys-border);
+}
+
+.journey .phase:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.journey .phase time {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: var(--ys-accent);
+  font-weight: 700;
+}
+
+.journey .phase h4 {
+  margin: 0.35rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+.journey .phase ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.92rem;
+}
+
+.journey .decisionGrid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+@media (min-width: 768px) {
+  .journey .decisionGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.journey .decisionCard {
+  border: var(--ys-border);
+  box-shadow: var(--ys-shadow);
+  background: var(--ys-surface);
+  padding: 1rem;
+}
+
+.journey .pitfall {
+  border: var(--ys-border);
+  border-left: 6px solid var(--ys-accent);
+  box-shadow: var(--ys-shadow);
+  background: var(--ys-surface);
+  padding: 1rem 1rem 1rem 0.85rem;
+  margin: 1rem 0;
+}
+
+.journey .pitfall h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.journey .checklist {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.journey .checklist li {
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed var(--ys-muted);
+  font-size: 0.92rem;
+}
+
+.journey .featureGrid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+@media (min-width: 640px) {
+  .journey .featureGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .journey .featureGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.journey .featureCard {
+  border: var(--ys-border);
+  box-shadow: var(--ys-shadow);
+  background: var(--ys-surface);
+  padding: 0.85rem;
+  font-size: 0.9rem;
+}
+
+.journey .shotGrid {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 640px) {
+  .journey .shotGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.journey .shotFeatured {
+  grid-column: 1 / -1;
+}
+
+.journey figure {
+  margin: 0;
+  border: var(--ys-border);
+  box-shadow: var(--ys-shadow);
+  background: var(--ys-surface);
+}
+
+.journey figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.journey figcaption {
+  padding: 0.65rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--ys-muted);
+  border-top: var(--ys-border);
+}
+
+.journey .numberGrid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+@media (min-width: 640px) {
+  .journey .numberGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .journey .numberGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.journey .numberCard {
+  border: var(--ys-border);
+  box-shadow: var(--ys-shadow);
+  padding: 0.85rem;
+  background: var(--ys-surface);
+}
+
+.journey .numberCard strong {
+  font-family: Inter, sans-serif;
+  font-size: 1.35rem;
+}
+
+.journey .footerBrand {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: var(--ys-border);
+  font-size: 0.85rem;
+  color: var(--ys-muted);
+}
+
+.journey code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  background: var(--ys-bg);
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--ys-muted);
+}

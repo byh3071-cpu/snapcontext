@@ -1,0 +1,336 @@
+import styles from './snapcontext-v013-store-journey.module.css'
+
+export const post = {
+  slug: 'snapcontext-v013-store-journey',
+  category: 'YOHAN STUDIO · BUILD LOG',
+  title: '아이디어 4개를 합쳐 18일 만에 Chrome·Whale 스토어에 제출한 이야기',
+  subtitle: 'SnapContext v0.1.3 — 맥락 캡처 확장 프로그램 빌드 여정',
+  date: '2026-05-24',
+  author: 'Yohan Baek',
+  tags: ['Chrome Extension', 'Vibe Coding', 'TypeScript', 'Manifest V3', 'Build in Public'],
+  seoKeywords: '크롬 확장 프로그램 만들기, 바이브코딩, 1인 개발 배포, Chrome Extension 개발기',
+  ogDescription:
+    '산발적인 아이디어 4개를 하나로 합치고, 18일 만에 v0.1.3까지 개발해서 Chrome Web Store와 Whale Store에 동시 제출했다. 바이브코더의 리얼 빌드 기록.',
+  published: true
+}
+
+const img = (name) => `/blog/snapcontext-v013/${name}`
+
+<div className={styles.journey}>
+
+{/* Hero — 블로그 레이아웃 H1이 있으면 아래 eyebrow·subtitle만 사용 */}
+<div>
+  <span className={styles.eyebrow}>{post.category}</span>
+  <p className={styles.lead}>{post.subtitle}</p>
+  <p style={{ fontSize: '0.9rem', color: 'var(--ys-muted)' }}>
+    {post.date} · {post.author}
+  </p>
+  <div className={styles.tagRow}>
+    <span className={styles.tag}>Manifest V3</span>
+    <span className={styles.tag}>TypeScript</span>
+    <span className={styles.tag}>Vite</span>
+    <span className={styles.tag}>Playwright E2E</span>
+  </div>
+</div>
+
+## 한눈에 보기
+
+<div className={styles.statGrid}>
+  <div className={styles.statCard}>
+    <strong>0.1.3</strong>
+    <span>최종 버전</span>
+  </div>
+  <div className={styles.statCard}>
+    <strong>18일</strong>
+    <span>아이디어→스토어</span>
+  </div>
+  <div className={styles.statCard}>
+    <strong>43</strong>
+    <span>E2E 통과</span>
+  </div>
+  <div className={styles.statCard}>
+    <strong>2</strong>
+    <span>스토어 제출</span>
+  </div>
+</div>
+
+<div className={styles.tableWrap}>
+  <table>
+    <thead>
+      <tr>
+        <th>채널</th>
+        <th>상태</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="https://github.com/byh3071-cpu/SnapContext">GitHub</a></td>
+        <td className={styles.statusOk}>공개</td>
+        <td>소스·Privacy·스크린샷</td>
+      </tr>
+      <tr>
+        <td>Chrome Web Store</td>
+        <td className={styles.statusWait}>심사 대기</td>
+        <td>비판매자 · host_permissions</td>
+      </tr>
+      <tr>
+        <td>Whale Store</td>
+        <td className={styles.statusWait}>리뷰 요청</td>
+        <td>한국어 listing</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## 왜 만들었나
+
+<p className={styles.lead}>
+  브라우저에서 버그를 발견하면 스크린샷을 찍고, 메모장에 URL을 복사하고, viewport 크기를 개발자 도구에서 확인하고, 그걸 다시 AI 채팅에 붙여넣는다. 매번 이 루프를 반복할 때마다 "이거 한 번에 되면 안 되나?"라는 생각이 들었다.
+</p>
+
+SnapContext는 그 짜증에서 시작됐다. 웹에서 발견한 UI 문제, 에러, 레퍼런스를 딸깍 한 번에 캡처하고, AI가 바로 이해하는 Context Pack으로 변환하는 Chrome/Whale 확장 프로그램이다.
+
+이 글은 아이디어 4개를 하나로 합치고, 18일 만에 v0.1.3까지 개발해서 Chrome Web Store와 Whale Store에 동시 제출하기까지의 리얼 빌드 기록이다. 실패도 삽질도 다 들어있다.
+
+## 4개의 아이디어가 1개가 되기까지
+
+사실 SnapContext는 처음부터 하나의 아이디어가 아니었다. 바이브코딩 제품군(Vibe Harness Kit) 진단을 하면서 나왔던 여러 아이디어 중 4개가 "어, 이거 결국 같은 문제 아닌가?"로 수렴했다.
+
+<div className={styles.ideaGrid}>
+  <div className={styles.ideaCard}>
+    <h4>PageSnap Studio</h4>
+    <p>웹 페이지 캡처 → 캡처 엔진 (Visible/Element/Document/FullPage)</p>
+  </div>
+  <div className={styles.ideaCard}>
+    <h4>Prompt Screenshot Annotator</h4>
+    <p>스크린샷 AI 주석 → 핀 주석 (번호 핀 + 메모)</p>
+  </div>
+  <div className={styles.ideaCard}>
+    <h4>Vibe Debug Pack</h4>
+    <p>디버그 정보 수집 → Context Pack (URL, viewport, UA)</p>
+  </div>
+  <div className={styles.ideaCard}>
+    <h4>Notion Context Bridge</h4>
+    <p>Notion 저장 → v0.2 Pro로 이동</p>
+  </div>
+</div>
+
+<div className={styles.mergeDiagram} aria-label="4개 아이디어가 SnapContext로 합류">
+  <svg viewBox="0 0 640 200" role="img" aria-hidden="true">
+    <rect x="8" y="12" width="130" height="44" fill="var(--ys-surface)" stroke="var(--ys-ink)" strokeWidth="2" />
+    <text x="73" y="40" textAnchor="middle" fontSize="11" fill="var(--ys-ink)">PageSnap</text>
+    <rect x="8" y="78" width="130" height="44" fill="var(--ys-surface)" stroke="var(--ys-ink)" strokeWidth="2" />
+    <text x="73" y="106" textAnchor="middle" fontSize="11" fill="var(--ys-ink)">Annotator</text>
+    <rect x="8" y="144" width="130" height="44" fill="var(--ys-surface)" stroke="var(--ys-ink)" strokeWidth="2" />
+    <text x="73" y="172" textAnchor="middle" fontSize="11" fill="var(--ys-ink)">Debug Pack</text>
+    <rect x="178" y="78" width="130" height="44" fill="var(--ys-surface)" stroke="var(--ys-ink)" strokeWidth="2" />
+    <text x="243" y="106" textAnchor="middle" fontSize="11" fill="var(--ys-ink)">Notion Bridge</text>
+    <path d="M138 34 L280 100" stroke="var(--ys-accent)" strokeWidth="2" fill="none" />
+    <path d="M138 100 L280 100" stroke="var(--ys-accent)" strokeWidth="2" fill="none" />
+    <path d="M138 166 L280 100" stroke="var(--ys-accent)" strokeWidth="2" fill="none" />
+    <path d="M308 100 L380 100" stroke="var(--ys-ink)" strokeWidth="2" fill="none" markerEnd="url(#arrow)" />
+    <rect x="390" y="68" width="220" height="64" fill="var(--ys-accent)" stroke="var(--ys-ink)" strokeWidth="2" />
+    <text x="500" y="96" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#fff">SnapContext</text>
+    <text x="500" y="116" textAnchor="middle" fontSize="10" fill="#fff">캡처 → 맥락 → AI 전달</text>
+    <defs>
+      <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="var(--ys-ink)" />
+      </marker>
+    </defs>
+  </svg>
+</div>
+
+결국 핵심은 하나였다: **캡처 → 맥락 패키징 → AI/도구 전달**을 한 번에.
+
+다른 캡처 도구(GoFullPage, Awesome Screenshot)는 "캡처"에서 끝난다. SnapContext는 캡처한 것을 AI가 바로 이해하는 패키지로 만들어준다. 그게 차별점이었고, 4개를 합칠 이유였다.
+
+## 타임라인
+
+<div className={styles.timeline}>
+  <article className={styles.phase}>
+    <time>Phase 0 · 05-06</time>
+    <h4>아이디어 수렴</h4>
+    <ul>
+      <li>4개 아이디어 통합 기획서 작성</li>
+      <li>VHK 5대 기준 검증 (독푸딩 · 시행횟수 · 요한의 업)</li>
+      <li>Cursor 첫 프롬프트 작성 (90줄 설계서)</li>
+    </ul>
+  </article>
+  <article className={styles.phase}>
+    <time>Phase 1 · 05-07</time>
+    <h4>v0.1 코어 완성</h4>
+    <ul>
+      <li>Side Panel → 캡처 3종 → 핀 주석 → Context Pack</li>
+      <li>하루 만에 코어 기능 전체 구현 (Cursor + Claude)</li>
+      <li><code>host_permissions</code>로 activeTab 경고 해소 (ADR-002)</li>
+    </ul>
+  </article>
+  <article className={styles.phase}>
+    <time>Phase 2 · 05-08</time>
+    <h4>v0.1.1 배포 준비</h4>
+    <ul>
+      <li>아이콘·manifest·프롬프트 템플릿 3종</li>
+      <li>단축키 V/E/M/G/P · 캡처 히스토리</li>
+      <li>JS 번들 48.31 → 43.11 kB (−9.5%)</li>
+    </ul>
+  </article>
+  <article className={styles.phase}>
+    <time>Phase 3 · 05-10</time>
+    <h4>v0.1.2 UX + 코드 프리즈</h4>
+    <ul>
+      <li>프로그레시브 공개 UI · 2×2 캡처 그리드 · Full Page Capture</li>
+      <li>Lightbox (width-based zoom)</li>
+      <li>Playwright E2E 48개 · 수동 테스트 8/8</li>
+      <li>git init + 첫 커밋</li>
+    </ul>
+  </article>
+  <article className={styles.phase}>
+    <time>Phase 4 · 05-24</time>
+    <h4>v0.1.3 스토어 제출</h4>
+    <ul>
+      <li>E2E 43/43 · Chrome·Whale 수동 검증</li>
+      <li>GitHub 공개 · 스크린샷 5장 · ZIP 제출</li>
+      <li>CWS + Whale 동시 제출</li>
+    </ul>
+  </article>
+</div>
+
+## 핵심 기술 결정 3가지
+
+<div className={styles.decisionGrid}>
+  <div className={styles.decisionCard}>
+    <h3>Popup → Side Panel</h3>
+    <p>
+      캡처 도구에 popup은 치명적이다. 페이지 클릭하면 닫힌다. 캡처→주석→패키징 워크플로에는 Side Panel(MV3)이 맞았다. ADR-001.
+    </p>
+  </div>
+  <div className={styles.decisionCard}>
+    <h3>activeTab 제거</h3>
+    <p>
+      Side Panel 버튼은 "탭 클릭"이 아니다. activeTab 경고가 계속 떠서 <code>host_permissions: &lt;all_urls&gt;</code>로 갔다. 심사는 까다로워질 수 있다. ADR-002.
+    </p>
+  </div>
+  <div className={styles.decisionCard}>
+    <h3>React 없이 Vanilla TS</h3>
+    <p>
+      React 런타임만 40kB+. 전체 JS 43kB로 끝냈다. 상태 관리는 수동이지만 UI가 단순해서 버텼다.
+    </p>
+  </div>
+</div>
+
+## 삽질 & 교훈
+
+<div className={styles.pitfall}>
+  <h4>⚠️ Whale 다크모드 단축키 충돌</h4>
+  <p>
+    Document Capture를 <code>Alt+Shift+D</code>로 썼더니 웨일 다크모드 토글이었다. 캡처 누르면 화면이 갑자기 어두워지는 기현상. <code>Alt+Shift+M</code>으로 바꿨다.
+  </p>
+</div>
+
+<div className={styles.pitfall}>
+  <h4>⚠️ Full Page scroll+stitch</h4>
+  <p>
+    Chrome API에 "전체 페이지 한 방"은 없다. 스크롤하며 이어붙이기. lazy-load, fixed 헤더, sticky — 예외가 많다. 15000px 제한 걸고 v0.1.2에서 안정화.
+  </p>
+</div>
+
+<div className={styles.pitfall}>
+  <h4>⚠️ SPA viewport 0×0</h4>
+  <p>
+    렌더 전에 Content Script가 돌면 viewport가 0×0. <code>window.innerWidth/Height</code> fallback과 UA 빈 값 방어 코드 추가.
+  </p>
+</div>
+
+<div className={styles.pitfall}>
+  <h4>⚠️ Notion MCP 토큰 노출</h4>
+  <p>
+    MCP 연결 설정에 토큰이 평문으로 남아 있었다. 재발급하고 env-var 방식으로 바꿨다. GitHub Push Protection에도 한번 걸렸다.
+  </p>
+</div>
+
+## 스토어 제출 — 생각보다 할 게 많더라
+
+코드 완성이 끝이 아니었다. 스토어 제출은 그 자체로 하나의 프로젝트였다.
+
+<ul className={styles.checklist}>
+  <li>✅ <code>npm run build</code> → dist ZIP</li>
+  <li>✅ <code>npm test</code> 7/7 + E2E 43/43</li>
+  <li>✅ Chrome·Whale 수동 검증 (단축키, 풀페이지, 4캡처+PNG)</li>
+  <li>✅ 스토어 스크린샷 5장 (Playwright + 1280×800 프레임)</li>
+  <li>✅ <a href="https://github.com/byh3071-cpu/SnapContext/blob/master/docs/PRIVACY.md">PRIVACY.md</a></li>
+  <li>✅ GitHub 공개 (Notion 토큰 제외)</li>
+  <li>✅ Chrome Web Store ($5 · Privacy practices · 비판매자)</li>
+  <li>✅ Whale Store (한국어 listing · 리뷰 요청)</li>
+</ul>
+
+## 최종 결과물
+
+<div className={styles.featureGrid}>
+  <div className={styles.featureCard}><strong>🖥 화면 캡처</strong><br />Alt+Shift+V</div>
+  <div className={styles.featureCard}><strong>🎯 요소 캡처</strong><br />Alt+Shift+E</div>
+  <div className={styles.featureCard}><strong>📄 문서 캡처</strong><br />Alt+Shift+M</div>
+  <div className={styles.featureCard}><strong>📜 전체 캡처</strong><br />Alt+Shift+G</div>
+  <div className={styles.featureCard}><strong>📌 핀 주석</strong><br />번호 핀 + 메모</div>
+  <div className={styles.featureCard}><strong>🤖 Context Pack</strong><br />프롬프트 + JSON</div>
+</div>
+
+<p>
+  <strong>스택:</strong> Manifest V3 · TypeScript strict · Vite · @crxjs/vite-plugin · Side Panel API · Vanilla TS · Playwright E2E · <code>chrome.storage.local</code>
+</p>
+
+<div className={styles.shotGrid}>
+  <figure className={styles.shotFeatured}>
+    <img src={img('01-capture-controls.png')} alt="4가지 캡처 모드" width={1280} height={800} loading="lazy" />
+    <figcaption>01 — 브라우저에서 바로 캡처</figcaption>
+  </figure>
+  <figure>
+    <img src={img('02-visible-capture-preview.png')} alt="캡처 미리보기" width={1280} height={800} loading="lazy" />
+    <figcaption>02 — 캡처 결과 즉시 확인</figcaption>
+  </figure>
+  <figure>
+    <img src={img('03-pin-memo-annotation.png')} alt="핀 메모" width={1280} height={800} loading="lazy" />
+    <figcaption>03 — 문제 위치에 메모</figcaption>
+  </figure>
+  <figure>
+    <img src={img('04-ai-prompt-context-pack.png')} alt="Context Pack" width={1280} height={800} loading="lazy" />
+    <figcaption>04 — 프롬프트와 JSON 한 번에</figcaption>
+  </figure>
+  <figure className={styles.shotFeatured}>
+    <img src={img('05-full-page-shortcut-history.png')} alt="풀페이지" width={1280} height={800} loading="lazy" />
+    <figcaption>05 — 긴 페이지도 한 장으로 (Alt+Shift+G)</figcaption>
+  </figure>
+</div>
+
+## 숫자로 보는 여정
+
+<div className={styles.numberGrid}>
+  <div className={styles.numberCard}><strong>4 → 1</strong><br />아이디어 통합</div>
+  <div className={styles.numberCard}><strong>18일</strong><br />05-06 → 05-24</div>
+  <div className={styles.numberCard}><strong>v0.1.3</strong><br />4번의 버전 업</div>
+  <div className={styles.numberCard}><strong>43/43</strong><br />E2E 전수 통과</div>
+  <div className={styles.numberCard}><strong>7 ADR</strong><br />결정 기록</div>
+  <div className={styles.numberCard}><strong>43.11 kB</strong><br />JS 번들 (React 없음)</div>
+</div>
+
+## 다음 이야기
+
+지금은 Chrome Web Store와 Whale Store 심사 결과를 기다리는 중이다.
+
+승인되면 스토어 URL을 README에 반영하고, E2E 테스트 전략 글을 이어서 쓸 생각이다. v0.2는 Supabase 이미지 업로드 + Notion 저장(Pro) 쪽.
+
+SnapContext는 요한 스튜디오의 첫 번째 제품 출시다. 직접 수익보다 포트폴리오 + 기술 자산 + 빌드로그 콘텐츠 가치가 크다. **아이디어를 실행으로, 실행을 배포로** — 그 사이클을 18일 안에 돌렸다는 게 핵심이다.
+
+다음은 같은 스택으로 AI Prompt Vault를 만들 차례다.
+
+**관련 링크**
+
+- [GitHub — SnapContext](https://github.com/byh3071-cpu/SnapContext)
+- [Privacy Policy](https://github.com/byh3071-cpu/SnapContext/blob/master/docs/PRIVACY.md)
+- [Yohan Studio](https://yohan-studio.vercel.app)
+
+<div className={styles.footerBrand}>
+  <strong>Yohan Studio</strong> · Build in Public · SnapContext v0.1.3
+</div>
+
+</div>
