@@ -12,6 +12,7 @@ tags: [devlog, store-submission, v0.1.3, chrome, whale]
 - 관련 파일: `docs/log/2026-05-24-v013-store-submission.md`, `docs/store/yohan-studio/snapcontext-v013-journey.html`, `snapcontext-v0.1.3.zip`
 - 역전파 상태: 반영완료
 - SoT Key: [2026-05-24] 마일스톤-001: v0.1.3 Chrome·Whale 스토어 제출
+- Notion Dev Log: https://www.notion.so/36a9740ab07281ed8873fe1881ced270
 
 ## 메모
 
