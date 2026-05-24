@@ -30,12 +30,13 @@ tags: [release, store-candidate, v0.1.3]
 
 - [x] GitHub repo 정리 및 push — https://github.com/byh3071-cpu/SnapContext
 - [x] Chrome Web Store 스크린샷 5장 준비 (`1280x800`) — `docs/store/chrome-web-store/screenshots/`
-- [ ] Chrome Web Store 개발자 등록 및 제출
-- [ ] Whale Store 제출
-- [ ] 빌드/제출 로그 1편 작성
+- [x] Chrome Web Store 제출 — 검토 대기 중 (2026-05-24)
+- [x] Whale Store 제출 — 리뷰 요청 (2026-05-24)
+- [x] 빌드/제출 로그 — `docs/log/2026-05-24-v013-store-submission.md`
 
-## 수동 확인
+## 수동 확인 (2026-05-24 완료)
 
-- `chrome://extensions/shortcuts`에서 `Alt+Shift+G` 등록 확인
-- `whale://extensions/shortcuts`에서 `Alt+Shift+G` 등록 확인
-- 긴 페이지에서 전체 캡처 결과가 visible 영역보다 길게 생성되는지 확인
+- [x] Chrome `chrome://extensions/shortcuts` — V/E/M/G
+- [x] Whale `whale://extensions/shortcuts` — V/E/M/G (수동 등록)
+- [x] 긴 페이지 전체 캡처 — visible보다 긴 결과 확인
+- [x] 4캡처 모드 + PNG 동작 확인

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SnapContext v0.1.3 — 스토어 제출 여정 | Yohan Studio</title>
+  <meta name="description" content="SnapContext Chrome·Whale 스토어 제출까지의 개발·검증·배포 여정 (v0.1.3 Store Candidate)">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #e94560;
+      --accent2: #533483;
+      --ok: #06d6a0;
+      --line: rgba(255,255,255,.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Pretendard", "Malgun Gothic", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    a { color: #fecdd3; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    header {
+      padding: 2.5rem 0 2rem;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 2.5rem;
+    }
+    .eyebrow {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: .75rem;
+    }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.15; margin-bottom: 1rem; }
+    .lead { color: var(--muted); font-size: 1.1rem; max-width: 42rem; }
+    .meta { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.25rem; }
+    .pill {
+      font-size: .8rem;
+      padding: .35rem .75rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: .5rem;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+    h3 { font-size: 1.05rem; margin: 1.5rem 0 .75rem; color: #e2e8f0; }
+    p, li { color: #cbd5e1; }
+    ul { padding-left: 1.25rem; margin: .75rem 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+    .stat {
+      background: linear-gradient(135deg, var(--surface), #16213e);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat strong { display: block; font-size: 1.75rem; color: var(--ok); }
+    .stat span { font-size: .8rem; color: var(--muted); }
+    .timeline { position: relative; margin: 1.5rem 0; padding-left: 1.5rem; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(var(--accent), var(--accent2));
+      border-radius: 3px;
+    }
+    .step {
+      position: relative;
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border-radius: 10px;
+      border: 1px solid var(--line);
+    }
+    .step::before {
+      content: "";
+      position: absolute;
+      left: -1.65rem;
+      top: 1.25rem;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px var(--bg);
+    }
+    .step time { font-size: .8rem; color: var(--muted); }
+    .step h4 { margin: .35rem 0 .5rem; font-size: 1rem; }
+    .flow {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 1rem 0;
+      font-family: ui-monospace, monospace;
+      font-size: .78rem;
+      line-height: 1.5;
+      overflow-x: auto;
+      color: #94a3b8;
+      border: 1px solid var(--line);
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      margin: 1.5rem 0;
+    }
+    @media (min-width: 640px) {
+      .gallery { grid-template-columns: 1fr 1fr; }
+    }
+    figure {
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+    figure img { width: 100%; height: auto; display: block; }
+    figcaption {
+      padding: .75rem 1rem;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+    figure.featured { grid-column: 1 / -1; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: .9rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: .6rem .75rem;
+      text-align: left;
+    }
+    th { background: var(--surface); color: var(--text); }
+    .status-ok { color: var(--ok); font-weight: 700; }
+    .status-wait { color: #ffd166; font-weight: 700; }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+      font-size: .85rem;
+      color: var(--muted);
+    }
+    .links { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+    .links a {
+      text-decoration: none;
+      padding: .5rem 1rem;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="eyebrow">Yohan Studio · Case Study</p>
+      <h1>SnapContext v0.1.3<br>스토어 제출 여정</h1>
+      <p class="lead">
+        Chrome·Whale MV3 확장 — 화면 캡처, 핀 주석, AI용 Context Pack.
+        v0.1.3 Store Candidate부터 GitHub 공개, 실전 검증, 양 스토어 제출까지의 과정을 기록합니다.
+      </p>
+      <div class="meta">
+        <span class="pill">2026-05-24</span>
+        <span class="pill">Manifest V3</span>
+        <span class="pill">TypeScript · Vite</span>
+        <span class="pill">Playwright E2E 43 checks</span>
+      </div>
+    </header>
+
+    <section>
+      <h2>한눈에 보기</h2>
+      <div class="grid">
+        <div class="stat"><strong>0.1.3</strong><span>Store Candidate</span></div>
+        <div class="stat"><strong>43</strong><span>E2E 통과</span></div>
+        <div class="stat"><strong>5</strong><span>스토어 스크린샷</span></div>
+        <div class="stat"><strong>2</strong><span>스토어 제출</span></div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>채널</th><th>상태</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="https://github.com/byh3071-cpu/SnapContext">GitHub</a></td>
+            <td class="status-ok">공개</td>
+            <td>소스·Privacy·스크린샷</td>
+          </tr>
+          <tr>
+            <td>Chrome Web Store</td>
+            <td class="status-wait">검토 대기</td>
+            <td>비판매자 · &lt;all_urls&gt;</td>
+          </tr>
+          <tr>
+            <td>Whale Store</td>
+            <td class="status-wait">리뷰 요청</td>
+            <td>한국어 listing · Yohan Studio</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>타임라인</h2>
+      <div class="timeline">
+        <article class="step">
+          <time>Phase 1 — v0.1.x</time>
+          <h4>핵심 기능 완성</h4>
+          <p>4종 캡처, 핀·메모, Context Pack, 풀페이지 stitch, 캡처 기록. 단축키 SoT를 Alt+Shift+G로 확정.</p>
+        </article>
+        <article class="step">
+          <time>2026-05-24</time>
+          <h4>v0.1.3 Store Candidate 승격</h4>
+          <p>package / manifest / UI 버전 통일. PRD·changelog·에이전트 문서 동기화.</p>
+        </article>
+        <article class="step">
+          <time>2026-05-24</time>
+          <h4>실전 검증</h4>
+          <p><code>npm test</code> 7/7 · <code>test:e2e:all</code> 43/43 · Chrome/Whale 수동 캡처·단축키 확인.</p>
+        </article>
+        <article class="step">
+          <time>2026-05-24</time>
+          <h4>스토어 에셋</h4>
+          <p>Playwright로 실제 패널 UI 캡처 + 1280×800 마케팅 프레임 5장 생성 (<code>store:screenshots</code>).</p>
+        </article>
+        <article class="step">
+          <time>2026-05-24</time>
+          <h4>GitHub push</h4>
+          <p>공개 repo · PRIVACY URL · Notion 토큰 제외(히스토리 정리).</p>
+        </article>
+        <article class="step">
+          <time>2026-05-24</time>
+          <h4>Chrome · Whale 제출</h4>
+          <p>CWS Privacy practices·비판매자. Whale 한국어 listing·리뷰 요청.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>제출 파이프라인</h2>
+      <pre class="flow">개발 완료
+  → npm run build (dist/)
+  → npm test + test:e2e:all
+  → store:screenshots (1280×800 × 5)
+  → dist/* → snapcontext-v0.1.3.zip
+  → Chrome Web Store (EN listing + Privacy)
+  → Whale Store (KO listing)
+  → 심사 대기</pre>
+    </section>
+
+    <section>
+      <h2>기술 결정 메모</h2>
+      <ul>
+        <li><strong>host_permissions &lt;all_urls&gt;</strong> — 사이드패널 UX에서 activeTab 한계 (ADR 002). CWS 심사 지연 가능.</li>
+        <li><strong>원격 코드 없음</strong> — MV3 번들만 패키지에 포함.</li>
+        <li><strong>데이터 로컬 only</strong> — chrome.storage.local, 외부 전송 없음.</li>
+        <li><strong>Whale 단축키</strong> — suggested_key 미적용 시 shortcuts에 V/E/M/G 수동 등록.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>스토어 스크린샷</h2>
+      <p class="lead" style="font-size:.95rem;margin-bottom:1rem;">
+        실제 사이드패널 UI + 마케팅 카피 합성. 경로: <code>docs/store/chrome-web-store/screenshots/</code>
+      </p>
+      <div class="gallery">
+        <figure class="featured">
+          <img src="../chrome-web-store/screenshots/01-capture-controls.png" alt="4가지 캡처 모드" width="1280" height="800" loading="lazy">
+          <figcaption>01 — 브라우저에서 바로 캡처</figcaption>
+        </figure>
+        <figure>
+          <img src="../chrome-web-store/screenshots/02-visible-capture-preview.png" alt="캡처 미리보기" width="1280" height="800" loading="lazy">
+          <figcaption>02 — 캡처 결과 즉시 확인</figcaption>
+        </figure>
+        <figure>
+          <img src="../chrome-web-store/screenshots/03-pin-memo-annotation.png" alt="핀 메모" width="1280" height="800" loading="lazy">
+          <figcaption>03 — 문제 위치에 메모</figcaption>
+        </figure>
+        <figure>
+          <img src="../chrome-web-store/screenshots/04-ai-prompt-context-pack.png" alt="Context Pack" width="1280" height="800" loading="lazy">
+          <figcaption>04 — 프롬프트와 JSON 한 번에</figcaption>
+        </figure>
+        <figure>
+          <img src="../chrome-web-store/screenshots/05-full-page-shortcut-history.png" alt="풀페이지" width="1280" height="800" loading="lazy">
+          <figcaption>05 — 긴 페이지도 한 장으로 (Alt+Shift+G)</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>다음 단계</h2>
+      <ul>
+        <li>CWS / Whale 심사 결과 대기</li>
+        <li>승인 후 스토어 URL → README·changelog</li>
+        <li>v0.2: Notion 저장 등 PRD 로드맵</li>
+      </ul>
+      <div class="links">
+        <a href="https://github.com/byh3071-cpu/SnapContext">GitHub</a>
+        <a href="https://github.com/byh3071-cpu/SnapContext/blob/master/docs/PRIVACY.md">Privacy Policy</a>
+      </div>
+    </section>
+
+    <footer>
+      <p><strong>Yohan Studio</strong> — SnapContext v0.1.3 Store Journey</p>
+      <p>문서: docs/log/2026-05-24-v013-store-submission.md · HTML은 repo와 함께 호스팅하거나 정적 사이트에 복사해 사용.</p>
+    </footer>
+  </div>
+</body>
+</html>

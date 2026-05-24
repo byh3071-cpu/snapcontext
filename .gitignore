@@ -16,3 +16,6 @@ coverage
 # E2E test outputs (regenerated each run)
 tests/e2e/screenshots/
 
+# Store upload artifacts (regenerate with npm run build)
+snapcontext-*.zip
+
