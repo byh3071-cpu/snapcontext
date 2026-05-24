@@ -1,0 +1,30 @@
+{
+  "name": "snapcontext",
+  "version": "0.1.3",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-dist.ps1",
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-dist.ps1 && tsc --noEmit && vite build",
+    "icons:from-master": "node scripts/resize-extension-icons-from-master.mjs",
+    "icons:generate": "node scripts/generate-extension-icons.mjs",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "node tests/e2e/smoke.mjs",
+    "test:e2e:all": "node tests/e2e/smoke.mjs && node tests/e2e/pin-flow.mjs && node tests/e2e/loaded-pack-pin.mjs && node tests/e2e/pin-delete.mjs && node tests/e2e/coverage.mjs && node tests/e2e/full-page-shortcut.mjs",
+    "store:screenshots": "node scripts/generate-store-screenshots.mjs"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.28",
+    "@types/chrome": "^0.0.278",
+    "playwright": "^1.59.1",
+    "sharp": "^0.34.5",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.4"
+  },
+  "dependencies": {
+    "lucide": "^1.14.0"
+  }
+}

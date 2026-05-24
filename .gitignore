@@ -1,0 +1,18 @@
+node_modules
+dist
+.env
+.env.local
+*.local
+*.local.*
+*.log
+.DS_Store
+coverage
+.vite
+.claude/
+
+# Notion API batch payloads (scratch from prior dev-log injection)
+.notion-*.json
+
+# E2E test outputs (regenerated each run)
+tests/e2e/screenshots/
+
