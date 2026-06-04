@@ -1,4 +1,6 @@
+import { X } from 'lucide'
 import type { PinItem } from '../../types'
+import { panelLucideIcon } from '../utils/panel-lucide'
 
 const PIN_CLASS = 'pin-badge'
 /** Drag threshold in px – clicks shorter than this are treated as pin actions. */
@@ -51,7 +53,7 @@ export function mountImageLightbox(
   closeBtn.type = 'button'
   closeBtn.className = 'image-lightbox__close'
   closeBtn.setAttribute('aria-label', '닫기')
-  closeBtn.textContent = '×'
+  closeBtn.appendChild(panelLucideIcon(X, 18))
 
   pinContainer.appendChild(img)
   viewport.appendChild(pinContainer)
@@ -141,7 +143,7 @@ export function mountImageLightbox(
       badge.style.left = `${pin.x}%`
       badge.style.top = `${pin.y}%`
       badge.textContent = String(pin.id)
-      badge.title = `핀 ${pin.id} — 클릭하면 삭제`
+      badge.title = `핀 ${pin.id} (클릭하면 삭제)`
       badge.dataset.pinId = String(pin.id)
       pinContainer.appendChild(badge)
     }

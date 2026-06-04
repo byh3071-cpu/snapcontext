@@ -14,7 +14,7 @@ import type {
   ProjectProfile
 } from '../../types'
 import { getStorageItem, setStorageItem } from '../../storage'
-import { Braces, ClipboardCopy, CopyCheck, Sparkles } from 'lucide'
+import { Braces, ClipboardCopy, CopyCheck, Sparkles, X } from 'lucide'
 import { panelLucideIcon, panelLucideIconRow } from '../utils/panel-lucide'
 import { toKoreanErrorMessage } from '../../utils/messaging'
 
@@ -27,9 +27,9 @@ const TEMPLATE_OPTIONS: ReadonlyArray<{
   id: PromptTemplateId
   label: string
 }> = [
-  { id: 'bug', label: '🐛 버그 리포트' },
-  { id: 'refactor', label: '🔧 리팩토링' },
-  { id: 'reference', label: '📐 레퍼런스' }
+  { id: 'bug', label: '버그 리포트' },
+  { id: 'refactor', label: '리팩토링' },
+  { id: 'reference', label: '레퍼런스' }
 ]
 
 function isPromptTemplateId(value: unknown): value is PromptTemplateId {
@@ -64,7 +64,7 @@ export function mountContextPackPanel(
   const intentInput = document.createElement('textarea')
   intentInput.className = 'context-pack-panel__intent'
   intentInput.rows = 3
-  intentInput.placeholder = '증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)'
+  intentInput.placeholder = '증상이나 AI에게 요청할 내용을 적어주세요'
 
   const matchedProfile = document.createElement('p')
   matchedProfile.className = 'context-pack-panel__hint muted'
@@ -277,7 +277,7 @@ export function mountContextPackPanel(
       deleteBtn.type = 'button'
       deleteBtn.className = 'context-pack-panel__history-delete'
       deleteBtn.setAttribute('aria-label', '히스토리 삭제')
-      deleteBtn.textContent = '×'
+      deleteBtn.appendChild(panelLucideIcon(X, 14))
       deleteBtn.addEventListener('click', () => {
         void (async () => {
           history = history.filter((h) => h.id !== item.id)

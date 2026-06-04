@@ -1,4 +1,6 @@
+import { X, ZoomIn } from 'lucide'
 import type { CaptureType } from '../../types'
+import { panelLucideIcon } from '../utils/panel-lucide'
 import { mountImageLightbox, type ImageLightboxPinHandlers } from './ImageLightbox'
 
 type PreviewImageInput = {
@@ -105,7 +107,7 @@ export function mountPreview(
   btnZoom.className = 'preview-zoom-btn'
   btnZoom.setAttribute('aria-label', '원본 이미지 확대')
   btnZoom.title = '원본 이미지 확대'
-  btnZoom.textContent = '🔍'
+  btnZoom.appendChild(panelLucideIcon(ZoomIn, 16))
 
   pinContainer.appendChild(img)
   stage.appendChild(pinContainer)
@@ -139,7 +141,7 @@ export function mountPreview(
   btnCloseLb.type = 'button'
   btnCloseLb.className = 'pin-lightbox__close'
   btnCloseLb.setAttribute('aria-label', '닫기')
-  btnCloseLb.textContent = '×'
+  btnCloseLb.appendChild(panelLucideIcon(X, 18))
   lbHeader.append(lbTitle, lbHint, btnCloseLb)
 
   const lbScroll = document.createElement('div')
