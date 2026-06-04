@@ -77,14 +77,18 @@ export default {
         return textResponse('PNG 이미지만 업로드할 수 있습니다.', 415)
       }
       const id = crypto.randomUUID()
-      await env.BUCKET.put(id, buf, {
-        httpMetadata: { contentType: 'image/png' }
-      })
-      const context = form.get('context')
-      if (typeof context === 'string' && context.length > 0) {
-        await env.BUCKET.put(`${id}.json`, context, {
-          httpMetadata: { contentType: 'application/json' }
+      try {
+        await env.BUCKET.put(id, buf, {
+          httpMetadata: { contentType: 'image/png' }
         })
+        const context = form.get('context')
+        if (typeof context === 'string' && context.length > 0) {
+          await env.BUCKET.put(`${id}.json`, context, {
+            httpMetadata: { contentType: 'application/json' }
+          })
+        }
+      } catch {
+        return textResponse('업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.', 502)
       }
       return jsonResponse({ id, url: `${url.origin}/s/${id}` })
     }
@@ -92,7 +96,12 @@ export default {
     // raw 이미지: GET /i/{id}
     if (req.method === 'GET' && url.pathname.startsWith('/i/')) {
       const id = url.pathname.slice(3)
-      const obj = await env.BUCKET.get(id)
+      let obj: R2ObjectBody | null
+      try {
+        obj = await env.BUCKET.get(id)
+      } catch {
+        return textResponse('이미지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 502)
+      }
       if (!obj || isExpired(obj.uploaded, Date.now())) {
         return textResponse(GONE_MSG, 410)
       }
@@ -108,14 +117,18 @@ export default {
     // 뷰어: GET /s/{id}
     if (req.method === 'GET' && url.pathname.startsWith('/s/')) {
       const id = url.pathname.slice(3)
-      const head = await env.BUCKET.head(id)
-      if (!head || isExpired(head.uploaded, Date.now())) {
-        return htmlResponse(buildExpiredHtml(), 410)
+      try {
+        const head = await env.BUCKET.head(id)
+        if (!head || isExpired(head.uploaded, Date.now())) {
+          return htmlResponse(buildExpiredHtml(), 410)
+        }
+        const ctxObj = await env.BUCKET.get(`${id}.json`)
+        const ctx = ctxObj ? parseSharedContext(await ctxObj.text()) : null
+        const html = buildViewerHtml(id, ctx, formatExpiryKST(head.uploaded))
+        return htmlResponse(html, 200)
+      } catch {
+        return textResponse('페이지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 502)
       }
-      const ctxObj = await env.BUCKET.get(`${id}.json`)
-      const ctx = ctxObj ? parseSharedContext(await ctxObj.text()) : null
-      const html = buildViewerHtml(id, ctx, formatExpiryKST(head.uploaded))
-      return htmlResponse(html, 200)
     }
 
     return textResponse('Not found', 404)
