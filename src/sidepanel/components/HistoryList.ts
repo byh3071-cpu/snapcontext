@@ -1,4 +1,4 @@
-import { Trash2, X } from 'lucide'
+import { ImageOff, Trash2, X } from 'lucide'
 import {
   clearHistory,
   deleteCapture,
@@ -73,9 +73,12 @@ export function mountHistoryList(
   let items: CaptureHistoryItem[] = []
 
   function renderEmpty(): void {
-    const empty = document.createElement('p')
-    empty.className = 'capture-history__empty muted'
-    empty.textContent = '저장된 캡처가 아직 없습니다.'
+    const empty = document.createElement('div')
+    empty.className = 'capture-history__empty empty-state'
+    const emptyText = document.createElement('p')
+    emptyText.className = 'empty-state__text'
+    emptyText.textContent = '저장된 캡처가 아직 없습니다.'
+    empty.append(panelLucideIcon(ImageOff, 28), emptyText)
     list.append(empty)
   }
 
@@ -159,9 +162,9 @@ export function mountHistoryList(
 
     const meta = document.createElement('div')
     meta.className = 'capture-history__meta'
-    meta.textContent = `${formatTime(item.timestamp)} | ${captureTypeLabel(
+    meta.textContent = `${formatTime(item.timestamp)} · ${captureTypeLabel(
       item.captureType
-    )} | 핀 ${item.pinsCount}`
+    )} · 핀 ${item.pinsCount}`
 
     body.append(primary, url, meta)
 

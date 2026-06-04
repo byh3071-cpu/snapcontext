@@ -1356,3 +1356,34 @@ body {
 .image-lightbox__close:hover {
   background: var(--accent);
 }
+
+/* ===== 빈 상태 (아이콘 + 한 줄 안내) ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+}
+
+.empty-state .panel-lucide-icon {
+  color: var(--text-muted);
+  opacity: 0.55;
+}
+
+.empty-state__text {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--lh-normal);
+}
+
+/* ===== 글리프 버튼(닫기·삭제·확대) 아이콘은 버튼 텍스트색을 따름(중립) ===== */
+.pin-lightbox__close .panel-lucide-icon,
+.image-lightbox__close .panel-lucide-icon,
+.preview-zoom-btn .panel-lucide-icon,
+.pin-memo__delete .panel-lucide-icon,
+.context-pack-panel__history-delete .panel-lucide-icon {
+  color: currentColor;
+}

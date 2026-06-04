@@ -1,4 +1,6 @@
+import { MapPin, X } from 'lucide'
 import type { PinItem } from '../../types'
+import { panelLucideIcon } from '../utils/panel-lucide'
 
 export type PinMemoListApi = {
   render: (pins: PinItem[], activePinId: number | null) => void
@@ -22,9 +24,12 @@ export function mountPinMemoList(
   const listRoot = document.createElement('div')
   listRoot.className = 'pin-memo__list'
 
-  const placeholder = document.createElement('p')
-  placeholder.className = 'pin-memo__placeholder muted'
-  placeholder.textContent = '이미지를 클릭하여 핀을 추가하세요'
+  const placeholder = document.createElement('div')
+  placeholder.className = 'pin-memo__placeholder empty-state'
+  const placeholderText = document.createElement('p')
+  placeholderText.className = 'empty-state__text'
+  placeholderText.textContent = '이미지를 클릭하여 핀을 추가하세요'
+  placeholder.append(panelLucideIcon(MapPin, 28), placeholderText)
 
   host.append(heading, listRoot, placeholder)
 
@@ -53,7 +58,7 @@ export function mountPinMemoList(
 
       const label = document.createElement('span')
       label.className = 'pin-memo__label'
-      label.textContent = `[${pin.id}]`
+      label.textContent = String(pin.id)
 
       const ta = document.createElement('textarea')
       ta.className = 'pin-memo__input'
@@ -72,7 +77,7 @@ export function mountPinMemoList(
       del.className = 'pin-memo__delete'
       del.title = '핀 삭제'
       del.setAttribute('aria-label', '핀 삭제')
-      del.textContent = '×'
+      del.appendChild(panelLucideIcon(X, 16))
       del.addEventListener('click', () => handlers.onDelete(pin.id))
 
       const field = document.createElement('div')
