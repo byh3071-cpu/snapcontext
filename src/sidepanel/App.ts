@@ -272,6 +272,18 @@ function init(): void {
     hasCapture: () => capturedImage !== null,
     getImage: () => capturedImage,
     getPins: () => pins,
+    getContext: () =>
+      captureSnapshot
+        ? {
+            v: 1,
+            sourceUrl: captureSnapshot.sourceUrl,
+            sourceTitle: captureSnapshot.sourceTitle,
+            captureType: captureSnapshot.captureType,
+            capturedAt: currentHistoryTimestamp,
+            viewport: captureSnapshot.viewport,
+            pins: pins.map((p) => ({ id: p.id, memo: p.memo }))
+          }
+        : null,
     showToast
   })
 
