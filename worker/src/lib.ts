@@ -31,6 +31,14 @@ export function sanitizeHttpUrl(raw: string): string | null {
   }
 }
 
+export function safeDecodeId(raw: string): string {
+  try {
+    return decodeURIComponent(raw)
+  } catch {
+    return raw
+  }
+}
+
 export function isPngMagic(bytes: Uint8Array): boolean {
   if (bytes.length < PNG_MAGIC.length) return false
   for (let i = 0; i < PNG_MAGIC.length; i++) {

@@ -5,7 +5,8 @@ import {
   formatExpiryKST,
   buildViewerHtml,
   buildExpiredHtml,
-  parseSharedContext
+  parseSharedContext,
+  safeDecodeId
 } from './lib'
 
 export interface Env {
@@ -95,7 +96,7 @@ export default {
 
     // raw 이미지: GET /i/{id}
     if (req.method === 'GET' && url.pathname.startsWith('/i/')) {
-      const id = url.pathname.slice(3)
+      const id = safeDecodeId(url.pathname.slice(3))
       let obj: R2ObjectBody | null
       try {
         obj = await env.BUCKET.get(id)
@@ -116,7 +117,7 @@ export default {
 
     // 뷰어: GET /s/{id}
     if (req.method === 'GET' && url.pathname.startsWith('/s/')) {
-      const id = url.pathname.slice(3)
+      const id = safeDecodeId(url.pathname.slice(3))
       try {
         const head = await env.BUCKET.head(id)
         if (!head || isExpired(head.uploaded, Date.now())) {

@@ -7,6 +7,7 @@ import {
   formatExpiryKST,
   buildViewerHtml,
   parseSharedContext,
+  safeDecodeId,
   MAX_AGE_MS,
   PNG_MAGIC,
   type SharedContext
@@ -107,6 +108,11 @@ describe('hardening (regression)', () => {
   })
   it('parseSharedContext rejects JSON arrays', () => {
     expect(parseSharedContext('[1,2,3]')).toBeNull()
+  })
+  it('safeDecodeId decodes valid and returns raw on malformed', () => {
+    expect(safeDecodeId('%41bc')).toBe('Abc')
+    expect(safeDecodeId('%')).toBe('%')
+    expect(safeDecodeId('abc-123')).toBe('abc-123')
   })
   it('buildViewerHtml escapes quotes in source url (no attribute breakout)', () => {
     const ctx: SharedContext = {
