@@ -289,3 +289,13 @@ export type PinItem = {
 
 }
 
+export type SharedContext = {
+  v: 1
+  sourceUrl: string
+  sourceTitle: string
+  captureType: CaptureType
+  capturedAt: string
+  viewport: { width: number; height: number }
+  pins: Array<{ id: number; memo: string }>
+}
+
