@@ -122,23 +122,27 @@ export function mountImageActions(
     }
   }
 
+  // 업로드 중 재진입(더블클릭 → 중복 업로드) 방지용 동기 가드
+  let sharing = false
   const onShare = async (): Promise<void> => {
+    if (sharing) return
     const img = deps.getImage()
     if (!img) {
       deps.showToast('캡처 데이터가 없습니다.', 'error')
       return
     }
-    // 최초 1회 동의
-    const consented = (await getStorageItem<boolean>(CONSENT_KEY)) ?? false
-    if (!consented) {
-      const ok = await showConfirm(CONSENT_MESSAGE)
-      if (!ok) return
-      await setStorageItem(CONSENT_KEY, true)
-    }
-
-    btnShare.disabled = true
-    shareLabel.textContent = '업로드 중…'
+    sharing = true
     try {
+      // 최초 1회 동의
+      const consented = (await getStorageItem<boolean>(CONSENT_KEY)) ?? false
+      if (!consented) {
+        const ok = await showConfirm(CONSENT_MESSAGE)
+        if (!ok) return
+        await setStorageItem(CONSENT_KEY, true)
+      }
+
+      btnShare.disabled = true
+      shareLabel.textContent = '업로드 중…'
       const blob = await renderAnnotatedPngBlob(img, deps.getPins())
       const ctx = toggleInput.checked ? deps.getContext() ?? undefined : undefined
       const url = await uploadShare(blob, ctx)
@@ -151,6 +155,7 @@ export function mountImageActions(
     } catch (e) {
       deps.showToast(toKoreanErrorMessage(e), 'error')
     } finally {
+      sharing = false
       btnShare.disabled = !deps.hasCapture()
       shareLabel.textContent = '공유 링크'
     }
