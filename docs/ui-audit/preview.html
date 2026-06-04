@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SnapContext UI 감사 하네스 (before/after)</title>
+  <!-- 제품 스타일시트(라이브) — 토큰화 전/후가 자동 반영된다. -->
+  <link rel="stylesheet" href="../../src/sidepanel/styles/global.css" />
+  <style>
+    /* ===== PREVIEW HARNESS ONLY — 제품 CSS 아님. 갤러리 레이아웃/오버레이 격리용. ===== */
+    :root { --ph-w: 380px; }
+    .ph-toolbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      padding: 10px 14px; margin: 0 0 16px;
+      background: #0b0e18; border-bottom: 1px solid rgba(255,255,255,.1);
+      font: 13px/1.4 system-ui, sans-serif; color: #ccc;
+    }
+    .ph-toolbar strong { color: #fff; margin-right: 8px; }
+    .ph-toolbar button {
+      font: inherit; padding: 5px 10px; border-radius: 7px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #ddd;
+    }
+    .ph-toolbar button:hover { background: rgba(233,69,96,.2); }
+    .ph-wrap {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--ph-w), 1fr));
+      gap: 20px; padding: 0 16px 80px; align-items: start;
+    }
+    .ph-sample { min-width: 0; }
+    .ph-label {
+      font: 600 12px/1.4 system-ui, sans-serif; color: #8fa0bf;
+      margin: 0 0 6px; letter-spacing: .02em;
+    }
+    .ph-label span { color: #5b6680; font-weight: 400; }
+    .ph-frame {
+      width: var(--ph-w); max-width: 100%;
+      background: linear-gradient(160deg, #1a1a2e, #16213e);
+      border: 1px solid rgba(255,255,255,.08); border-radius: 10px;
+      padding: 12px; box-sizing: border-box; overflow: hidden;
+    }
+    .ph-frame .app-shell { padding: 0; }
+    /* fixed 오버레이를 갤러리 안에 가두기 위한 스테이지 */
+    .ph-stage { position: relative; height: 460px; border-radius: 8px; overflow: hidden; }
+    .ph-stage > .pin-lightbox,
+    .ph-stage > .image-lightbox,
+    .ph-stage > .snap-confirm { position: absolute; }
+    /* content-script 가짜 페이지 */
+    .ph-page {
+      position: relative; height: 320px; overflow: hidden; border-radius: 8px;
+      background: #fafafa; color: #222; padding: 16px;
+      font: 14px/1.5 system-ui, sans-serif;
+    }
+    .ph-page h3 { margin: 0 0 8px; }
+    .ph-page p { margin: 0 0 10px; color: #555; }
+    .ph-section-title {
+      grid-column: 1 / -1; margin: 24px 0 0; padding: 6px 0;
+      font: 700 14px/1.4 system-ui, sans-serif; color: #e94560;
+      border-bottom: 1px solid rgba(233,69,96,.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="ph-toolbar">
+    <strong>SnapContext UI 하네스</strong>
+    <span>폭:</span>
+    <button data-w="320">320</button>
+    <button data-w="380">380</button>
+    <button data-w="460">460</button>
+    <span style="margin-left:auto">토큰화 전/후를 같은 화면으로 캡처해 docs/ui-audit/compare.md 에 붙이세요.</span>
+  </div>
+
+  <div class="ph-wrap">
+
+    <!-- ============ 헤더 / 셸 ============ -->
+    <div class="ph-section-title">셸 · 배너 · 토스트</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">App 헤더 <span>(app-header)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <header class="app-header">
+          <h1 class="app-title">SnapContext</h1>
+          <p class="app-sub">v0.1.3</p>
+        </header>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">요소 선택 배너 <span>(selection-banner)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="selection-banner">
+          <div class="selection-banner__row">
+            <p class="selection-banner__text">페이지에서 요소를 클릭하세요. <kbd>Esc</kbd>로 취소할 수 있습니다.</p>
+            <button type="button" class="selection-banner__cancel">취소</button>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">토스트 <span>(info / error / 스택)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="toast-root">
+          <div class="toast toast--info toast--show">캡처를 불러왔습니다.</div>
+          <div class="toast toast--error toast--show">캡처 기록을 저장하지 못했습니다.</div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ 캡처 툴바 ============ -->
+    <div class="ph-section-title">캡처 툴바</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">CaptureToolbar <span>(2×2, primary=화면)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="panel-card">
+          <div class="toolbar" role="toolbar" aria-label="캡처 모드">
+            <div class="toolbar-row">
+              <button type="button" class="toolbar-btn toolbar-btn--primary" data-action="visible" title="화면 캡처 (Alt+Shift+V)">
+                <span class="toolbar-btn__glyph"><span class="panel-lucide-icon-row"><i data-icon="monitor" data-size="12"></i><i data-icon="camera" data-size="12"></i></span></span>
+                <span><strong>화면 캡처</strong><br><span class="muted" style="font-size: 0.78rem;">현재 보이는 화면</span></span>
+              </button>
+              <button type="button" class="toolbar-btn" data-action="document" title="문서 캡처 (Alt+Shift+M)">
+                <span class="toolbar-btn__glyph"><i data-icon="file" data-size="18"></i></span>
+                <span><strong>문서 캡처</strong><br><span class="muted" style="font-size: 0.78rem;">본문 영역 자동 감지</span></span>
+              </button>
+              <button type="button" class="toolbar-btn" data-action="element" title="요소 캡처 (Alt+Shift+E)">
+                <span class="toolbar-btn__glyph"><i data-icon="scan" data-size="18"></i></span>
+                <span><strong>요소 캡처</strong><br><span class="muted" style="font-size: 0.78rem;">페이지 요소 선택</span></span>
+              </button>
+              <button type="button" class="toolbar-btn" data-action="full-page" title="전체 캡처 (Alt+Shift+G)">
+                <span class="toolbar-btn__glyph"><i data-icon="maximize" data-size="18"></i></span>
+                <span><strong>전체 캡처</strong><br><span class="muted" style="font-size: 0.78rem;">스크롤 전체 페이지</span></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ 프리뷰 ============ -->
+    <div class="ph-section-title">프리뷰 · 이미지 액션</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">Preview <span>(빈 상태)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="preview-card">
+          <div class="preview-inner">
+            <div class="preview-empty">
+              <div class="preview-empty-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7a2 2 0 0 1 2-2h1l1.5-2h5L15 5h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/><circle cx="12" cy="12.5" r="3.25"/></svg>
+              </div>
+              <p class="preview-placeholder">위 버튼으로 캡처를 시작하세요</p>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">Preview <span>(이미지 있음)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="preview-card">
+          <div class="preview-expand-row">
+            <p class="preview-expand-hint muted">큰 작업 화면에서 캡처를 확인하고 핀을 추가하세요.</p>
+            <button type="button" class="preview-expand-btn" aria-expanded="false">크게 보기</button>
+          </div>
+          <div class="preview-inner">
+            <div class="preview-capture" data-size="regular">
+              <div class="preview-result-header">
+                <div class="preview-result-title"><span class="preview-result-eyebrow">캡처됨</span><strong>화면 캡처</strong></div>
+                <div class="preview-result-actions"><span class="preview-result-meta">1280×720</span></div>
+              </div>
+              <div class="preview-stage">
+                <div class="pin-container"><img class="preview-img" alt="캡처 미리보기" data-mock-img></div>
+                <button type="button" class="preview-zoom-btn" aria-label="원본 이미지 확대" title="원본 이미지 확대">🔍</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">ImageActions <span>(활성)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="image-actions">
+          <div class="image-actions__row">
+            <button type="button" class="context-pack-panel__btn context-pack-panel__btn--primary" title="PNG copy (Alt+Shift+P)">
+              <span class="context-pack-panel__icon" aria-hidden="true"><i data-icon="copy" data-size="18"></i></span><span>PNG 복사</span>
+            </button>
+            <button type="button" class="context-pack-panel__btn" title="PNG save">
+              <span class="context-pack-panel__icon" aria-hidden="true"><i data-icon="download" data-size="18"></i></span><span>PNG 저장</span>
+            </button>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ 컨텍스트 팩 ============ -->
+    <div class="ph-section-title">컨텍스트 팩 패널</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">ContextPackPanel <span>(캡처 없음 · 버튼 비활성)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card context-pack-panel">
+          <h2 class="context-pack-panel__title">AI 디버그 팩</h2>
+          <textarea class="context-pack-panel__intent" rows="3" placeholder="증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)"></textarea>
+          <p class="context-pack-panel__hint muted">AI 디버그 팩을 만들려면 페이지 또는 요소를 캡처하세요.</p>
+          <div class="context-pack-panel__template-row">
+            <label class="context-pack-panel__template-label">프롬프트 템플릿
+              <select class="context-pack-panel__template-select">
+                <option>🐛 버그 리포트</option><option>🔧 리팩토링</option><option>📐 레퍼런스</option>
+              </select>
+            </label>
+          </div>
+          <div class="context-pack-panel__grid">
+            <button type="button" class="context-pack-panel__btn context-pack-panel__btn--primary" disabled><span class="context-pack-panel__icon" aria-hidden="true"><span class="panel-lucide-icon-row"><i data-icon="sparkles" data-size="15"></i><i data-icon="copy" data-size="15"></i></span></span><span>AI 프롬프트 복사</span></button>
+            <button type="button" class="context-pack-panel__btn" disabled><span class="context-pack-panel__icon" aria-hidden="true"><span class="panel-lucide-icon-row"><i data-icon="braces" data-size="15"></i><i data-icon="copy" data-size="15"></i></span></span><span>JSON 복사</span></button>
+            <button type="button" class="context-pack-panel__btn context-pack-panel__btn--full" disabled><span class="context-pack-panel__icon" aria-hidden="true"><i data-icon="copy" data-size="18"></i></span><span>프롬프트 + JSON 복사</span></button>
+          </div>
+          <details class="context-pack-panel__section"><summary>최근 팩</summary>
+            <div class="context-pack-panel__list"><p class="muted">아직 저장된 팩이 없습니다.</p></div>
+          </details>
+        </section>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">ContextPackPanel <span>(최근 팩 데이터)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card context-pack-panel">
+          <h2 class="context-pack-panel__title">AI 디버그 팩</h2>
+          <p class="context-pack-panel__hint muted">AI용 디버그 프롬프트, JSON 팩 또는 주석이 포함된 PNG를 복사하세요.</p>
+          <div class="context-pack-panel__grid">
+            <button type="button" class="context-pack-panel__btn context-pack-panel__btn--primary"><span class="context-pack-panel__icon" aria-hidden="true"><span class="panel-lucide-icon-row"><i data-icon="sparkles" data-size="15"></i><i data-icon="copy" data-size="15"></i></span></span><span>AI 프롬프트 복사</span></button>
+            <button type="button" class="context-pack-panel__btn"><span class="context-pack-panel__icon" aria-hidden="true"><span class="panel-lucide-icon-row"><i data-icon="braces" data-size="15"></i><i data-icon="copy" data-size="15"></i></span></span><span>JSON 복사</span></button>
+          </div>
+          <details class="context-pack-panel__section" open><summary>최근 팩</summary>
+            <div class="context-pack-panel__list">
+              <div class="context-pack-panel__history-row">
+                <div class="context-pack-panel__history-meta">버그 리포트 - 예시 페이지 제목</div>
+                <button type="button">프롬프트</button><button type="button">전체</button>
+                <button type="button" class="context-pack-panel__history-delete" aria-label="히스토리 삭제">×</button>
+              </div>
+            </div>
+          </details>
+        </section>
+      </div></div>
+    </section>
+
+    <!-- ============ 핀 메모 ============ -->
+    <div class="ph-section-title">핀 메모 · 히스토리</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">PinMemoList <span>(빈 상태)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card">
+          <h2 class="pin-memo__title">핀 메모</h2>
+          <div class="pin-memo__list"></div>
+          <p class="pin-memo__placeholder muted">이미지를 클릭하여 핀을 추가하세요</p>
+        </section>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">PinMemoList <span>(데이터 · 활성 행)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card">
+          <h2 class="pin-memo__title">핀 메모</h2>
+          <div class="pin-memo__list">
+            <div class="pin-memo__row pin-memo__row--active" data-pin-id="1">
+              <span class="pin-memo__label">[1]</span>
+              <div class="pin-memo__field">
+                <textarea class="pin-memo__input" rows="1" placeholder="메모 입력…">로그인 버튼 정렬 깨짐</textarea>
+                <button type="button" class="pin-memo__delete" title="핀 삭제" aria-label="핀 삭제">×</button>
+              </div>
+            </div>
+            <div class="pin-memo__row" data-pin-id="2">
+              <span class="pin-memo__label">[2]</span>
+              <div class="pin-memo__field">
+                <textarea class="pin-memo__input" rows="1" placeholder="메모 입력…"></textarea>
+                <button type="button" class="pin-memo__delete" title="핀 삭제" aria-label="핀 삭제">×</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">HistoryList <span>(빈 상태)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card capture-history">
+          <div class="capture-history__header">
+            <h2 class="capture-history__title">캡처 기록</h2>
+            <button type="button" class="capture-history__clear" title="캡처 기록 모두 삭제" aria-label="캡처 기록 모두 삭제" disabled><i data-icon="trash" data-size="15"></i></button>
+          </div>
+          <div class="capture-history__list">
+            <p class="capture-history__empty muted">저장된 캡처가 아직 없습니다.</p>
+          </div>
+        </section>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">HistoryList <span>(항목 2개)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card capture-history">
+          <div class="capture-history__header">
+            <h2 class="capture-history__title">캡처 기록</h2>
+            <button type="button" class="capture-history__clear" title="캡처 기록 모두 삭제" aria-label="캡처 기록 모두 삭제"><i data-icon="trash" data-size="15"></i></button>
+          </div>
+          <div class="capture-history__list">
+            <div class="capture-history__item-wrap">
+              <button type="button" class="capture-history__item">
+                <div class="capture-history__thumb"><img alt="" data-mock-img></div>
+                <div class="capture-history__body">
+                  <div class="capture-history__primary">예시 페이지 제목 — 길어지면 말줄임</div>
+                  <div class="capture-history__url">https://example.com/some/long/path</div>
+                  <div class="capture-history__meta">6월 04 14:32 | 영역 | 핀 3</div>
+                </div>
+              </button>
+              <button type="button" class="capture-history__delete" title="캡처 삭제" aria-label="캡처 삭제"><i data-icon="x" data-size="15"></i></button>
+            </div>
+            <div class="capture-history__item-wrap">
+              <button type="button" class="capture-history__item">
+                <div class="capture-history__thumb"></div>
+                <div class="capture-history__body">
+                  <div class="capture-history__primary">example.com</div>
+                  <div class="capture-history__url">https://example.com/no-thumb</div>
+                  <div class="capture-history__meta">6월 04 09:10 | 문서 | 핀 0</div>
+                </div>
+              </button>
+              <button type="button" class="capture-history__delete" title="캡처 삭제" aria-label="캡처 삭제"><i data-icon="x" data-size="15"></i></button>
+            </div>
+          </div>
+        </section>
+      </div></div>
+    </section>
+
+    <!-- ============ 단축키 ============ -->
+    <div class="ph-section-title">단축키 도움말</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">ShortcutsHelp <span>(펼침)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card shortcuts-help">
+          <details class="shortcuts-help__details" open>
+            <summary>설정 / 도움말: 단축키</summary>
+            <dl class="shortcuts-help__list">
+              <dt>화면 캡처</dt><dd>Alt+Shift+V</dd>
+              <dt>요소 캡처</dt><dd>Alt+Shift+E</dd>
+              <dt>문서 캡처</dt><dd>Alt+Shift+M</dd>
+              <dt>전체 캡처</dt><dd>Alt+Shift+G</dd>
+              <dt>PNG 복사</dt><dd>직접 지정</dd>
+            </dl>
+            <p class="shortcuts-help__note muted">브라우저에서 이미 사용 중인 단축키와 충돌하면 자동 등록되지 않을 수 있습니다. 그럴 때는 whale://extensions/shortcuts 에서 직접 지정하세요.</p>
+          </details>
+        </section>
+      </div></div>
+    </section>
+
+    <!-- ============ 오버레이 (스테이지에 격리) ============ -->
+    <div class="ph-section-title">오버레이 · 다이얼로그 <span style="font-weight:400;color:#5b6680">(fixed→스테이지 격리)</span></div>
+
+    <section class="ph-sample">
+      <div class="ph-label">confirm-dialog</div>
+      <div class="ph-frame"><div class="ph-stage">
+        <div class="snap-confirm" role="dialog" aria-modal="true">
+          <div class="snap-confirm__panel">
+            <p class="snap-confirm__message">새 캡처를 시작하면 기존 핀이 삭제됩니다. 계속할까요?</p>
+            <div class="snap-confirm__actions">
+              <button type="button" class="snap-confirm__btn snap-confirm__btn--muted">취소</button>
+              <button type="button" class="snap-confirm__btn snap-confirm__btn--primary">계속</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">pin-lightbox <span>(크게 보기)</span></div>
+      <div class="ph-frame"><div class="ph-stage">
+        <div class="pin-lightbox" role="dialog" aria-modal="true" aria-label="화면 캡처">
+          <div class="pin-lightbox__backdrop"></div>
+          <div class="pin-lightbox__panel">
+            <div class="pin-lightbox__header"><span class="pin-lightbox__title">화면 캡처</span><span class="pin-lightbox__hint muted">Ctrl+휠: 확대/축소</span><button type="button" class="pin-lightbox__close" aria-label="닫기">×</button></div>
+            <div class="pin-lightbox__scroll">
+              <div class="preview-capture preview-capture--lightbox" data-size="regular">
+                <div class="preview-stage"><div class="pin-container"><img class="preview-img" alt="" data-mock-img></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">image-lightbox <span>(원본 확대 · 핀)</span></div>
+      <div class="ph-frame"><div class="ph-stage">
+        <div class="image-lightbox" role="dialog" aria-modal="true" aria-label="원본 이미지 확대">
+          <div class="image-lightbox__backdrop"></div>
+          <div class="image-lightbox__stage">
+            <div class="image-lightbox__viewport">
+              <div class="image-lightbox__pin-container" style="width:320px;height:180px">
+                <img class="image-lightbox__img" alt="" data-mock-img style="width:320px;height:180px">
+                <button type="button" class="pin-badge pin-badge--active" style="left:42%;top:32%" title="핀 1 — 클릭하면 삭제">1</button>
+                <button type="button" class="pin-badge" style="left:70%;top:60%" title="핀 2 — 클릭하면 삭제">2</button>
+              </div>
+            </div>
+            <button type="button" class="image-lightbox__close" aria-label="닫기">×</button>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ content-script (페이지 주입) ============ -->
+    <div class="ph-section-title">content-script 오버레이 <span style="font-weight:400;color:#5b6680">(가짜 페이지 · 인라인 스타일)</span></div>
+
+    <section class="ph-sample">
+      <div class="ph-label">요소 선택 hover 하이라이트</div>
+      <div class="ph-frame"><div class="ph-page">
+        <h3>예시 웹페이지</h3>
+        <p>요소 캡처 모드에서 대상에 인라인 box-shadow가 직접 주입됩니다.</p>
+        <button style="box-shadow: inset 0 0 0 2px rgba(233,69,96,.95); padding:8px 14px; border:1px solid #ccc; border-radius:4px; background:#fff">대상 요소 (hover)</button>
+        <div style="position:absolute;inset:0;background:transparent;cursor:crosshair;pointer-events:none"></div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">문서 영역 하이라이트 + 페이지 토스트</div>
+      <div class="ph-frame"><div class="ph-page">
+        <h3>예시 웹페이지</h3>
+        <p>본문 영역 자동 감지 플래시와 캡처 실패 토스트.</p>
+        <div style="position:absolute;left:24px;top:64px;width:240px;height:150px;border:2px solid #e94560;border-radius:6px;box-sizing:border-box;pointer-events:none"></div>
+        <div style="position:absolute;left:50%;top:16px;transform:translateX(-50%);max-width:min(420px,92vw);padding:10px 14px;background:#16161f;color:#eee;border-radius:8px;font:13px/1.4 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">사이드패널을 연 상태에서 다시 시도하세요.</div>
+      </div></div>
+    </section>
+
+  </div>
+
+  <script>
+    // ===== 하네스 전용 스크립트 =====
+    // 1) lucide 자리표시 SVG 주입 (제품은 런타임 lucide createElement, 여기선 레이아웃 재현용 placeholder)
+    var ICONS = {
+      x: 'M18 6 6 18M6 6l12 12',
+      trash: 'M3 6h18M8 6V4h8v2M6 6l1 14h12l1-14',
+      copy: 'M9 9h10v10H9zM5 15V5h10',
+      download: 'M12 3v12m-5-5 5 5 5-5M5 21h14',
+      camera: 'M4 7h3l2-2h6l2 2h3v12H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+      monitor: 'M3 4h18v12H3zM8 20h8M12 16v4',
+      file: 'M6 2h8l4 4v16H6zM14 2v4h4',
+      scan: 'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',
+      maximize: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
+      sparkles: 'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',
+      braces: 'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2'
+    };
+    document.querySelectorAll('[data-icon]').forEach(function (el) {
+      var name = el.getAttribute('data-icon');
+      var size = el.getAttribute('data-size') || '18';
+      var d = ICONS[name] || ICONS.x;
+      el.outerHTML =
+        '<svg class="panel-lucide-icon" width="' + size + '" height="' + size +
+        '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
+    });
+
+    // 2) 캡처 자리표시 이미지
+    var MOCK = "data:image/svg+xml," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='320' height='180'>" +
+      "<rect width='100%' height='100%' fill='#1a2540'/>" +
+      "<rect x='14' y='14' width='150' height='12' rx='3' fill='#3b5180'/>" +
+      "<rect x='14' y='36' width='292' height='92' rx='5' fill='#142038'/>" +
+      "<rect x='14' y='140' width='120' height='10' rx='3' fill='#2c3e63'/>" +
+      "<circle cx='250' cy='82' r='22' fill='#e94560' opacity='.5'/></svg>");
+    document.querySelectorAll('[data-mock-img]').forEach(function (img) { img.src = MOCK; });
+
+    // 3) 폭 토글
+    document.querySelectorAll('.ph-toolbar [data-w]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.documentElement.style.setProperty('--ph-w', b.getAttribute('data-w') + 'px');
+      });
+    });
+  </script>
+</body>
+</html>
