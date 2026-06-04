@@ -17,14 +17,20 @@ export async function uploadShare(
   if (context) {
     form.append('context', JSON.stringify(context))
   }
-  const res = await fetch(`${endpoint}/upload`, {
+  const base = endpoint.replace(/\/+$/, '')
+  const res = await fetch(`${base}/upload`, {
     method: 'POST',
     body: form
   })
   if (!res.ok) {
     throw new Error(`업로드 실패 (${res.status})`)
   }
-  const data = (await res.json()) as { url?: string }
+  let data: { url?: string }
+  try {
+    data = (await res.json()) as { url?: string }
+  } catch {
+    throw new Error('서버 응답을 해석할 수 없습니다.')
+  }
   if (!data.url) {
     throw new Error('서버 응답에 URL이 없습니다.')
   }

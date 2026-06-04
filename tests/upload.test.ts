@@ -70,4 +70,30 @@ describe('uploadShare', () => {
     const blob = new Blob([new Uint8Array([1])], { type: 'image/png' })
     await expect(uploadShare(blob)).rejects.toThrow('엔드포인트가 설정되지')
   })
+
+  it('propagates network errors', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+    const blob = new Blob([new Uint8Array([1])], { type: 'image/png' })
+    await expect(uploadShare(blob)).rejects.toThrow(/fetch/i)
+  })
+
+  it('throws a Korean message on non-JSON 200 response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('<html>not json</html>', { status: 200 }))
+    )
+    const blob = new Blob([new Uint8Array([1])], { type: 'image/png' })
+    await expect(uploadShare(blob)).rejects.toThrow('서버 응답을 해석할 수 없습니다.')
+  })
+
+  it('normalizes a trailing slash in the endpoint (no double slash)', async () => {
+    vi.stubEnv('VITE_UPLOAD_ENDPOINT', 'https://w.example.dev/')
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(okJson({ url: 'https://w.example.dev/s/z' }))
+    vi.stubGlobal('fetch', fetchMock)
+    const blob = new Blob([new Uint8Array([1])], { type: 'image/png' })
+    await uploadShare(blob)
+    expect(fetchMock.mock.calls[0][0]).toBe('https://w.example.dev/upload')
+  })
 })
