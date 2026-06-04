@@ -96,3 +96,29 @@ describe('buildViewerHtml', () => {
     expect(html).not.toContain('<dl>')
   })
 })
+
+describe('hardening (regression)', () => {
+  it('escapeHtml processes & first (no double-escape)', () => {
+    expect(escapeHtml('a&lt;b')).toBe('a&amp;lt;b')
+  })
+  it('sanitizeHttpUrl rejects uppercase/whitespace javascript scheme', () => {
+    expect(sanitizeHttpUrl(' JavaScript:alert(1)')).toBeNull()
+    expect(sanitizeHttpUrl('java\tscript:alert(1)')).toBeNull()
+  })
+  it('parseSharedContext rejects JSON arrays', () => {
+    expect(parseSharedContext('[1,2,3]')).toBeNull()
+  })
+  it('buildViewerHtml escapes quotes in source url (no attribute breakout)', () => {
+    const ctx: SharedContext = {
+      v: 1,
+      sourceUrl: 'http://a.com/"><script>alert(1)</script>',
+      sourceTitle: 't',
+      captureType: 'visible',
+      capturedAt: '2026',
+      viewport: { width: 1, height: 2 },
+      pins: []
+    }
+    const html = buildViewerHtml('idq', ctx, 'x')
+    expect(html).not.toContain('"><script>alert(1)')
+  })
+})

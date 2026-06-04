@@ -13,7 +13,7 @@ export type SharedContext = {
 }
 
 export function escapeHtml(s: string): string {
-  return s
+  return String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -58,7 +58,7 @@ export function formatExpiryKST(uploaded: Date): string {
 export function parseSharedContext(raw: string): SharedContext | null {
   try {
     const o = JSON.parse(raw) as unknown
-    if (!o || typeof o !== 'object') return null
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return null
     return o as SharedContext
   } catch {
     return null
