@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "snapcontext-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-01",
+  "r2_buckets": [
+    { "binding": "BUCKET", "bucket_name": "snapcontext-uploads" }
+  ]
+}
