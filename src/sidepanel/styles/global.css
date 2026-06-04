@@ -1033,6 +1033,33 @@ body {
   justify-content: center;
 }
 
+.image-actions__share-row {
+  margin-top: 8px;
+}
+
+.image-actions__share-row .context-pack-panel__btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.image-actions__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.image-actions__toggle input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #e94560;
+}
+
 .context-pack-panel__grid .context-pack-panel__btn--full {
   grid-column: 1 / -1;
   margin-bottom: 0;
