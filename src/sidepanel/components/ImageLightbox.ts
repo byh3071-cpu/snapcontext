@@ -141,7 +141,7 @@ export function mountImageLightbox(
       badge.style.left = `${pin.x}%`
       badge.style.top = `${pin.y}%`
       badge.textContent = String(pin.id)
-      badge.title = `핀 ${pin.id} — 클릭하면 삭제`
+      badge.title = `핀 ${pin.id} (클릭하면 삭제)`
       badge.dataset.pinId = String(pin.id)
       pinContainer.appendChild(badge)
     }

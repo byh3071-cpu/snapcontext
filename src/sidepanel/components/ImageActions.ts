@@ -49,8 +49,8 @@ export function mountImageActions(
 
   const btnCopy = mkBtn('PNG 복사', panelLucideIcon(Copy, 18), 'primary')
   const btnSave = mkBtn('PNG 저장', panelLucideIcon(Download, 18), 'default')
-  btnCopy.title = 'PNG copy (Alt+Shift+P)'
-  btnSave.title = 'PNG save'
+  btnCopy.title = 'PNG 복사 (Alt+Shift+P)'
+  btnSave.title = 'PNG 저장'
   row.append(btnCopy, btnSave)
   host.append(row)
 

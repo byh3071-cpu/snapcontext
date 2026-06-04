@@ -31,7 +31,7 @@ export function mountShortcutsHelp(host: HTMLElement): void {
   const note = document.createElement('p')
   note.className = 'shortcuts-help__note muted'
   note.textContent =
-    '브라우저에서 이미 사용 중인 단축키와 충돌하면 자동 등록되지 않을 수 있습니다. 그럴 때는 whale://extensions/shortcuts 에서 직접 지정하세요.'
+    '브라우저에서 이미 사용 중인 단축키와 충돌하면 자동 등록되지 않을 수 있습니다. 그럴 때는 브라우저의 확장 프로그램 단축키 설정에서 직접 지정하세요.'
 
   details.append(summary, list, note)
   host.append(details)
