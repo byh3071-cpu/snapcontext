@@ -122,12 +122,25 @@ async function main() {
       .first()
     log('공유 링크 버튼 노출', (await shareBtn.count()) > 0)
 
-    // --- 1회차: 토글 OFF, 동의 다이얼로그 → 계속 ---
+    // --- 0회차: 미동의(취소) → 업로드 차단 (#6) ---
+    await shareBtn.click()
+    await page.waitForTimeout(300)
+    const cancelDialogShown = (await page.locator('.snap-confirm').count()) > 0
+    log('미동의 케이스: 동의 다이얼로그 표시', cancelDialogShown)
+    if (cancelDialogShown) {
+      await page.locator('.snap-confirm__btn--muted').click() // '취소' 클릭
+    }
+    await page.waitForTimeout(500)
+    // 취소했으니 /upload 호출이 일어나면 안 됨 (window.__lastUpload === null 유지)
+    const afterCancel = await page.evaluate(() => window.__lastUpload)
+    log('미동의(취소) → 업로드 호출 차단', afterCancel === null, JSON.stringify(afterCancel))
+
+    // --- 1회차: 토글 OFF, 동의 다이얼로그 → 계속 (취소 시 동의 미저장이라 다시 떠야 함) ---
     await shareBtn.click()
     await page.waitForTimeout(300)
     const dialog = page.locator('.snap-confirm')
     const dialogShown = (await dialog.count()) > 0
-    log('최초 동의 다이얼로그 표시', dialogShown)
+    log('취소 후 재클릭 시 동의 다이얼로그 재표시(동의 미저장)', dialogShown)
     if (dialogShown) {
       await page.locator('.snap-confirm__btn--primary').click()
     }
