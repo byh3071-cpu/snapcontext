@@ -19,3 +19,9 @@ tests/e2e/screenshots/
 # Store upload artifacts (regenerate with npm run build)
 snapcontext-*.zip
 
+
+# vhk init
+.env.*.local
+node_modules/
+dist/
+*.tsbuildinfo

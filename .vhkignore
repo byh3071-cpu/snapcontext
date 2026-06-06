@@ -1,0 +1,4 @@
+# vhk cloud push 백업에서 제외할 .vhk/ 파일 (한 줄에 하나)
+# 기본 제외(자동): memory.json, refs.json, HARD_STOP, cloud.json, .gitignore
+# 예) 아래 주석을 풀면 brief.md 도 백업에서 제외됩니다.
+# brief.md

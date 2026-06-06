@@ -1,14 +1,10 @@
-# SnapContext — AGENTS.md (에이전트 작동 규약)
+# SnapContext — Antigravity Rules
 
+> 코딩/디자인 전용. 기록/운영 → CLAUDE.md 참조.
 > ⚡ 이 파일은 RULES.md에서 자동 생성됨 (vhk sync). 직접 수정 금지.
-> 빠른 시작(토큰 절감): `docs/context/agent-compact.md` 를 먼저 읽으세요.
 
-## Loop Protocol
-- 루프: `context → goal next → 작업 → goal check → goal done`
-- 작업 시작 시 `.vhk/HARD_STOP` 확인 — 있으면 모든 자동화 즉시 중단.
-- active goal 만 작업. `docs/state`(next-task/blockers)는 append-only.
-- 교훈·결정·실패·성공은 `vhk memory`(memory v2 4버킷, 단일 출처).
-- 게이트(tsc / test:run / build) 통과해야만 `vhk goal done`.
+## 필수 참조
+- docs/PRD.md · docs/ARCHITECTURE.md · CLAUDE.md · RULES.md
 
 ## 기술 스택 (변경 시 ADR 필수)
 - Manifest V3
@@ -83,18 +79,3 @@
 ## 커밋 컨벤션
 - feat: 새 기능 / fix: 버그 수정 / refactor: 리팩토링 / docs: 문서 변경 / chore: 빌드·설정 변경
 - 예: `feat: add element capture with overlay`
-
-## 기술 스택 (변경 시 ADR 필수)
-- Manifest V3
-- Vite + @crxjs/vite-plugin
-- TypeScript strict (any 금지, as 최소화)
-- Vanilla TS + CSS (React/Preact 사용 금지)
-- Side Panel API (chrome.sidePanel)
-- CSS 변수 기반 dark productive 테마
-
-## 기록 규칙
-- 새 라이브러리/API/패턴 선택 → docs/adr/ 에 ADR (YAML 프론트매터: id, date, tags)
-- 기능 완성 → docs/log/YYYY-MM-DD-{작업명}.md (세션·마일스톤 로그)
-- 에러 해결 → docs/troubleshooting/ (재현·원인·해결)
-- 새로 배운 것 → docs/til.md 에 한 줄
-- 스키마/타입 변경 → docs/changelog.md 에 기록

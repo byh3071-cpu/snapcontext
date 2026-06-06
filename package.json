@@ -4,6 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "save": "vhk save",
+    "check": "vhk check",
+    "scan": "vhk secure scan",
+    "recap": "vhk recap",
+    "ship": "vhk ship",
+    "doctor": "vhk doctor",
     "dev": "vite",
     "clean": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-dist.ps1",
     "build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clean-dist.ps1 && tsc --noEmit && vite build",
