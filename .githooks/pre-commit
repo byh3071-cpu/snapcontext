@@ -1,0 +1,9 @@
+#!/bin/sh
+# 로컬 게이트: 검증 실패 시 commit 자체를 막는다.
+# 긴급 우회(되도록 쓰지 말 것): git commit --no-verify
+set -e
+echo "[pre-commit] 검증 게이트 실행..."
+node scripts/check-version-sync.mjs
+node scripts/check-no-silent-fallback.mjs
+npx vitest run
+echo "[pre-commit] 통과"
