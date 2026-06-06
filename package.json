@@ -13,7 +13,11 @@
     "test": "vitest run",
     "test:e2e": "node tests/e2e/smoke.mjs",
     "test:e2e:all": "node tests/e2e/smoke.mjs && node tests/e2e/pin-flow.mjs && node tests/e2e/loaded-pack-pin.mjs && node tests/e2e/pin-delete.mjs && node tests/e2e/coverage.mjs && node tests/e2e/full-page-shortcut.mjs && node tests/e2e/upload-share.mjs",
-    "store:screenshots": "node scripts/generate-store-screenshots.mjs"
+    "store:screenshots": "node scripts/generate-store-screenshots.mjs",
+    "check:version": "node scripts/check-version-sync.mjs",
+    "check:fallback": "node scripts/check-no-silent-fallback.mjs",
+    "verify": "node scripts/check-version-sync.mjs && node scripts/check-no-silent-fallback.mjs && tsc --noEmit && vitest run",
+    "prepare": "git config core.hooksPath .githooks || exit 0"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.28",
