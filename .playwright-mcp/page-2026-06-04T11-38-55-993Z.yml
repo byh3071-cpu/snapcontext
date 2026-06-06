@@ -1,0 +1,291 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome Web Store logo Chrome Web Store" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome Web Store logo" [ref=e8]
+          - generic [ref=e9]: Chrome Web Store
+        - search "Sitewide" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Search Chrome Web Store" [active] [ref=e15]
+        - generic [ref=e16]:
+          - button "More options menu" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google apps" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "Sign in" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https://chromewebstore.google.com/detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg?hl%3Den%26gl%3DUS&followup=https://chromewebstore.google.com/detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg?hl%3Den%26gl%3DUS&hl=en&ec=GAZApQM
+      - tablist [ref=e42]:
+        - generic [ref=e45]:
+          - tab "Discover" [ref=e46] [cursor=pointer]:
+            - generic:
+              - generic: Discover
+          - tab "Extensions" [selected] [ref=e47] [cursor=pointer]:
+            - generic:
+              - generic: Extensions
+          - tab "Themes" [ref=e48] [cursor=pointer]:
+            - generic:
+              - generic: Themes
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - img "Item logo image for Take Webpage Screenshots Entirely - FireShot" [ref=e58]
+          - heading "Take Webpage Screenshots Entirely - FireShot" [level=1] [ref=e59]
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - generic [ref=e64] [cursor=pointer]:
+              - img [ref=e67]
+              - link "Created by the owner of the listed website. The publisher has a good record with no history of violations. Learn more." [ref=e70]:
+                - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+            - link "https://getfireshot.com/" [ref=e71] [cursor=pointer]:
+              - /url: https://getfireshot.com/
+          - generic [ref=e72]:
+            - generic [ref=e75] [cursor=pointer]:
+              - img [ref=e78]
+              - link "Follows recommended practices for Chrome extensions. Learn more." [ref=e81]:
+                - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+            - generic [ref=e82]: Featured
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - generic [ref=e85]: "4.8"
+              - img [ref=e86]
+              - generic [ref=e88]:
+                - text: (
+                - link "50.7K ratings" [ref=e89] [cursor=pointer]:
+                  - /url: ./detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg/reviews
+                  - paragraph [ref=e90]: 50.7K ratings
+                - text: )
+            - button "Ratings are updated daily and may not reflect the most recent reviews." [ref=e92] [cursor=pointer]:
+              - img [ref=e95]
+          - button "Share" [ref=e101] [cursor=pointer]:
+            - img [ref=e104]
+            - generic [ref=e106]: Share
+        - generic [ref=e107]:
+          - link "Extension" [ref=e108] [cursor=pointer]:
+            - /url: ./category/extensions
+          - link "Developer Tools" [ref=e109] [cursor=pointer]:
+            - /url: ./category/extensions/productivity/developer
+          - text: 3,000,000 users
+        - button "Add to Chrome" [ref=e113] [cursor=pointer]:
+          - generic [ref=e115]: Add to Chrome
+      - generic [ref=e116]:
+        - region "Media carousel" [ref=e117]:
+          - button "Previous slide" [ref=e119] [cursor=pointer]:
+            - img [ref=e122]
+          - generic [ref=e126]:
+            - button "Item media 3 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e128] [cursor=pointer]:
+              - img "Item media 3 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e129]
+            - button "Item media 4 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e131] [cursor=pointer]:
+              - img "Item media 4 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e132]
+            - generic [ref=e135] [cursor=pointer]:
+              - button "Item media 1 (video) for Take Webpage Screenshots Entirely - FireShot" [ref=e137]
+              - img "Item video thumbnail" [ref=e143]
+            - button "Item media 2 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e145] [cursor=pointer]:
+              - img "Item media 2 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e146]
+            - button "Item media 3 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e148] [cursor=pointer]:
+              - img "Item media 3 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e149]
+            - button "Item media 4 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e151] [cursor=pointer]:
+              - img "Item media 4 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e152]
+            - generic [ref=e155] [cursor=pointer]:
+              - button "Item media 1 (video) for Take Webpage Screenshots Entirely - FireShot" [ref=e157]
+              - img "Item video thumbnail" [ref=e163]
+            - button "Item media 2 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e165] [cursor=pointer]:
+              - img "Item media 2 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e166]
+          - button "Next slide" [ref=e168] [cursor=pointer]:
+            - img [ref=e171]
+        - generic [ref=e174]:
+          - button "Preview slide 1 for Take Webpage Screenshots Entirely - FireShot" [ref=e175] [cursor=pointer]:
+            - img "Item video thumbnail" [ref=e176]
+          - button "Preview slide 2 for Take Webpage Screenshots Entirely - FireShot" [ref=e178] [cursor=pointer]:
+            - img "Item media 2 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e180]
+          - button "Preview slide 3 for Take Webpage Screenshots Entirely - FireShot" [ref=e182] [cursor=pointer]:
+            - img "Item media 3 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e184]
+          - button "Preview slide 4 for Take Webpage Screenshots Entirely - FireShot" [ref=e186] [cursor=pointer]:
+            - img "Item media 4 (screenshot) for Take Webpage Screenshots Entirely - FireShot" [ref=e188]
+      - generic [ref=e190]:
+        - heading "Overview" [level=2] [ref=e192]:
+          - generic [ref=e193]: Overview
+        - generic [ref=e194]:
+          - generic [ref=e195]:
+            - paragraph [ref=e196]: Take FULL webpage screenshots. Capture, edit and save them to PDF/JPEG/GIF/PNG, upload, print, send to OneNote, clipboard or email.
+            - paragraph [ref=e197]: "FireShot helps you: • Save receipts, tickets, and order confirmations • Capture long articles, ChatGPT, research, and documentation • Share design reviews, bug reports, and product ideas • Keep permanent records of web pages that may change or disappear 🔒 Screenshot is done instantly and stored locally. It never leaves your computer, so it's 100% safe for storing a sensitive information. FireShot can work offline. 🏆 Awarded as \"The Best Free Google Chrome Extension (Full Page Screenshot Tool)\" by PCMAG.COM 🛑 No spyware and unnecessary permissions - you're just in a couple of clicks away from an ideal screenshot. Top 7️⃣ reasons to install FireShot: 1️⃣ Save screenshot to disk as PDF (with links), PNG, and JPEG 2️⃣ Capture entire page, visible part of the web page or just a selection 3️⃣ Automatically capture all tabs to PDF or image 🔥 (https://getfireshot.com/demos/capture-all-tabs.php) 4️⃣ Provide a list of URLs for an automatic batch capturing process 🔥 (https://getfireshot.com/demos/capture-website-urls.php) 5️⃣ Attach screenshot to Gmail 6️⃣ Copy screenshot to clipboard 7️⃣ Print ### An upgrade is available. Activate it directly from the menu and: ✓ PDF with direct links and text, can be saved as a single page or split to pages ✓ Capture specific elements, such as scrolling areas on web pages (https://getfireshot.com/selection.php) ✓ Capture all tabs in one click and save to single PDF (https://getfireshot.com/demos/capture-all-tabs.php) ✓ Edit: crop, resize, add text and arrow annotations, blur areas and apply other effects ✓ Send to OneNote (Pro version) ✓ Save captures to disk as PNG, GIF, JPEG, BMP ✓ Upload to Twitter, ImageShack, Flickr, EasyCaptures, custom FTP or HTTP servers ✓ Copy to clipboard ✓ Print ✓ E-Mail ✓ Export captures to external editor ✓ Add page information to screenshot (URL, title, time, domain, etc)"
+          - button "See more" [ref=e198] [cursor=pointer]
+      - generic [ref=e201]:
+        - heading "4.8 out of 5 4.8 out of 5 stars 50.7K ratings• Learn more about results and reviews." [level=2] [ref=e203]:
+          - generic [ref=e204]:
+            - text: 4.8 out of 5
+            - img "4.8 out of 5 stars" [ref=e205]:
+              - generic [ref=e206]:
+                - generic [ref=e207]:
+                  - img [ref=e208]
+                  - img [ref=e211]
+                  - img [ref=e214]
+                  - img [ref=e217]
+                  - img [ref=e220]
+                - generic [ref=e223]:
+                  - img [ref=e224]
+                  - img [ref=e226]
+                  - img [ref=e228]
+                  - img [ref=e230]
+                  - img [ref=e232]
+          - text: 50.7K ratings•
+          - paragraph [ref=e234]:
+            - link "Learn more about results and reviews." [ref=e235] [cursor=pointer]:
+              - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results
+        - generic [ref=e237] [cursor=pointer]:
+          - generic [ref=e238]: See all reviews
+          - link "See all reviews" [ref=e239]:
+            - /url: ./detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg/reviews
+      - generic [ref=e240]:
+        - heading "Details" [level=2] [ref=e242]
+        - list [ref=e244]:
+          - listitem [ref=e245]:
+            - generic [ref=e246]: Version
+            - generic [ref=e247]: 2.1.4.18
+          - listitem [ref=e248]:
+            - generic [ref=e249]: Updated
+            - generic [ref=e250]: May 24, 2026
+          - listitem [ref=e251]:
+            - link "Flag concern" [ref=e253] [cursor=pointer]:
+              - /url: ./detail/mcbpblocgmgfnpjjppndjkmgjaogfceg/report
+          - listitem [ref=e254]:
+            - generic [ref=e255]: Size
+            - generic [ref=e256]: 12.0MiB
+          - listitem [ref=e257]:
+            - generic [ref=e258]: Languages
+            - generic [ref=e260]:
+              - text: 41 languages
+              - button "Show more languages" [ref=e262] [cursor=pointer]:
+                - img [ref=e265]
+          - listitem [ref=e268]:
+            - generic [ref=e269]: Developer
+            - generic [ref=e271]:
+              - link "Website" [ref=e272] [cursor=pointer]:
+                - /url: https://getfireshot.com/
+                - img [ref=e273]
+                - text: Website
+              - group [ref=e275]:
+                - generic "Email" [ref=e276]:
+                  - img [ref=e277]
+                  - text: Email
+                  - img [ref=e279]
+          - listitem [ref=e281]:
+            - generic [ref=e282]: Non-trader
+            - generic [ref=e283]: This developer has not identified itself as a trader. For consumers in the European Union, please note that consumer rights do not apply to contracts between you and this developer.
+      - generic [ref=e284]:
+        - heading "Privacy" [level=2] [ref=e286]
+        - generic [ref=e288]:
+          - generic [ref=e289]:
+            - img [ref=e290]
+            - generic [ref=e293]:
+              - text: The developer has disclosed that it will not collect or use your data. To learn more, see the developer’s
+              - link "privacy policy" [ref=e294] [cursor=pointer]:
+                - /url: http://getfireshot.com/privacy.php
+              - text: .
+          - generic [ref=e295]:
+            - heading "This developer declares that your data is" [level=2] [ref=e296]
+            - list [ref=e297]:
+              - listitem [ref=e298]:
+                - text: Not being sold to third parties, outside of the
+                - link "approved use cases" [ref=e299] [cursor=pointer]:
+                  - /url: https://developer.chrome.com/docs/webstore/program-policies/limited-use/
+              - listitem [ref=e300]: Not being used or transferred for purposes that are unrelated to the item's core functionality
+              - listitem [ref=e301]: Not being used or transferred to determine creditworthiness or for lending purposes
+      - generic [ref=e303]:
+        - heading "Support" [level=2] [ref=e304]
+        - generic [ref=e306] [cursor=pointer]:
+          - generic [ref=e307]: Visit support hub
+          - link "Visit support hub" [ref=e308]:
+            - /url: ./detail/mcbpblocgmgfnpjjppndjkmgjaogfceg/support
+      - generic [ref=e309]:
+        - heading "Related" [level=2] [ref=e310]
+        - region "Related items carousel" [ref=e313]:
+          - button "Previous slide" [ref=e315] [cursor=pointer]:
+            - img [ref=e318]
+          - region "Related item slides" [ref=e322]:
+            - generic [ref=e323]:
+              - generic [ref=e325]:
+                - link "Webpage Screenshot - Entire page screenshot!" [ref=e326] [cursor=pointer]:
+                  - /url: ./detail/webpage-screenshot-entire/akgpcdalpfphjmfifkmfbpdmgdmeeaeo
+                - generic [ref=e327]:
+                  - heading "Webpage Screenshot - Entire page screenshot!" [level=3] [ref=e328]
+                  - generic [ref=e329]:
+                    - img "Average rating 4.7 out of 5 stars." [ref=e330]:
+                      - generic [ref=e331]: "4.7"
+                      - img [ref=e332]
+                    - generic [ref=e335] [cursor=pointer]:
+                      - img [ref=e338]
+                      - link "Learn more about results and reviews \"Webpage Screenshot - Entire page screenshot!\"." [ref=e340]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e341]: Since 2015 The most popular tool for your day to day. Whole page screenshot, sharing and much more.
+              - generic [ref=e343]:
+                - link "Scrolling screenshot tool & screen capture" [ref=e344] [cursor=pointer]:
+                  - /url: ./detail/scrolling-screenshot-tool/mfpiaehgjbbfednooihadalhehabhcjo
+                - generic [ref=e345]:
+                  - heading "Scrolling screenshot tool & screen capture" [level=3] [ref=e346]
+                  - generic [ref=e347]:
+                    - img "Average rating 4.3 out of 5 stars." [ref=e348]:
+                      - generic [ref=e349]: "4.3"
+                      - img [ref=e350]
+                    - generic [ref=e353] [cursor=pointer]:
+                      - img [ref=e356]
+                      - link "Learn more about results and reviews \"Scrolling screenshot tool & screen capture\"." [ref=e358]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e359]: Scrolling Screenshot tool for screen capture and screen sharing
+              - generic [ref=e361]:
+                - link "Explain and Send Screenshots" [ref=e362] [cursor=pointer]:
+                  - /url: ./detail/explain-and-send-screensh/mdddabjhelpilpnpgondfmehhcplpiin
+                - generic [ref=e363]:
+                  - heading "Explain and Send Screenshots" [level=3] [ref=e364]
+                  - generic [ref=e365]:
+                    - img "Average rating 4.2 out of 5 stars." [ref=e366]:
+                      - generic [ref=e367]: "4.2"
+                      - img [ref=e368]
+                    - generic [ref=e371] [cursor=pointer]:
+                      - img [ref=e374]
+                      - link "Learn more about results and reviews \"Explain and Send Screenshots\"." [ref=e376]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e377]: Capture or record a video of your screen, write text or arrows and share it. The safest extension with NO crazy permissions!
+              - generic [ref=e379]:
+                - link "RSSHub Radar" [ref=e380] [cursor=pointer]:
+                  - /url: ./detail/rsshub-radar/kefjpfngnndepjbopdmoebkipbgkggaa
+                - generic [ref=e381]:
+                  - heading "RSSHub Radar" [level=3] [ref=e383]
+                  - generic [ref=e384]:
+                    - img "Average rating 4.8 out of 5 stars." [ref=e385]:
+                      - generic [ref=e386]: "4.8"
+                      - img [ref=e387]
+                    - generic [ref=e390] [cursor=pointer]:
+                      - img [ref=e393]
+                      - link "Learn more about results and reviews \"RSSHub Radar\"." [ref=e395]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e396]: Easily find and subscribe to RSS and RSSHub.
+          - button "Next slide" [ref=e398] [cursor=pointer]:
+            - img [ref=e401]
+  - contentinfo [ref=e404]:
+    - list [ref=e405]:
+      - listitem [ref=e406]:
+        - link "About Chrome Web Store" [ref=e407] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=en
+        - text: •
+      - listitem [ref=e408]:
+        - link "Developer Dashboard" [ref=e409] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e410]:
+        - link "Privacy Policy" [ref=e411] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=en
+        - text: •
+      - listitem [ref=e412]:
+        - link "Terms of Service" [ref=e413] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/en/gallery_tos.html
+        - text: •
+      - listitem [ref=e414]:
+        - link "Help" [ref=e415] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=en

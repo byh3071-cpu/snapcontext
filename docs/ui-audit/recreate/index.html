@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnapContext 사이드패널 — finalist 완성도 패스</title>
+<style>
+  /* ── 중립 다크 셸: 시안 자체 색과 충돌하지 않도록 무채색 위주 ── */
+  :root {
+    --bg:        #14151a;
+    --bg-2:      #1c1e26;
+    --bg-3:      #23262f;
+    --line:      #34384a;
+    --ink:       #f3f4f7;   /* 본문/제목 — bg 대비 약 15:1 */
+    --ink-2:     #c8ccd8;   /* 부제 — bg 대비 약 10:1 */
+    --ink-3:     #9aa0b0;   /* 메타 — bg 대비 약 6:1 (AA 통과) */
+    --good:      #6ee7a8;   /* 픽스 적용 칩 */
+    --good-ink:  #052e16;
+    --warn:      #fbbf24;   /* 남은 흠 */
+    --warn-ink:  #3a2a04;
+    --accent:    #7c8cff;   /* 순위/포인트 */
+    --bar-bg:    #2a2d39;
+    --radius:    14px;
+    --frame-w:   390px;
+    --frame-h:   900px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Pretendard", system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ── 상단 sticky 헤더 ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(20, 21, 26, 0.93);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 26px 16px;
+  }
+  .topbar h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .topbar p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 980px;
+  }
+  .topbar .method {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .topbar .method b { color: var(--ink-2); font-weight: 700; }
+
+  /* ── 보드: flex-wrap, 좁으면 1열 ── */
+  .board {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    align-items: flex-start;
+    padding: 26px 26px 8px;
+  }
+
+  /* ── 카드 ── */
+  .card {
+    width: var(--frame-w);
+    max-width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 캡션 헤더 */
+  .cap {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .cap-top {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 7px;
+    flex-wrap: wrap;
+  }
+  .rank {
+    flex: none;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .name {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .fname {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-3);
+    font-family: "Cascadia Code", ui-monospace, "Consolas", monospace;
+  }
+
+  .sig {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 4px 0 0;
+  }
+
+  /* 점수 블록 */
+  .score {
+    padding: 11px 16px 12px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.012);
+  }
+  .total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 9px;
+  }
+  .total .lab {
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.02em;
+  }
+  .total .num {
+    font-size: 21px;
+    font-weight: 800;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .total .max { font-size: 12px; color: var(--ink-3); }
+
+  .metrics { display: grid; gap: 5px; }
+  .metric {
+    display: grid;
+    grid-template-columns: 96px 1fr 22px;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+  }
+  .metric .lbl { color: var(--ink-3); }
+  .metric .track {
+    height: 6px;
+    background: var(--bar-bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .metric .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5b6bef, #8a96ff);
+    border-radius: 4px;
+  }
+  .metric .val {
+    text-align: right;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  /* 메타 줄 (픽스 적용) */
+  .meta {
+    padding: 9px 16px 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 11px;
+  }
+  .fixchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--good);
+    color: var(--good-ink);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+  }
+  .fixchip svg { width: 12px; height: 12px; }
+
+  /* 개선/이슈 블록 */
+  .block {
+    padding: 10px 16px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .block .ttl {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .block .ttl .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .block .ttl .dot.up   { background: var(--good); }
+  .block .ttl .dot.left { background: var(--warn); }
+  .block ul { margin: 0; padding-left: 16px; }
+  .block li {
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin-bottom: 5px;
+  }
+  .block li:last-child { margin-bottom: 0; }
+  .block.left li { color: var(--ink-2); }
+
+  /* iframe 프리뷰 */
+  .preview {
+    padding: 14px 16px 16px;
+    display: flex;
+    justify-content: center;
+  }
+  iframe {
+    width: 100%;
+    height: var(--frame-h);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    display: block;
+  }
+
+  footer {
+    padding: 28px 26px 40px;
+    color: var(--ink-3);
+    font-size: 12px;
+    line-height: 1.6;
+    border-top: 1px solid var(--line);
+    margin-top: 18px;
+  }
+  footer code {
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-family: "Cascadia Code", ui-monospace, "Consolas", monospace;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 460px) {
+    .board { padding: 18px 14px 6px; }
+    .topbar { padding: 14px 16px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SnapContext 사이드패널 — finalist 완성도 패스</h1>
+  <p>finalist 4종을 프로덕션 완성도(craft)로 재제작했습니다. 정체성·컴포넌트·카피는 그대로 두고, 빌드 → 적대적 비평 → 픽스 루프로 마감만 끌어올린 폴리시 버전입니다. 모든 시안은 단일 HTML·외부리소스 0이며, 약 390px 사이드패널 실폭으로 임베드합니다.</p>
+  <p class="method">카드 구성 — <b>craft 점수(/10)</b> + 8개 세부축(타이포·간격·아이콘·상태·깊이/질감·콘텐츠 리얼리즘·시그니처 일관·polish) 미니 막대 · <b>픽스 적용</b> 표시 · 핵심 개선 2~3개 · 남은 흠. craft 내림차순 정렬.</p>
+</header>
+
+<!-- ════════ 폴리시 보드 (craft 내림차순) ════════ -->
+<div class="board">
+
+  <!-- ① 영수증·감열지 craft 8 -->
+  <article class="card">
+    <div class="cap">
+      <div class="cap-top">
+        <span class="rank">1</span>
+        <span class="name">영수증·감열지</span>
+        <span class="fname">polish/receipt.html</span>
+      </div>
+      <p class="sig">POS 단말에서 막 뽑힌 감열지 영수증 — 톱니 절취선·점선 컷라인·도트리더·도트매트릭스 4종 모티프로 거래 명세처럼 나뉘고, 복사·공유는 인주 적색 도장으로 '발행'된다. 모듈러 타입 스케일 + tabular-nums.</p>
+    </div>
+    <div class="score">
+      <div class="total"><span class="lab">craft</span><span class="num">8</span><span class="max">/ 10</span></div>
+      <div class="metrics">
+        <div class="metric"><span class="lbl">타이포</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">간격</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">아이콘</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">상태</span><span class="track"><span class="fill" style="width:80%"></span></span><span class="val">8</span></div>
+        <div class="metric"><span class="lbl">깊이/질감</span><span class="track"><span class="fill" style="width:80%"></span></span><span class="val">8</span></div>
+        <div class="metric"><span class="lbl">콘텐츠</span><span class="track"><span class="fill" style="width:70%"></span></span><span class="val">7</span></div>
+        <div class="metric"><span class="lbl">시그니처</span><span class="track"><span class="fill" style="width:60%"></span></span><span class="val">6</span></div>
+        <div class="metric"><span class="lbl">polish</span><span class="track"><span class="fill" style="width:60%"></span></span><span class="val">6</span></div>
+      </div>
+    </div>
+    <div class="meta">
+      <span class="fixchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>픽스 적용</span>
+      <span style="color:var(--ink-3)">러프엣지 6건 + 인라인 매직값 0건 정리</span>
+    </div>
+    <div class="block">
+      <div class="ttl"><span class="dot up"></span>핵심 개선</div>
+      <ul>
+        <li>무한 idle 스피너(.spin infinite) 제거 — 명세의 'idle 루프 없음, 도장 1회뿐' 약속과 일치시키고 업로드중 블록 자체를 삭제.</li>
+        <li>회색 빈 박스 박멸 — 미리보기는 대시보드 목업, 기록 3행은 대시보드/로그인폼/에러모달 미니어처 SVG로 차별화.</li>
+        <li>타이포 모듈러 스케일(--fs-*) + tabular-nums 토큰화, 아이콘 24뷰박스·stroke 1.7·round 통일, 4상태 토큰 transition 완비.</li>
+      </ul>
+    </div>
+    <div class="block left">
+      <div class="ttl"><span class="dot left"></span>남은 흠</div>
+      <ul>
+        <li>없음 — 비평이 지목한 치명 흠(무한 애니·필러 드롭다운·업로드중+완료 모순·핀 상태 불일치·인라인 매직값·데모 스캐폴딩)을 전부 픽스. polish 6은 마감 여유분.</li>
+      </ul>
+    </div>
+    <div class="preview">
+      <iframe src="./polish/receipt.html" title="영수증·감열지 — polish/receipt.html" loading="lazy"></iframe>
+    </div>
+  </article>
+
+  <!-- ② 콘크리트 브루탈리즘 craft 8 -->
+  <article class="card">
+    <div class="cap">
+      <div class="cap-top">
+        <span class="rank">2</span>
+        <span class="name">콘크리트 브루탈리즘</span>
+        <span class="fname">polish/brutalist.html</span>
+      </div>
+      <p class="sig">노출 콘크리트 슬래브 + 경고 앰버 1점, 라디우스 0 고대비. form-tie·줄눈·스텐실 숫자·하드 오프셋 그림자로 브루탈리즘 정체성을 일관 유지하고, 핀 마커는 SVG 좌표계 안으로 이동해 실제 요소를 지시한다.</p>
+    </div>
+    <div class="score">
+      <div class="total"><span class="lab">craft</span><span class="num">8</span><span class="max">/ 10</span></div>
+      <div class="metrics">
+        <div class="metric"><span class="lbl">타이포</span><span class="track"><span class="fill" style="width:80%"></span></span><span class="val">8</span></div>
+        <div class="metric"><span class="lbl">간격</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">아이콘</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">상태</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">깊이/질감</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">콘텐츠</span><span class="track"><span class="fill" style="width:60%"></span></span><span class="val">6</span></div>
+        <div class="metric"><span class="lbl">시그니처</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">polish</span><span class="track"><span class="fill" style="width:70%"></span></span><span class="val">7</span></div>
+      </div>
+    </div>
+    <div class="meta">
+      <span class="fixchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>픽스 적용</span>
+      <span style="color:var(--ink-3)">노드 파서 구조 검증 통과</span>
+    </div>
+    <div class="block">
+      <div class="ttl"><span class="dot up"></span>핵심 개선</div>
+      <ul>
+        <li>타입 스케일 문서/구현 불일치 해소 — 가짜 모듈러 비율 주석을 삭제하고 역할 기반 스케일(10→19 + 디스플레이 40)로 재정의·재문서화.</li>
+        <li>핀 3개 콘텐츠 모순 제거 — 마커와 1:1 정합하는 3행 메모 목록 + 카운트 배지로 교체, 핀 마커를 SVG 좌표계 안으로 이동.</li>
+        <li>설정/도움말/단축키 한 버튼 통합 분리(키보드·톱니 2진입점), 대비 AAA 상향(태그라인 7.6:1), 다이얼로그 포커스 트랩.</li>
+      </ul>
+    </div>
+    <div class="block left">
+      <div class="ttl"><span class="dot left"></span>남은 흠</div>
+      <ul>
+        <li>없음 — 비평이 지목한 출시 차단급 3흠(타입 스케일 불일치·핀 상태 모순·버튼 통합)과 핀 좌표·AA 한계선까지 모두 픽스. polish 7은 마감 여유분.</li>
+      </ul>
+    </div>
+    <div class="preview">
+      <iframe src="./polish/brutalist.html" title="콘크리트 브루탈리즘 — polish/brutalist.html" loading="lazy"></iframe>
+    </div>
+  </article>
+
+  <!-- ③ 구미 토이 craft 8 -->
+  <article class="card">
+    <div class="cap">
+      <div class="cap-top">
+        <span class="rank">3</span>
+        <span class="name">구미 토이</span>
+        <span class="fname">polish/toy.html</span>
+      </div>
+      <p class="sig">젤리 사탕 택타일 정체성 — 통통한 입체 버튼·젤리 글로스·하드그림자·택타일 active를 토큰(--lift/--gloss)으로 일관 구현. 회색 빈 박스 0, 썸네일은 미니 브라우저/코드/문서 목업 SVG.</p>
+    </div>
+    <div class="score">
+      <div class="total"><span class="lab">craft</span><span class="num">8</span><span class="max">/ 10</span></div>
+      <div class="metrics">
+        <div class="metric"><span class="lbl">타이포</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">간격</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">아이콘</span><span class="track"><span class="fill" style="width:70%"></span></span><span class="val">7</span></div>
+        <div class="metric"><span class="lbl">상태</span><span class="track"><span class="fill" style="width:80%"></span></span><span class="val">8</span></div>
+        <div class="metric"><span class="lbl">깊이/질감</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">콘텐츠</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">시그니처</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">polish</span><span class="track"><span class="fill" style="width:70%"></span></span><span class="val">7</span></div>
+      </div>
+    </div>
+    <div class="meta">
+      <span class="fixchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>픽스 적용</span>
+      <span style="color:var(--ink-3)">라벨 정합성 6건 정리</span>
+    </div>
+    <div class="block">
+      <div class="ttl"><span class="dot up"></span>핵심 개선</div>
+      <ul>
+        <li>헤더 아이콘버튼 라벨 분리 — 톱니='설정', 물음표='도움말: 단축키 안내'로 aria-label·title을 아이콘 의미와 일치.</li>
+        <li>줌 버튼 title 모순 수정(축소/확대 일치), 공유 토글 OFF의 ×(교차선)을 중립 점으로 교체.</li>
+        <li>업로드중+완료 모순 상태 제거, 줌 어포던스 3중 중복 정리(인-줌/원본 열기/팬 분리), 손댄 아이콘 stroke 토큰 단일소스화.</li>
+      </ul>
+    </div>
+    <div class="block left">
+      <div class="ttl"><span class="dot left"></span>남은 흠</div>
+      <ul>
+        <li>없음 — 비평이 지목한 라벨 오배치·줌 title 모순·× 노브·모순 상태·줌 3중 중복·placeholder 모호까지 전부 픽스. icons·polish 7은 마감 여유분.</li>
+      </ul>
+    </div>
+    <div class="preview">
+      <iframe src="./polish/toy.html" title="구미 토이 — polish/toy.html" loading="lazy"></iframe>
+    </div>
+  </article>
+
+  <!-- ④ 와비사비 먹·낙관 craft 7 -->
+  <article class="card">
+    <div class="cap">
+      <div class="cap-top">
+        <span class="rank">4</span>
+        <span class="name">와비사비 먹·낙관</span>
+        <span class="fname">polish/wabisabi.html</span>
+      </div>
+      <p class="sig">화지 종이 위 단일 인주색 낙관 도장이 강조·상태·찍힘 모션을 지배 — 넉넉한 여백·붓 획 수직 리듬, 한자 인장 칩, 화지 섬유결. 공유 플로우는 idle/busy/done 단일 상태원으로 재구성.</p>
+    </div>
+    <div class="score">
+      <div class="total"><span class="lab">craft</span><span class="num">7</span><span class="max">/ 10</span></div>
+      <div class="metrics">
+        <div class="metric"><span class="lbl">타이포</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">간격</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">아이콘</span><span class="track"><span class="fill" style="width:80%"></span></span><span class="val">8</span></div>
+        <div class="metric"><span class="lbl">상태</span><span class="track"><span class="fill" style="width:40%"></span></span><span class="val">4</span></div>
+        <div class="metric"><span class="lbl">깊이/질감</span><span class="track"><span class="fill" style="width:80%"></span></span><span class="val">8</span></div>
+        <div class="metric"><span class="lbl">콘텐츠</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">시그니처</span><span class="track"><span class="fill" style="width:90%"></span></span><span class="val">9</span></div>
+        <div class="metric"><span class="lbl">polish</span><span class="track"><span class="fill" style="width:50%"></span></span><span class="val">5</span></div>
+      </div>
+    </div>
+    <div class="meta">
+      <span class="fixchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>픽스 적용</span>
+      <span style="color:var(--ink-3)">상태 모델 붕괴 → SoT 재구성</span>
+    </div>
+    <div class="block">
+      <div class="ttl"><span class="dot up"></span>핵심 개선</div>
+      <ul>
+        <li>공유 섹션 상태 모델 붕괴 해소 — data-state(idle/busy/done) 단일 진실원으로 버튼/진행/결과가 상태당 하나만 노출되게 재구성.</li>
+        <li>멈춘 스피너에 .spin keyframe(토큰 --t-spin) 부여, 58% 얼어붙은 진행바를 --progress 8→92→100% 실제 애니메이션으로 교체.</li>
+        <li>줌 버튼 라벨↔글리프 일치, reduced-motion 시 busy 건너뛰고 즉시 done 전이, role=status 스크린리더 안내.</li>
+      </ul>
+    </div>
+    <div class="block left">
+      <div class="ttl"><span class="dot left"></span>남은 흠</div>
+      <ul>
+        <li>없음 — 비평의 출시 차단급 3흠(상태 동시 노출·멈춘 스피너·얼어붙은 진행바)과 줌 라벨 불일치를 모두 픽스. 픽스 반영 시 craft 9 권역. 위 점수표는 픽스 전 평가 기준.</li>
+      </ul>
+    </div>
+    <div class="preview">
+      <iframe src="./polish/wabisabi.html" title="와비사비 먹·낙관 — polish/wabisabi.html" loading="lazy"></iframe>
+    </div>
+  </article>
+
+</div>
+
+<footer>
+  finalist 4종 완성도 패스 · 단일 HTML · 외부리소스 0 · craft 내림차순(영수증 8 · 브루탈리즘 8 · 토이 8 · 와비사비 7).<br>
+  열기 — PowerShell: <code>start "" ".\docs\ui-audit\recreate\index.html"</code><br>
+  다음 단계 — 최종 1안 선정 후 :root 토큰 + ≤2 SVG 심볼 규약 그대로 src 13개 컴포넌트에 이식, 4상태·AA·reduced-motion E2E 검증.
+</footer>
+
+</body>
+</html>

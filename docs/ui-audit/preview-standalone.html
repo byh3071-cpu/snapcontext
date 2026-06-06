@@ -1,0 +1,3175 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SnapContext UI 감사 하네스 (before/after)</title>
+  <!-- 제품 스타일시트(라이브) — 토큰화 전/후가 자동 반영된다. -->
+  <style id="theme-before" media="not all">
+:root {
+  --bg-gradient-start: #1a1a2e;
+  --bg-gradient-end: #16213e;
+  --surface: #0f3460;
+  --accent: #e94560;
+  --accent-secondary: #533483;
+  --text: #eee;
+  --text-muted: #aaa;
+  --radius: 12px;
+  --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --panel-icon-coral: #ff6b6b;
+  --panel-icon-coral-hover: #ff8f8f;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-width: 300px;
+  font-family: var(--font);
+  color: var(--text);
+  background: linear-gradient(
+    160deg,
+    var(--bg-gradient-start),
+    var(--bg-gradient-end)
+  );
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.app-sub {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.panel-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toolbar-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 52, 96, 0.55);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  background: rgba(233, 69, 96, 0.18);
+  border-color: rgba(233, 69, 96, 0.35);
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toolbar-btn--primary:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    rgba(233, 69, 96, 0.95),
+    rgba(83, 52, 131, 0.85)
+  );
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.toolbar-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.toolbar-btn__glyph {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.toolbar-btn__glyph .panel-lucide-icon-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.panel-lucide-icon {
+  flex-shrink: 0;
+  color: var(--panel-icon-coral);
+  display: block;
+}
+
+.panel-lucide-icon-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  line-height: 0;
+}
+
+.toolbar-btn:hover:not(:disabled) .panel-lucide-icon,
+.context-pack-panel__btn:not(:disabled):hover .panel-lucide-icon {
+  color: var(--panel-icon-coral-hover);
+}
+
+.preview-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%),
+    var(--surface);
+  border-radius: var(--radius);
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-inner {
+  display: grid;
+  gap: 8px;
+}
+
+.preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 168px;
+  padding: 22px 12px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background: rgba(8, 27, 52, 0.22);
+}
+
+.preview-empty-icon {
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+}
+
+.preview-expand-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 27, 52, 0.3);
+}
+
+.preview-expand-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.preview-expand-btn {
+  align-self: center;
+  justify-self: stretch;
+  padding: 10px 12px;
+  border-radius: 9px;
+  border: 1px solid rgba(233, 69, 96, 0.45);
+  background: rgba(233, 69, 96, 0.15);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.preview-expand-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.preview-expand-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pin-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.pin-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.pin-lightbox__panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 36%),
+    var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+}
+
+.pin-lightbox__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.pin-lightbox__title {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.pin-lightbox__hint {
+  margin-left: auto;
+  margin-right: 8px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.pin-lightbox__close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.pin-lightbox__close:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.pin-lightbox__scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 확대: 패널 너비에 맞춤 — 가로 스크롤 없이 세로만 (핀 % 좌표는 표시 영역 기준으로 유지) */
+.preview-capture--lightbox {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.preview-capture {
+  display: grid;
+  gap: 12px;
+  min-height: 112px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 27, 52, 0.24);
+}
+
+.preview-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.preview-result-title {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.preview-result-title strong {
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.preview-result-eyebrow {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.preview-result-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.preview-result-meta {
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.preview-result-open {
+  display: none;
+}
+
+.preview-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 132px;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+    radial-gradient(circle at 50% 45%, rgba(233, 69, 96, 0.13), transparent 42%),
+    rgba(3, 18, 36, 0.22);
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0, 0 0, 0 0;
+  background-size: 20px 20px, 20px 20px, 20px 20px, 20px 20px, auto, auto;
+}
+
+.preview-capture--lightbox .pin-container {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.preview-capture--lightbox .preview-img {
+  width: auto;
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+  display: block;
+}
+
+.preview-empty-icon svg {
+  width: 72px;
+  height: 72px;
+  color: #e94560;
+  opacity: 1;
+}
+
+.preview-placeholder {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.preview-img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.preview-capture[data-size='small'] .preview-img {
+  image-rendering: auto;
+}
+
+.preview-capture--lightbox .preview-stage {
+  min-height: 0;
+  padding: 10px;
+  overflow: auto;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.preview-capture--lightbox .preview-result-header {
+  margin-bottom: 2px;
+}
+
+.preview-capture--hidden:not(.preview-capture--lightbox) {
+  display: none !important;
+}
+
+.pin-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.pin-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: #e94560;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: transform 0.12s ease;
+}
+
+.pin-badge:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.pin-badge--active {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.pin-memo__title {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+}
+
+.pin-memo__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pin-memo__row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pin-memo__row--active .pin-memo__label {
+  color: var(--text);
+}
+
+.pin-memo__label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding-top: 6px;
+}
+
+.pin-memo__field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  align-items: start;
+}
+
+.pin-memo__input {
+  width: 100%;
+  resize: none;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--text);
+  padding: 6px 8px;
+  font: inherit;
+  line-height: 1.35;
+  min-height: 32px;
+  max-height: 160px;
+}
+
+.pin-memo__delete {
+  border: none;
+  background: rgba(233, 69, 96, 0.18);
+  color: var(--text);
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.pin-memo__placeholder {
+  margin: 0;
+}
+
+.context-pack-panel__title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.context-pack-panel__hint {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+}
+
+.context-pack-panel__intent {
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 28, 52, 0.55);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  resize: vertical;
+  min-height: 2.8rem;
+  box-sizing: border-box;
+}
+
+.context-pack-panel__input {
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 28, 52, 0.55);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  box-sizing: border-box;
+}
+
+.context-pack-panel__intent::placeholder {
+  color: var(--text-muted);
+}
+
+.context-pack-panel__input::placeholder {
+  color: var(--text-muted);
+}
+
+.context-pack-panel__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.context-pack-panel__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+  padding: 10px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 52, 96, 0.55);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.context-pack-panel__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.context-pack-panel__btn--primary:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    rgba(233, 69, 96, 0.95),
+    rgba(83, 52, 131, 0.85)
+  );
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.context-pack-panel__btn:not(:disabled):hover {
+  filter: brightness(1.06);
+}
+
+.context-pack-panel__btn--full {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.context-pack-panel__icon {
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.context-pack-panel__section {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.context-pack-panel__section summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.context-pack-panel__profile-form {
+  margin-top: 10px;
+}
+
+.context-pack-panel__list {
+  display: grid;
+  gap: 6px;
+}
+
+.context-pack-panel__list-row,
+.context-pack-panel__history-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.78rem;
+}
+
+.context-pack-panel__history-row {
+  grid-template-columns: 1fr auto auto auto;
+}
+
+.context-pack-panel__list-row button,
+.context-pack-panel__history-row button {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  padding: 5px 7px;
+  background: rgba(10, 28, 52, 0.6);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+}
+
+.context-pack-panel__history-delete {
+  width: 26px;
+  padding: 0 !important;
+  font-size: 1rem !important;
+  line-height: 1;
+  color: var(--text-muted) !important;
+}
+
+.context-pack-panel__history-delete:hover {
+  color: var(--accent) !important;
+  border-color: rgba(233, 69, 96, 0.45) !important;
+}
+
+.context-pack-panel__history-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.capture-history {
+  display: grid;
+  gap: 10px;
+}
+
+.capture-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.capture-history__title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.capture-history__clear,
+.capture-history__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 28, 52, 0.58);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.capture-history__clear {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.capture-history__clear:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.capture-history__list {
+  display: grid;
+  gap: 8px;
+}
+
+.capture-history__item-wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.capture-history__item {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 9px;
+  align-items: center;
+  width: 100%;
+  padding: 7px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 27, 52, 0.3);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background 0.15s ease, transform 0.15s ease;
+  touch-action: pan-y;
+}
+
+.capture-history__item:hover {
+  background: rgba(233, 69, 96, 0.14);
+}
+
+.capture-history__thumb {
+  width: 64px;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent),
+    rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.capture-history__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.capture-history__body {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.capture-history__primary,
+.capture-history__url,
+.capture-history__meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.capture-history__primary {
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.capture-history__url,
+.capture-history__meta {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.capture-history__delete {
+  width: 34px;
+  border-radius: 9px;
+}
+
+.capture-history__delete:hover,
+.capture-history__clear:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.capture-history__empty {
+  padding: 2px 0;
+}
+
+.muted {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.selection-banner {
+  background: rgba(15, 52, 96, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+
+.selection-banner__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.selection-banner__text {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.selection-banner kbd {
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-muted);
+}
+
+.selection-banner__cancel {
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(233, 69, 96, 0.18);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.selection-banner__cancel:hover {
+  filter: brightness(1.08);
+}
+
+.toast-root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.toast-root:empty {
+  display: none;
+}
+
+.toast {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(15, 52, 96, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font-size: 0.85rem;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.toast--show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast--error {
+  border-color: rgba(233, 69, 96, 0.55);
+}
+
+.snap-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.snap-confirm__panel {
+  width: 100%;
+  max-width: 320px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.snap-confirm__message {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.snap-confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.snap-confirm__btn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 52, 96, 0.6);
+  color: var(--text);
+}
+
+.snap-confirm__btn--primary {
+  border-color: transparent;
+  background: linear-gradient(
+    135deg,
+    rgba(233, 69, 96, 0.95),
+    rgba(83, 52, 131, 0.85)
+  );
+  font-weight: 600;
+}
+
+.snap-confirm__btn--muted:hover {
+  filter: brightness(1.08);
+}
+
+.snap-confirm__btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+.image-actions {
+  margin-top: 8px;
+}
+
+.image-actions[hidden] {
+  display: none;
+}
+
+.image-actions__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.image-actions__row .context-pack-panel__btn {
+  justify-content: center;
+}
+
+.image-actions__share-row {
+  margin-top: 8px;
+}
+
+.image-actions__share-row .context-pack-panel__btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.image-actions__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.image-actions__toggle input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #e94560;
+}
+
+.context-pack-panel__grid .context-pack-panel__btn--full {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.shortcuts-help {
+  display: grid;
+  gap: 8px;
+}
+
+.shortcuts-help__details summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.shortcuts-help__list {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 7px 10px;
+  margin: 10px 0;
+  font-size: 0.78rem;
+}
+
+.shortcuts-help__list dt,
+.shortcuts-help__list dd {
+  margin: 0;
+}
+
+.shortcuts-help__list dt {
+  min-width: 0;
+  color: var(--text-muted);
+}
+
+.shortcuts-help__list dd {
+  justify-self: end;
+  padding: 2px 7px;
+  border-radius: 7px;
+  background: rgba(10, 28, 52, 0.6);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.74rem;
+}
+
+.shortcuts-help__note {
+  line-height: 1.35;
+}
+
+.context-pack-panel__template-row {
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.context-pack-panel__template-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.context-pack-panel__template-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 52, 96, 0.55);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+.context-pack-panel__template-select:focus-visible {
+  outline: 2px solid rgba(233, 69, 96, 0.6);
+  outline-offset: 1px;
+}
+
+.context-pack-panel__template-select option {
+  background: #0f3460;
+  color: var(--text);
+}
+
+.preview-stage {
+  position: relative;
+}
+
+.preview-zoom-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+
+.preview-zoom-btn:hover {
+  background: rgba(233, 69, 96, 0.7);
+  border-color: rgba(233, 69, 96, 0.85);
+  transform: scale(1.05);
+}
+
+.preview-zoom-btn:focus-visible {
+  outline: 2px solid rgba(233, 69, 96, 0.7);
+  outline-offset: 2px;
+}
+
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.image-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  cursor: zoom-out;
+}
+
+.image-lightbox__stage {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-lightbox__viewport {
+  /* Native scroll for pan. Image is sized via JS (img.style.width/height),
+     so when zoomed it overflows and the scrollbars provide pan. We avoid
+     CSS transform: scale on a parent because that promotes to a GPU
+     compositor layer and falls back to GPU bilinear interpolation, which
+     ghosts UI text regardless of image-rendering. */
+  overflow: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 24px);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  /* Hide scrollbar visual chrome but keep scrollability. */
+  scrollbar-width: thin;
+}
+
+.image-lightbox__viewport:active {
+  cursor: grabbing;
+}
+
+.image-lightbox__pin-container {
+  position: relative;
+  display: block;
+  line-height: 0;
+  /* Sharp rendering — img is now sized to its display resolution by JS so
+     pixelated reliably maps source pixel → display pixel without GPU
+     compositor smoothing. */
+  image-rendering: pixelated;
+}
+
+.image-lightbox__pin-container .pin-badge {
+  z-index: 2;
+}
+
+.image-lightbox__img {
+  display: block;
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  cursor: inherit;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.image-lightbox__close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: rgba(15, 52, 96, 0.95);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.4rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.image-lightbox__close:hover {
+  background: var(--accent);
+}
+
+
+</style>
+  <style id="theme-after">
+:root {
+  /* ===== 스페이싱 (4px 그리드) ===== */
+  --space-0: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+
+  /* ===== 타이포 스케일 ===== */
+  --text-2xs: 0.6875rem; /* 11px — eyebrow·메타·kbd */
+  --text-xs: 0.75rem; /* 12px — 캡션·보조 */
+  --text-sm: 0.8125rem; /* 13px — 행·리스트 */
+  --text-base: 0.875rem; /* 14px — 본문 기본 */
+  --text-md: 0.9375rem; /* 15px — 섹션 제목 */
+  --text-lg: 1.0625rem; /* 17px — 앱 타이틀 */
+  --text-icon: 1.125rem; /* 18px — 글리프 버튼(닫기 등) */
+  --lh-tight: 1.25;
+  --lh-normal: 1.45;
+  --lh-relaxed: 1.6;
+
+  /* ===== 라디우스 ===== */
+  --radius-sm: 6px; /* 칩·kbd·작은 컨트롤 */
+  --radius-md: 8px; /* 버튼·인풋·카드 내부 요소 */
+  --radius-lg: 12px; /* 카드·패널·다이얼로그 */
+  --radius-pill: 999px; /* 핀 배지·메타 칩 */
+
+  /* ===== 그림자 (절제) ===== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.42);
+
+  /* ===== 모션 ===== */
+  --dur-fast: 120ms;
+  --dur: 160ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ===== 색 — 다크 브랜드(네이비 surface + 코랄 액센트), 그라데이션 제거 ===== */
+  --bg: #141a2b; /* 플랫 다크 배경(기존 보라↔네이비 그라데이션 대체) */
+  --surface: #0f3460; /* 카드·패널 (브랜드 네이비, 유지) */
+  --surface-sunken: rgba(3, 14, 32, 0.4); /* 인셋·스테이지·입력 */
+  --surface-raised: rgba(255, 255, 255, 0.04); /* 살짝 떠오른 면 */
+  --surface-control: rgba(15, 52, 96, 0.55); /* 보조 버튼·셀렉트 배경 */
+  --border: rgba(255, 255, 255, 0.08); /* 헤어라인 */
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #ececf0;
+  --text-muted: #9aa3b2;
+  --accent: #e94560; /* 코랄 — 브랜드 유지 */
+  --accent-strong: #d63450; /* 눌림·hover·보더 */
+  --accent-soft: rgba(233, 69, 96, 0.14); /* hover 배경·연한 강조 */
+  --accent-ring: rgba(233, 69, 96, 0.6); /* 포커스 링 */
+
+  /* ===== semantic ===== */
+  --danger: #e94560;
+  --success: #3fb27f;
+  --warn: #d9a23b;
+  --info: #5b8def;
+
+  /* ===== 폰트 ===== */
+  --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  /* ===== 아이콘 ===== */
+  --panel-icon-coral: #ff6b6b;
+  --panel-icon-coral-hover: #ff8f8f;
+
+  /* ===== 레거시 별칭 (점진 치환용) ===== */
+  --radius: var(--radius-lg);
+  --accent-secondary: #533483;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* 전역 포커스 링 — 키보드 접근성(WCAG 2.4.7). 액센트 outline. */
+:where(a, button, [role='button'], input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-width: 300px;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.app-title {
+  margin: 0;
+  font-size: var(--text-lg);
+  letter-spacing: -0.02em;
+}
+
+.app-sub {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.panel-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.toolbar-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-control);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toolbar-btn--primary:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.toolbar-btn--primary:not(:disabled):hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.toolbar-btn__glyph {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  flex-shrink: 0;
+}
+
+.toolbar-btn__glyph .panel-lucide-icon-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-0);
+}
+
+/* primary 버튼 위 아이콘은 흰색으로(코랄 배경 대비) */
+.toolbar-btn--primary .panel-lucide-icon {
+  color: #fff;
+}
+
+.panel-lucide-icon {
+  flex-shrink: 0;
+  color: var(--panel-icon-coral);
+  display: block;
+}
+
+.panel-lucide-icon-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  line-height: 0;
+}
+
+.toolbar-btn:hover:not(:disabled) .panel-lucide-icon,
+.context-pack-panel__btn:not(:disabled):hover .panel-lucide-icon {
+  color: var(--panel-icon-coral-hover);
+}
+
+.preview-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+}
+
+.preview-inner {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.preview-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 168px;
+  padding: var(--space-5) var(--space-3);
+  text-align: center;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-strong);
+  background: var(--surface-sunken);
+}
+
+.preview-empty-icon {
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+}
+
+.preview-expand-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+}
+
+.preview-expand-hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: var(--lh-normal);
+}
+
+.preview-expand-btn {
+  align-self: center;
+  justify-self: stretch;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: 600;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.preview-expand-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+
+.preview-expand-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pin-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  padding: var(--space-2);
+  box-sizing: border-box;
+}
+
+.pin-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+}
+
+.pin-lightbox__panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.pin-lightbox__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pin-lightbox__title {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.pin-lightbox__hint {
+  margin-left: auto;
+  margin-right: var(--space-2);
+  font-size: var(--text-2xs);
+  white-space: nowrap;
+}
+
+.pin-lightbox__close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  font-size: var(--text-icon);
+  line-height: 1;
+  transition: background var(--dur) var(--ease);
+}
+
+.pin-lightbox__close:hover {
+  background: var(--border-strong);
+}
+
+.pin-lightbox__scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: var(--space-3);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 확대: 패널 너비에 맞춤 — 가로 스크롤 없이 세로만 (핀 % 좌표는 표시 영역 기준으로 유지) */
+.preview-capture--lightbox {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.preview-capture {
+  display: grid;
+  gap: var(--space-3);
+  min-height: 112px;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+}
+
+.preview-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.preview-result-title {
+  display: grid;
+  gap: var(--space-0);
+  min-width: 0;
+}
+
+.preview-result-title strong {
+  font-size: var(--text-base);
+  line-height: var(--lh-tight);
+}
+
+.preview-result-eyebrow {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.preview-result-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.preview-result-meta {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  font-size: var(--text-2xs);
+  line-height: 1;
+}
+
+.preview-result-open {
+  display: none;
+}
+
+.preview-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 132px;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+}
+
+.preview-capture--lightbox .pin-container {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.preview-capture--lightbox .preview-img {
+  width: auto;
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+  display: block;
+}
+
+.preview-empty-icon svg {
+  width: 64px;
+  height: 64px;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+.preview-placeholder {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-base);
+}
+
+.preview-img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  display: block;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(0, 0, 0, 0.25); /* 어두운 1px ring — 스테이지와 캡처 경계 분리 */
+}
+
+.preview-capture[data-size='small'] .preview-img {
+  image-rendering: auto;
+}
+
+.preview-capture--lightbox .preview-stage {
+  min-height: 0;
+  padding: var(--space-2);
+  overflow: auto;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.preview-capture--lightbox .preview-result-header {
+  margin-bottom: var(--space-0);
+}
+
+.preview-capture--hidden:not(.preview-capture--lightbox) {
+  display: none !important;
+}
+
+.pin-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  line-height: 0;
+}
+
+.pin-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  border: none;
+  padding: 0;
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+
+.pin-badge:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+  background: var(--accent-strong);
+}
+
+.pin-badge--active {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.pin-memo__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-md);
+}
+
+.pin-memo__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.pin-memo__row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2);
+  align-items: start;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pin-memo__row--active .pin-memo__label {
+  color: var(--accent);
+}
+
+.pin-memo__label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  padding-top: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.pin-memo__field {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.pin-memo__input {
+  width: 100%;
+  resize: none;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text);
+  padding: var(--space-2);
+  font: inherit;
+  line-height: var(--lh-normal);
+  min-height: 32px;
+  max-height: 160px;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.pin-memo__input:focus-visible {
+  border-color: var(--accent);
+}
+
+.pin-memo__delete {
+  border: none;
+  background: var(--accent-soft);
+  color: var(--text);
+  border-radius: var(--radius-md);
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: var(--text-md);
+  line-height: 1;
+  transition: background var(--dur) var(--ease);
+}
+
+.pin-memo__delete:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.pin-memo__placeholder {
+  margin: 0;
+}
+
+.context-pack-panel__title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-md);
+}
+
+.context-pack-panel__hint {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.context-pack-panel__intent {
+  width: 100%;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--lh-normal);
+  resize: vertical;
+  min-height: 2.8rem;
+  box-sizing: border-box;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.context-pack-panel__input {
+  width: 100%;
+  margin: 0 0 var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--lh-normal);
+  box-sizing: border-box;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.context-pack-panel__intent:focus-visible,
+.context-pack-panel__input:focus-visible {
+  border-color: var(--accent);
+}
+
+.context-pack-panel__intent::placeholder {
+  color: var(--text-muted);
+}
+
+.context-pack-panel__input::placeholder {
+  color: var(--text-muted);
+}
+
+.context-pack-panel__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.context-pack-panel__btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: flex-start;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-control);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.context-pack-panel__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.context-pack-panel__btn:not(:disabled):hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.context-pack-panel__btn--primary:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.context-pack-panel__btn--primary:not(:disabled):hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.context-pack-panel__btn--primary .panel-lucide-icon {
+  color: #fff;
+}
+
+.context-pack-panel__btn--full {
+  width: 100%;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+
+.context-pack-panel__icon {
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.context-pack-panel__section {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.context-pack-panel__section summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.context-pack-panel__profile-form {
+  margin-top: var(--space-2);
+}
+
+.context-pack-panel__list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.context-pack-panel__list-row,
+.context-pack-panel__history-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.context-pack-panel__history-row {
+  grid-template-columns: 1fr auto auto auto;
+}
+
+.context-pack-panel__list-row button,
+.context-pack-panel__history-row button {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-sunken);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-2xs);
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.context-pack-panel__list-row button:hover,
+.context-pack-panel__history-row button:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.context-pack-panel__history-delete {
+  width: 26px;
+  padding: 0 !important;
+  font-size: var(--text-md) !important;
+  line-height: 1;
+  color: var(--text-muted) !important;
+}
+
+.context-pack-panel__history-delete:hover {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.context-pack-panel__history-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.capture-history {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.capture-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.capture-history__title {
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+.capture-history__clear,
+.capture-history__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.capture-history__clear {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+}
+
+.capture-history__clear:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.capture-history__list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.capture-history__item-wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.capture-history__item {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: var(--space-2);
+  align-items: center;
+  width: 100%;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-sunken);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  touch-action: pan-y;
+}
+
+.capture-history__item:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.capture-history__thumb {
+  width: 64px;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+}
+
+.capture-history__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.capture-history__body {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-0);
+}
+
+.capture-history__primary,
+.capture-history__url,
+.capture-history__meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.capture-history__primary {
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.capture-history__url,
+.capture-history__meta {
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+}
+
+.capture-history__delete {
+  width: 34px;
+  border-radius: var(--radius-md);
+}
+
+.capture-history__delete:hover,
+.capture-history__clear:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.capture-history__empty {
+  padding: var(--space-0) 0;
+}
+
+.muted {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.selection-banner {
+  background: var(--surface-control);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3);
+}
+
+.selection-banner__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.selection-banner__text {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--text);
+  line-height: var(--lh-normal);
+}
+
+.selection-banner kbd {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+}
+
+.selection-banner__cancel {
+  flex-shrink: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.selection-banner__cancel:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.toast-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+
+.toast-root:empty {
+  display: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-left: 3px solid var(--info);
+  color: var(--text);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.toast--show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast--error {
+  border-left-color: var(--danger);
+}
+
+.snap-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.snap-confirm__panel {
+  width: 100%;
+  max-width: 320px;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+.snap-confirm__message {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-base);
+  line-height: var(--lh-normal);
+  color: var(--text);
+}
+
+.snap-confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.snap-confirm__btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-control);
+  color: var(--text);
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.snap-confirm__btn--primary {
+  border-color: var(--accent-strong);
+  background: var(--accent);
+  font-weight: 600;
+}
+
+.snap-confirm__btn--muted:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+
+.snap-confirm__btn--primary:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.image-actions {
+  margin-top: var(--space-2);
+}
+
+.image-actions[hidden] {
+  display: none;
+}
+
+.image-actions__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.image-actions__row .context-pack-panel__btn {
+  justify-content: center;
+}
+
+.context-pack-panel__grid .context-pack-panel__btn--full {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.shortcuts-help {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.shortcuts-help__details summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.shortcuts-help__list {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2) var(--space-3);
+  margin: var(--space-2) 0;
+  font-size: var(--text-sm);
+}
+
+.shortcuts-help__list dt,
+.shortcuts-help__list dd {
+  margin: 0;
+}
+
+.shortcuts-help__list dt {
+  min-width: 0;
+  color: var(--text-muted);
+}
+
+.shortcuts-help__list dd {
+  justify-self: end;
+  padding: var(--space-0) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.shortcuts-help__note {
+  line-height: var(--lh-normal);
+}
+
+.context-pack-panel__template-row {
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.context-pack-panel__template-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.context-pack-panel__template-select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-control);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-base);
+  cursor: pointer;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 28px;
+}
+
+.context-pack-panel__template-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.context-pack-panel__template-select option {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.preview-stage {
+  position: relative;
+}
+
+.preview-zoom-btn {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--text);
+  cursor: pointer;
+  font-size: var(--text-md);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+
+.preview-zoom-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  transform: scale(1.05);
+}
+
+.preview-zoom-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+}
+
+.image-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  cursor: zoom-out;
+}
+
+.image-lightbox__stage {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-lightbox__viewport {
+  /* 팬은 네이티브 스크롤로 처리. 이미지는 JS(img.style.width/height)로 크기가 정해져
+     확대 시 오버플로되어 스크롤바가 팬을 제공한다. 부모에 CSS transform: scale을 쓰지
+     않는 이유: GPU 컴포지터 레이어로 승격되며 GPU 양선형 보간으로 폴백해 image-rendering과
+     무관하게 UI 텍스트가 고스팅되기 때문. */
+  overflow: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 24px);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  /* 스크롤바 시각 요소는 가늘게, 스크롤 가능성은 유지. */
+  scrollbar-width: thin;
+}
+
+.image-lightbox__viewport:active {
+  cursor: grabbing;
+}
+
+.image-lightbox__pin-container {
+  position: relative;
+  display: block;
+  line-height: 0;
+  /* 선명한 렌더 — img가 JS로 표시 해상도에 맞춰지므로 pixelated가 소스 픽셀→표시 픽셀을
+     GPU 컴포지터 스무딩 없이 안정적으로 매핑한다. */
+  image-rendering: pixelated;
+}
+
+.image-lightbox__pin-container .pin-badge {
+  z-index: 2;
+}
+
+.image-lightbox__img {
+  display: block;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  cursor: inherit;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
+.image-lightbox__close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: var(--text-icon);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  transition: background var(--dur) var(--ease);
+}
+
+.image-lightbox__close:hover {
+  background: var(--accent);
+}
+
+/* ===== 빈 상태 (아이콘 + 한 줄 안내) ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+}
+
+.empty-state .panel-lucide-icon {
+  color: var(--text-muted);
+  opacity: 0.55;
+}
+
+.empty-state__text {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--lh-normal);
+}
+
+/* ===== 글리프 버튼(닫기·삭제·확대) 아이콘은 버튼 텍스트색을 따름(중립) ===== */
+.pin-lightbox__close .panel-lucide-icon,
+.image-lightbox__close .panel-lucide-icon,
+.preview-zoom-btn .panel-lucide-icon,
+.pin-memo__delete .panel-lucide-icon,
+.context-pack-panel__history-delete .panel-lucide-icon {
+  color: currentColor;
+}
+
+</style>
+  <style>
+    /* ===== PREVIEW HARNESS ONLY — 제품 CSS 아님. 갤러리 레이아웃/오버레이 격리용. ===== */
+    :root { --ph-w: 380px; }
+    .ph-toolbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      padding: 10px 14px; margin: 0 0 16px;
+      background: #0b0e18; border-bottom: 1px solid rgba(255,255,255,.1);
+      font: 13px/1.4 system-ui, sans-serif; color: #ccc;
+    }
+    .ph-toolbar strong { color: #fff; margin-right: 8px; }
+    .ph-toolbar button {
+      font: inherit; padding: 5px 10px; border-radius: 7px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #ddd;
+    }
+    .ph-toolbar button:hover { background: rgba(233,69,96,.2); }
+    .ph-wrap {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--ph-w), 1fr));
+      gap: 20px; padding: 0 16px 80px; align-items: start;
+    }
+    .ph-sample { min-width: 0; }
+    .ph-label {
+      font: 600 12px/1.4 system-ui, sans-serif; color: #8fa0bf;
+      margin: 0 0 6px; letter-spacing: .02em;
+    }
+    .ph-label span { color: #5b6680; font-weight: 400; }
+    .ph-frame {
+      width: var(--ph-w); max-width: 100%;
+      background: linear-gradient(160deg, #1a1a2e, #16213e);
+      border: 1px solid rgba(255,255,255,.08); border-radius: 10px;
+      padding: 12px; box-sizing: border-box; overflow: hidden;
+    }
+    .ph-frame .app-shell { padding: 0; }
+    /* fixed 오버레이를 갤러리 안에 가두기 위한 스테이지 */
+    .ph-stage { position: relative; height: 460px; border-radius: 8px; overflow: hidden; }
+    .ph-stage > .pin-lightbox,
+    .ph-stage > .image-lightbox,
+    .ph-stage > .snap-confirm { position: absolute; }
+    /* content-script 가짜 페이지 */
+    .ph-page {
+      position: relative; height: 320px; overflow: hidden; border-radius: 8px;
+      background: #fafafa; color: #222; padding: 16px;
+      font: 14px/1.5 system-ui, sans-serif;
+    }
+    .ph-page h3 { margin: 0 0 8px; }
+    .ph-page p { margin: 0 0 10px; color: #555; }
+    .ph-section-title {
+      grid-column: 1 / -1; margin: 24px 0 0; padding: 6px 0;
+      font: 700 14px/1.4 system-ui, sans-serif; color: #e94560;
+      border-bottom: 1px solid rgba(233,69,96,.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="ph-toolbar">
+    <strong>SnapContext UI 하네스</strong><button id="toggle-theme" style="font:inherit;padding:5px 12px;border-radius:7px;cursor:pointer;border:1px solid #e94560;background:#e94560;color:#fff;font-weight:600">현재: AFTER (클릭 → BEFORE)</button>
+    <span>폭:</span>
+    <button data-w="320">320</button>
+    <button data-w="380">380</button>
+    <button data-w="460">460</button>
+    <span style="margin-left:auto">토큰화 전/후를 같은 화면으로 캡처해 docs/ui-audit/compare.md 에 붙이세요.</span>
+  </div>
+
+  <div class="ph-wrap">
+
+    <!-- ============ 헤더 / 셸 ============ -->
+    <div class="ph-section-title">셸 · 배너 · 토스트</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">App 헤더 <span>(app-header)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <header class="app-header">
+          <h1 class="app-title">SnapContext</h1>
+          <p class="app-sub">v0.1.3</p>
+        </header>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">요소 선택 배너 <span>(selection-banner)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="selection-banner">
+          <div class="selection-banner__row">
+            <p class="selection-banner__text">페이지에서 요소를 클릭하세요. <kbd>Esc</kbd>로 취소할 수 있습니다.</p>
+            <button type="button" class="selection-banner__cancel">취소</button>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">토스트 <span>(info / error / 스택)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="toast-root">
+          <div class="toast toast--info toast--show">캡처를 불러왔습니다.</div>
+          <div class="toast toast--error toast--show">캡처 기록을 저장하지 못했습니다.</div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ 캡처 툴바 ============ -->
+    <div class="ph-section-title">캡처 툴바</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">CaptureToolbar <span>(2×2, primary=화면)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="panel-card">
+          <div class="toolbar" role="toolbar" aria-label="캡처 모드">
+            <div class="toolbar-row">
+              <button type="button" class="toolbar-btn toolbar-btn--primary" data-action="visible" title="화면 캡처 (Alt+Shift+V)">
+                <span class="toolbar-btn__glyph"><span class="panel-lucide-icon-row"><i data-icon="monitor" data-size="12"></i><i data-icon="camera" data-size="12"></i></span></span>
+                <span><strong>화면 캡처</strong><br><span class="muted" style="font-size: 0.78rem;">현재 보이는 화면</span></span>
+              </button>
+              <button type="button" class="toolbar-btn" data-action="document" title="문서 캡처 (Alt+Shift+M)">
+                <span class="toolbar-btn__glyph"><i data-icon="file" data-size="18"></i></span>
+                <span><strong>문서 캡처</strong><br><span class="muted" style="font-size: 0.78rem;">본문 영역 자동 감지</span></span>
+              </button>
+              <button type="button" class="toolbar-btn" data-action="element" title="요소 캡처 (Alt+Shift+E)">
+                <span class="toolbar-btn__glyph"><i data-icon="scan" data-size="18"></i></span>
+                <span><strong>요소 캡처</strong><br><span class="muted" style="font-size: 0.78rem;">페이지 요소 선택</span></span>
+              </button>
+              <button type="button" class="toolbar-btn" data-action="full-page" title="전체 캡처 (Alt+Shift+G)">
+                <span class="toolbar-btn__glyph"><i data-icon="maximize" data-size="18"></i></span>
+                <span><strong>전체 캡처</strong><br><span class="muted" style="font-size: 0.78rem;">스크롤 전체 페이지</span></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ 프리뷰 ============ -->
+    <div class="ph-section-title">프리뷰 · 이미지 액션</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">Preview <span>(빈 상태)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="preview-card">
+          <div class="preview-inner">
+            <div class="preview-empty">
+              <div class="preview-empty-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7a2 2 0 0 1 2-2h1l1.5-2h5L15 5h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/><circle cx="12" cy="12.5" r="3.25"/></svg>
+              </div>
+              <p class="preview-placeholder">위 버튼으로 캡처를 시작하세요</p>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">Preview <span>(이미지 있음)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="preview-card">
+          <div class="preview-expand-row">
+            <p class="preview-expand-hint muted">큰 작업 화면에서 캡처를 확인하고 핀을 추가하세요.</p>
+            <button type="button" class="preview-expand-btn" aria-expanded="false">크게 보기</button>
+          </div>
+          <div class="preview-inner">
+            <div class="preview-capture" data-size="regular">
+              <div class="preview-result-header">
+                <div class="preview-result-title"><span class="preview-result-eyebrow">캡처됨</span><strong>화면 캡처</strong></div>
+                <div class="preview-result-actions"><span class="preview-result-meta">1280×720</span></div>
+              </div>
+              <div class="preview-stage">
+                <div class="pin-container"><img class="preview-img" alt="캡처 미리보기" data-mock-img></div>
+                <button type="button" class="preview-zoom-btn" aria-label="원본 이미지 확대" title="원본 이미지 확대">🔍</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">ImageActions <span>(활성)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <div class="image-actions">
+          <div class="image-actions__row">
+            <button type="button" class="context-pack-panel__btn context-pack-panel__btn--primary" title="PNG copy (Alt+Shift+P)">
+              <span class="context-pack-panel__icon" aria-hidden="true"><i data-icon="copy" data-size="18"></i></span><span>PNG 복사</span>
+            </button>
+            <button type="button" class="context-pack-panel__btn" title="PNG save">
+              <span class="context-pack-panel__icon" aria-hidden="true"><i data-icon="download" data-size="18"></i></span><span>PNG 저장</span>
+            </button>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ 컨텍스트 팩 ============ -->
+    <div class="ph-section-title">컨텍스트 팩 패널</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">ContextPackPanel <span>(캡처 없음 · 버튼 비활성)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card context-pack-panel">
+          <h2 class="context-pack-panel__title">AI 디버그 팩</h2>
+          <textarea class="context-pack-panel__intent" rows="3" placeholder="증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)"></textarea>
+          <p class="context-pack-panel__hint muted">AI 디버그 팩을 만들려면 페이지 또는 요소를 캡처하세요.</p>
+          <div class="context-pack-panel__template-row">
+            <label class="context-pack-panel__template-label">프롬프트 템플릿
+              <select class="context-pack-panel__template-select">
+                <option>🐛 버그 리포트</option><option>🔧 리팩토링</option><option>📐 레퍼런스</option>
+              </select>
+            </label>
+          </div>
+          <div class="context-pack-panel__grid">
+            <button type="button" class="context-pack-panel__btn context-pack-panel__btn--primary" disabled><span class="context-pack-panel__icon" aria-hidden="true"><span class="panel-lucide-icon-row"><i data-icon="sparkles" data-size="15"></i><i data-icon="copy" data-size="15"></i></span></span><span>AI 프롬프트 복사</span></button>
+            <button type="button" class="context-pack-panel__btn" disabled><span class="context-pack-panel__icon" aria-hidden="true"><span class="panel-lucide-icon-row"><i data-icon="braces" data-size="15"></i><i data-icon="copy" data-size="15"></i></span></span><span>JSON 복사</span></button>
+            <button type="button" class="context-pack-panel__btn context-pack-panel__btn--full" disabled><span class="context-pack-panel__icon" aria-hidden="true"><i data-icon="copy" data-size="18"></i></span><span>프롬프트 + JSON 복사</span></button>
+          </div>
+          <details class="context-pack-panel__section"><summary>최근 팩</summary>
+            <div class="context-pack-panel__list"><p class="muted">아직 저장된 팩이 없습니다.</p></div>
+          </details>
+        </section>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">ContextPackPanel <span>(최근 팩 데이터)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card context-pack-panel">
+          <h2 class="context-pack-panel__title">AI 디버그 팩</h2>
+          <p class="context-pack-panel__hint muted">AI용 디버그 프롬프트, JSON 팩 또는 주석이 포함된 PNG를 복사하세요.</p>
+          <div class="context-pack-panel__grid">
+            <button type="button" class="context-pack-panel__btn context-pack-panel__btn--primary"><span class="context-pack-panel__icon" aria-hidden="true"><span class="panel-lucide-icon-row"><i data-icon="sparkles" data-size="15"></i><i data-icon="copy" data-size="15"></i></span></span><span>AI 프롬프트 복사</span></button>
+            <button type="button" class="context-pack-panel__btn"><span class="context-pack-panel__icon" aria-hidden="true"><span class="panel-lucide-icon-row"><i data-icon="braces" data-size="15"></i><i data-icon="copy" data-size="15"></i></span></span><span>JSON 복사</span></button>
+          </div>
+          <details class="context-pack-panel__section" open><summary>최근 팩</summary>
+            <div class="context-pack-panel__list">
+              <div class="context-pack-panel__history-row">
+                <div class="context-pack-panel__history-meta">버그 리포트 - 예시 페이지 제목</div>
+                <button type="button">프롬프트</button><button type="button">전체</button>
+                <button type="button" class="context-pack-panel__history-delete" aria-label="히스토리 삭제">×</button>
+              </div>
+            </div>
+          </details>
+        </section>
+      </div></div>
+    </section>
+
+    <!-- ============ 핀 메모 ============ -->
+    <div class="ph-section-title">핀 메모 · 히스토리</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">PinMemoList <span>(빈 상태)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card">
+          <h2 class="pin-memo__title">핀 메모</h2>
+          <div class="pin-memo__list"></div>
+          <p class="pin-memo__placeholder muted">이미지를 클릭하여 핀을 추가하세요</p>
+        </section>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">PinMemoList <span>(데이터 · 활성 행)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card">
+          <h2 class="pin-memo__title">핀 메모</h2>
+          <div class="pin-memo__list">
+            <div class="pin-memo__row pin-memo__row--active" data-pin-id="1">
+              <span class="pin-memo__label">[1]</span>
+              <div class="pin-memo__field">
+                <textarea class="pin-memo__input" rows="1" placeholder="메모 입력…">로그인 버튼 정렬 깨짐</textarea>
+                <button type="button" class="pin-memo__delete" title="핀 삭제" aria-label="핀 삭제">×</button>
+              </div>
+            </div>
+            <div class="pin-memo__row" data-pin-id="2">
+              <span class="pin-memo__label">[2]</span>
+              <div class="pin-memo__field">
+                <textarea class="pin-memo__input" rows="1" placeholder="메모 입력…"></textarea>
+                <button type="button" class="pin-memo__delete" title="핀 삭제" aria-label="핀 삭제">×</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">HistoryList <span>(빈 상태)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card capture-history">
+          <div class="capture-history__header">
+            <h2 class="capture-history__title">캡처 기록</h2>
+            <button type="button" class="capture-history__clear" title="캡처 기록 모두 삭제" aria-label="캡처 기록 모두 삭제" disabled><i data-icon="trash" data-size="15"></i></button>
+          </div>
+          <div class="capture-history__list">
+            <p class="capture-history__empty muted">저장된 캡처가 아직 없습니다.</p>
+          </div>
+        </section>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">HistoryList <span>(항목 2개)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card capture-history">
+          <div class="capture-history__header">
+            <h2 class="capture-history__title">캡처 기록</h2>
+            <button type="button" class="capture-history__clear" title="캡처 기록 모두 삭제" aria-label="캡처 기록 모두 삭제"><i data-icon="trash" data-size="15"></i></button>
+          </div>
+          <div class="capture-history__list">
+            <div class="capture-history__item-wrap">
+              <button type="button" class="capture-history__item">
+                <div class="capture-history__thumb"><img alt="" data-mock-img></div>
+                <div class="capture-history__body">
+                  <div class="capture-history__primary">예시 페이지 제목 — 길어지면 말줄임</div>
+                  <div class="capture-history__url">https://example.com/some/long/path</div>
+                  <div class="capture-history__meta">6월 04 14:32 | 영역 | 핀 3</div>
+                </div>
+              </button>
+              <button type="button" class="capture-history__delete" title="캡처 삭제" aria-label="캡처 삭제"><i data-icon="x" data-size="15"></i></button>
+            </div>
+            <div class="capture-history__item-wrap">
+              <button type="button" class="capture-history__item">
+                <div class="capture-history__thumb"></div>
+                <div class="capture-history__body">
+                  <div class="capture-history__primary">example.com</div>
+                  <div class="capture-history__url">https://example.com/no-thumb</div>
+                  <div class="capture-history__meta">6월 04 09:10 | 문서 | 핀 0</div>
+                </div>
+              </button>
+              <button type="button" class="capture-history__delete" title="캡처 삭제" aria-label="캡처 삭제"><i data-icon="x" data-size="15"></i></button>
+            </div>
+          </div>
+        </section>
+      </div></div>
+    </section>
+
+    <!-- ============ 단축키 ============ -->
+    <div class="ph-section-title">단축키 도움말</div>
+
+    <section class="ph-sample">
+      <div class="ph-label">ShortcutsHelp <span>(펼침)</span></div>
+      <div class="ph-frame"><div class="app-shell">
+        <section class="panel-card shortcuts-help">
+          <details class="shortcuts-help__details" open>
+            <summary>설정 / 도움말: 단축키</summary>
+            <dl class="shortcuts-help__list">
+              <dt>화면 캡처</dt><dd>Alt+Shift+V</dd>
+              <dt>요소 캡처</dt><dd>Alt+Shift+E</dd>
+              <dt>문서 캡처</dt><dd>Alt+Shift+M</dd>
+              <dt>전체 캡처</dt><dd>Alt+Shift+G</dd>
+              <dt>PNG 복사</dt><dd>직접 지정</dd>
+            </dl>
+            <p class="shortcuts-help__note muted">브라우저에서 이미 사용 중인 단축키와 충돌하면 자동 등록되지 않을 수 있습니다. 그럴 때는 whale://extensions/shortcuts 에서 직접 지정하세요.</p>
+          </details>
+        </section>
+      </div></div>
+    </section>
+
+    <!-- ============ 오버레이 (스테이지에 격리) ============ -->
+    <div class="ph-section-title">오버레이 · 다이얼로그 <span style="font-weight:400;color:#5b6680">(fixed→스테이지 격리)</span></div>
+
+    <section class="ph-sample">
+      <div class="ph-label">confirm-dialog</div>
+      <div class="ph-frame"><div class="ph-stage">
+        <div class="snap-confirm" role="dialog" aria-modal="true">
+          <div class="snap-confirm__panel">
+            <p class="snap-confirm__message">새 캡처를 시작하면 기존 핀이 삭제됩니다. 계속할까요?</p>
+            <div class="snap-confirm__actions">
+              <button type="button" class="snap-confirm__btn snap-confirm__btn--muted">취소</button>
+              <button type="button" class="snap-confirm__btn snap-confirm__btn--primary">계속</button>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">pin-lightbox <span>(크게 보기)</span></div>
+      <div class="ph-frame"><div class="ph-stage">
+        <div class="pin-lightbox" role="dialog" aria-modal="true" aria-label="화면 캡처">
+          <div class="pin-lightbox__backdrop"></div>
+          <div class="pin-lightbox__panel">
+            <div class="pin-lightbox__header"><span class="pin-lightbox__title">화면 캡처</span><span class="pin-lightbox__hint muted">Ctrl+휠: 확대/축소</span><button type="button" class="pin-lightbox__close" aria-label="닫기">×</button></div>
+            <div class="pin-lightbox__scroll">
+              <div class="preview-capture preview-capture--lightbox" data-size="regular">
+                <div class="preview-stage"><div class="pin-container"><img class="preview-img" alt="" data-mock-img></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">image-lightbox <span>(원본 확대 · 핀)</span></div>
+      <div class="ph-frame"><div class="ph-stage">
+        <div class="image-lightbox" role="dialog" aria-modal="true" aria-label="원본 이미지 확대">
+          <div class="image-lightbox__backdrop"></div>
+          <div class="image-lightbox__stage">
+            <div class="image-lightbox__viewport">
+              <div class="image-lightbox__pin-container" style="width:320px;height:180px">
+                <img class="image-lightbox__img" alt="" data-mock-img style="width:320px;height:180px">
+                <button type="button" class="pin-badge pin-badge--active" style="left:42%;top:32%" title="핀 1 — 클릭하면 삭제">1</button>
+                <button type="button" class="pin-badge" style="left:70%;top:60%" title="핀 2 — 클릭하면 삭제">2</button>
+              </div>
+            </div>
+            <button type="button" class="image-lightbox__close" aria-label="닫기">×</button>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ============ content-script (페이지 주입) ============ -->
+    <div class="ph-section-title">content-script 오버레이 <span style="font-weight:400;color:#5b6680">(가짜 페이지 · 인라인 스타일)</span></div>
+
+    <section class="ph-sample">
+      <div class="ph-label">요소 선택 hover 하이라이트</div>
+      <div class="ph-frame"><div class="ph-page">
+        <h3>예시 웹페이지</h3>
+        <p>요소 캡처 모드에서 대상에 인라인 box-shadow가 직접 주입됩니다.</p>
+        <button style="box-shadow: inset 0 0 0 2px rgba(233,69,96,.95); padding:8px 14px; border:1px solid #ccc; border-radius:4px; background:#fff">대상 요소 (hover)</button>
+        <div style="position:absolute;inset:0;background:transparent;cursor:crosshair;pointer-events:none"></div>
+      </div></div>
+    </section>
+
+    <section class="ph-sample">
+      <div class="ph-label">문서 영역 하이라이트 + 페이지 토스트</div>
+      <div class="ph-frame"><div class="ph-page">
+        <h3>예시 웹페이지</h3>
+        <p>본문 영역 자동 감지 플래시와 캡처 실패 토스트.</p>
+        <div style="position:absolute;left:24px;top:64px;width:240px;height:150px;border:2px solid #e94560;border-radius:6px;box-sizing:border-box;pointer-events:none"></div>
+        <div style="position:absolute;left:50%;top:16px;transform:translateX(-50%);max-width:min(420px,92vw);padding:10px 14px;background:#16161f;color:#eee;border-radius:8px;font:13px/1.4 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35)">사이드패널을 연 상태에서 다시 시도하세요.</div>
+      </div></div>
+    </section>
+
+  </div>
+
+  <script>
+    // ===== 하네스 전용 스크립트 =====
+    // 1) lucide 자리표시 SVG 주입 (제품은 런타임 lucide createElement, 여기선 레이아웃 재현용 placeholder)
+    var ICONS = {
+      x: 'M18 6 6 18M6 6l12 12',
+      trash: 'M3 6h18M8 6V4h8v2M6 6l1 14h12l1-14',
+      copy: 'M9 9h10v10H9zM5 15V5h10',
+      download: 'M12 3v12m-5-5 5 5 5-5M5 21h14',
+      camera: 'M4 7h3l2-2h6l2 2h3v12H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+      monitor: 'M3 4h18v12H3zM8 20h8M12 16v4',
+      file: 'M6 2h8l4 4v16H6zM14 2v4h4',
+      scan: 'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',
+      maximize: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
+      sparkles: 'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',
+      braces: 'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2'
+    };
+    document.querySelectorAll('[data-icon]').forEach(function (el) {
+      var name = el.getAttribute('data-icon');
+      var size = el.getAttribute('data-size') || '18';
+      var d = ICONS[name] || ICONS.x;
+      el.outerHTML =
+        '<svg class="panel-lucide-icon" width="' + size + '" height="' + size +
+        '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
+    });
+
+    // 2) 캡처 자리표시 이미지
+    var MOCK = "data:image/svg+xml," + encodeURIComponent(
+      "<svg xmlns='http://www.w3.org/2000/svg' width='320' height='180'>" +
+      "<rect width='100%' height='100%' fill='#1a2540'/>" +
+      "<rect x='14' y='14' width='150' height='12' rx='3' fill='#3b5180'/>" +
+      "<rect x='14' y='36' width='292' height='92' rx='5' fill='#142038'/>" +
+      "<rect x='14' y='140' width='120' height='10' rx='3' fill='#2c3e63'/>" +
+      "<circle cx='250' cy='82' r='22' fill='#e94560' opacity='.5'/></svg>");
+    document.querySelectorAll('[data-mock-img]').forEach(function (img) { img.src = MOCK; });
+
+    // 3) 폭 토글
+    document.querySelectorAll('.ph-toolbar [data-w]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.documentElement.style.setProperty('--ph-w', b.getAttribute('data-w') + 'px');
+      });
+    });
+  
+    (function () {
+      var b = document.getElementById('theme-before');
+      var a = document.getElementById('theme-after');
+      var btn = document.getElementById('toggle-theme');
+      var aft = true;
+      if (btn) btn.addEventListener('click', function () {
+        aft = !aft;
+        a.media = aft ? 'all' : 'not all';
+        b.media = aft ? 'not all' : 'all';
+        btn.textContent = aft ? '현재: AFTER (클릭 → BEFORE)' : '현재: BEFORE (클릭 → AFTER)';
+      });
+    })();
+  </script>
+</body>
+</html>

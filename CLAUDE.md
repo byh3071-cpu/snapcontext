@@ -4,6 +4,10 @@ date: 2026-05-07
 tags: [process, documentation]
 ---
 
+# 규칙
+
+1. 무조건 한국어로 해라. 필요한 기술 용어는 영어 허락 하되 , 영어 남발 금지.
+
 # SnapContext
 
 ## 📋 프로젝트 개요

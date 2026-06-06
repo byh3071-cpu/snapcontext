@@ -1,0 +1,63 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome Web Store logo Chrome Web Store" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome Web Store logo" [ref=e8]
+          - generic [ref=e9]: Chrome Web Store
+        - search "Sitewide" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Search Chrome Web Store" [active] [ref=e15]
+        - generic [ref=e16]:
+          - button "More options menu" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google apps" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "Sign in" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https%3A%2F%2Fchromewebstore.google.com%2Fdetail%2Fbpconcjcammlapcogcnnelfmaeghhagj%2Ferror%3Fhl%3Den%26gl%3DUS&followup=https%3A%2F%2Fchromewebstore.google.com%2Fdetail%2Fbpconcjcammlapcogcnnelfmaeghhagj%2Ferror%3Fhl%3Den%26gl%3DUS&hl=en&ec=GAZApQM
+      - tablist [ref=e41]:
+        - generic [ref=e44]:
+          - tab "Discover" [ref=e45] [cursor=pointer]:
+            - generic:
+              - generic: Discover
+          - tab "Extensions" [ref=e46] [cursor=pointer]:
+            - generic:
+              - generic: Extensions
+          - tab "Themes" [ref=e47] [cursor=pointer]:
+            - generic:
+              - generic: Themes
+  - main [ref=e51]:
+    - generic [ref=e52]:
+      - heading [level=1] [ref=e53]: This item is not available
+      - paragraph [ref=e54]: Please sign in to view this item, or choose from thousands of other themes and extensions on the Chrome Web Store
+      - generic [ref=e56] [cursor=pointer]:
+        - generic [ref=e57]: Browse our store
+        - link [ref=e58]:
+          - /url: ./category/extensions
+  - contentinfo [ref=e59]:
+    - list [ref=e60]:
+      - listitem [ref=e61]:
+        - link "About Chrome Web Store" [ref=e62] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=en
+        - text: •
+      - listitem [ref=e63]:
+        - link "Developer Dashboard" [ref=e64] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e65]:
+        - link "Privacy Policy" [ref=e66] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=en
+        - text: •
+      - listitem [ref=e67]:
+        - link "Terms of Service" [ref=e68] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/en/gallery_tos.html
+        - text: •
+      - listitem [ref=e69]:
+        - link "Help" [ref=e70] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=en
+  - generic [ref=e72]: Loading...

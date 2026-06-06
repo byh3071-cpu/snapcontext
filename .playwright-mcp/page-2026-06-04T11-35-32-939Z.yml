@@ -1,0 +1,374 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "주요 콘텐츠로 이동" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome 웹 스토어 로고 Chrome 웹 스토어" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome 웹 스토어 로고" [ref=e8]
+          - generic [ref=e9]: Chrome 웹 스토어
+        - search "사이트 전체" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Chrome 웹 스토어 검색" [ref=e15]
+        - generic [ref=e16]:
+          - button "옵션 메뉴 더보기" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google 앱" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "로그인" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https%3A%2F%2Fchromewebstore.google.com%2Fdetail%2Fgofullpage-full-page-scre%2Ffdpohaocaechififmbbbbbknoalclacl%2Freviews&followup=https%3A%2F%2Fchromewebstore.google.com%2Fdetail%2Fgofullpage-full-page-scre%2Ffdpohaocaechififmbbbbbknoalclacl%2Freviews&ec=GAZApQM
+      - tablist [ref=e409]:
+        - generic [ref=e412]:
+          - tab "탐색" [ref=e413] [cursor=pointer]:
+            - generic:
+              - generic: 탐색
+          - tab "확장 프로그램" [selected] [ref=e414] [cursor=pointer]:
+            - generic:
+              - generic: 확장 프로그램
+          - tab "테마" [ref=e415] [cursor=pointer]:
+            - generic:
+              - generic: 테마
+  - main [ref=e419]:
+    - generic [ref=e420]:
+      - generic [ref=e422]:
+        - generic [ref=e423] [cursor=pointer]:
+          - img [ref=e426]
+          - link "항목 세부정보 페이지로 돌아가기" [ref=e428]:
+            - /url: ./detail/GoFullPage%20-%20Full%20Page%20Screen%20Capture/fdpohaocaechififmbbbbbknoalclacl
+        - generic [ref=e429]:
+          - link "GoFullPage - Full Page Screen Capture의 상품 로고 이미지 GoFullPage - Full Page Screen Capture" [ref=e430] [cursor=pointer]:
+            - /url: ./detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl
+            - img "GoFullPage - Full Page Screen Capture의 상품 로고 이미지" [ref=e431]
+            - heading "GoFullPage - Full Page Screen Capture" [level=1] [ref=e432]
+          - generic [ref=e433]:
+            - generic [ref=e434]:
+              - generic [ref=e437] [cursor=pointer]:
+                - img [ref=e440]
+                - link "정책 위반 이력이 없는 양호한 기록을 보유한 게시자입니다. 자세히 알아보기" [ref=e443]:
+                  - /url: https://support.google.com/chrome_webstore/?hl=ko&p=cws_badges
+              - link "Full Page LLC" [ref=e444] [cursor=pointer]:
+                - /url: ./publisher/full-page-llc/u67df6addf0e0e65cc17152a973e0131f
+            - generic [ref=e445]:
+              - generic [ref=e448] [cursor=pointer]:
+                - img [ref=e451]
+                - link "Chrome 확장 프로그램의 권장사항을 따릅니다. 자세히 알아보기" [ref=e454]:
+                  - /url: https://support.google.com/chrome_webstore/?hl=ko&p=cws_badges
+              - generic [ref=e455]: 추천
+            - generic [ref=e456]:
+              - img "평균 평점은 별점 5점 중 4.9점입니다. 평점 8.4만개." [ref=e457]:
+                - generic [ref=e458]: "4.9"
+                - img [ref=e459]
+                - generic [ref=e461]:
+                  - text: (
+                  - paragraph [ref=e462]: 평점 8.4만개
+                  - text: )
+              - button "평점은 매일 업데이트되며, 최신 리뷰가 반영되지 않을 수도 있습니다." [ref=e464] [cursor=pointer]:
+                - img [ref=e467]
+            - button "공유" [ref=e473] [cursor=pointer]:
+              - img [ref=e476]
+              - generic [ref=e478]: 공유
+          - generic [ref=e479]:
+            - link "확장 프로그램" [ref=e480] [cursor=pointer]:
+              - /url: ./category/extensions
+            - link "개발자 도구" [ref=e481] [cursor=pointer]:
+              - /url: ./category/extensions/productivity/developer
+            - text: 11,000,000 사용자
+          - button "Chrome에 추가" [ref=e485] [cursor=pointer]:
+            - generic [ref=e487]: Chrome에 추가
+      - heading "5점 만점에 4.9점 별점 5점 중 4.9점" [level=2] [ref=e489]:
+        - generic [ref=e490]:
+          - text: 5점 만점에 4.9점
+          - img "별점 5점 중 4.9점" [ref=e491]:
+            - generic [ref=e492]:
+              - generic [ref=e493]:
+                - img [ref=e494]
+                - img [ref=e497]
+                - img [ref=e500]
+                - img [ref=e503]
+                - img [ref=e506]
+              - generic [ref=e509]:
+                - img [ref=e510]
+                - img [ref=e512]
+                - img [ref=e514]
+                - img [ref=e516]
+                - img [ref=e518]
+      - text: 평점 8.4만개•
+      - paragraph [ref=e520]:
+        - link "검색결과 및 리뷰에 관해 자세히 알아보기" [ref=e521] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results
+      - generic [ref=e522]:
+        - combobox "필터링 기준" [ref=e525] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: 필터링 기준
+              - generic: 필터링 기준
+          - generic:
+            - generic: 모든 리뷰
+          - generic:
+            - img
+        - combobox "정렬 기준" [ref=e529] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: 정렬 기준
+              - generic: 정렬 기준
+          - generic:
+            - generic: 날짜순
+          - generic:
+            - img
+        - combobox "언어" [ref=e534] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: 언어
+              - generic: 언어
+          - generic:
+            - generic: 한국어
+          - generic:
+            - img
+    - generic [ref=e536]:
+      - generic [ref=e537]:
+        - img "프로필 사진 검토" [ref=e538]
+        - heading "신영춘 별점 5점 중 5점 2026. 5. 19." [level=3] [ref=e540]:
+          - generic [ref=e541]: 신영춘
+          - img "별점 5점 중 5점" [ref=e542]:
+            - generic [ref=e543]:
+              - generic [ref=e544]:
+                - img [ref=e545]
+                - img [ref=e548]
+                - img [ref=e551]
+                - img [ref=e554]
+                - img [ref=e557]
+              - generic [ref=e560]:
+                - img [ref=e561]
+                - img [ref=e563]
+                - img [ref=e565]
+                - img [ref=e567]
+                - img [ref=e569]
+          - generic [ref=e571]: 2026. 5. 19.
+        - button "검토 옵션" [ref=e575] [cursor=pointer]:
+          - img [ref=e578]
+        - paragraph [ref=e581]: 좋아요
+      - generic [ref=e582]:
+        - img "프로필 사진 검토" [ref=e583]
+        - heading "플러스알파k 별점 5점 중 5점 2026. 4. 27." [level=3] [ref=e585]:
+          - generic [ref=e586]: 플러스알파k
+          - img "별점 5점 중 5점" [ref=e587]:
+            - generic [ref=e588]:
+              - generic [ref=e589]:
+                - img [ref=e590]
+                - img [ref=e593]
+                - img [ref=e596]
+                - img [ref=e599]
+                - img [ref=e602]
+              - generic [ref=e605]:
+                - img [ref=e606]
+                - img [ref=e608]
+                - img [ref=e610]
+                - img [ref=e612]
+                - img [ref=e614]
+          - generic [ref=e616]: 2026. 4. 27.
+        - button "검토 옵션" [ref=e620] [cursor=pointer]:
+          - img [ref=e623]
+        - paragraph [ref=e626]: 아주 좋아요 완벽해요 인터넷 관련 작업하는 데 있어서는 없어서는 안 될 프로그램입니다
+      - generic [ref=e627]:
+        - img "프로필 사진 검토" [ref=e628]
+        - heading "Joy Choi 별점 5점 중 5점 2026. 4. 19." [level=3] [ref=e630]:
+          - generic [ref=e631]: Joy Choi
+          - img "별점 5점 중 5점" [ref=e632]:
+            - generic [ref=e633]:
+              - generic [ref=e634]:
+                - img [ref=e635]
+                - img [ref=e638]
+                - img [ref=e641]
+                - img [ref=e644]
+                - img [ref=e647]
+              - generic [ref=e650]:
+                - img [ref=e651]
+                - img [ref=e653]
+                - img [ref=e655]
+                - img [ref=e657]
+                - img [ref=e659]
+          - generic [ref=e661]: 2026. 4. 19.
+        - button "검토 옵션" [ref=e665] [cursor=pointer]:
+          - img [ref=e668]
+        - paragraph [ref=e671]: 최고~ 최고~~~ 굿굿~~~ 감사합니다~
+      - generic [ref=e672]:
+        - img "프로필 사진 검토" [ref=e673]
+        - heading "[서울_13반_안태리] 별점 5점 중 5점 2026. 4. 8." [level=3] [ref=e675]:
+          - generic [ref=e676]: "[서울_13반_안태리]"
+          - img "별점 5점 중 5점" [ref=e677]:
+            - generic [ref=e678]:
+              - generic [ref=e679]:
+                - img [ref=e680]
+                - img [ref=e683]
+                - img [ref=e686]
+                - img [ref=e689]
+                - img [ref=e692]
+              - generic [ref=e695]:
+                - img [ref=e696]
+                - img [ref=e698]
+                - img [ref=e700]
+                - img [ref=e702]
+                - img [ref=e704]
+          - generic [ref=e706]: 2026. 4. 8.
+        - button "검토 옵션" [ref=e710] [cursor=pointer]:
+          - img [ref=e713]
+        - paragraph [ref=e716]: 포폴용 캡처용으로 매우 만족
+      - generic [ref=e717]:
+        - img "프로필 사진 검토" [ref=e718]
+        - heading "오용 별점 5점 중 5점 2026. 1. 21." [level=3] [ref=e720]:
+          - generic [ref=e721]: 오용
+          - img "별점 5점 중 5점" [ref=e722]:
+            - generic [ref=e723]:
+              - generic [ref=e724]:
+                - img [ref=e725]
+                - img [ref=e728]
+                - img [ref=e731]
+                - img [ref=e734]
+                - img [ref=e737]
+              - generic [ref=e740]:
+                - img [ref=e741]
+                - img [ref=e743]
+                - img [ref=e745]
+                - img [ref=e747]
+                - img [ref=e749]
+          - generic [ref=e751]: 2026. 1. 21.
+        - button "검토 옵션" [ref=e755] [cursor=pointer]:
+          - img [ref=e758]
+        - paragraph [ref=e761]: 덕분에 너무 편했습니다
+      - generic [ref=e762]:
+        - img "프로필 사진 검토" [ref=e763]
+        - heading "장운규 별점 5점 중 5점 2026. 1. 17." [level=3] [ref=e765]:
+          - generic [ref=e766]: 장운규
+          - img "별점 5점 중 5점" [ref=e767]:
+            - generic [ref=e768]:
+              - generic [ref=e769]:
+                - img [ref=e770]
+                - img [ref=e773]
+                - img [ref=e776]
+                - img [ref=e779]
+                - img [ref=e782]
+              - generic [ref=e785]:
+                - img [ref=e786]
+                - img [ref=e788]
+                - img [ref=e790]
+                - img [ref=e792]
+                - img [ref=e794]
+          - generic [ref=e796]: 2026. 1. 17.
+        - button "검토 옵션" [ref=e800] [cursor=pointer]:
+          - img [ref=e803]
+        - paragraph [ref=e806]: 클릭으로 캡처, 저장 사용하기 편합니다
+      - generic [ref=e807]:
+        - img "프로필 사진 검토" [ref=e808]
+        - heading "김기영 별점 5점 중 5점 2026. 1. 15." [level=3] [ref=e810]:
+          - generic [ref=e811]: 김기영
+          - img "별점 5점 중 5점" [ref=e812]:
+            - generic [ref=e813]:
+              - generic [ref=e814]:
+                - img [ref=e815]
+                - img [ref=e818]
+                - img [ref=e821]
+                - img [ref=e824]
+                - img [ref=e827]
+              - generic [ref=e830]:
+                - img [ref=e831]
+                - img [ref=e833]
+                - img [ref=e835]
+                - img [ref=e837]
+                - img [ref=e839]
+          - generic [ref=e841]: 2026. 1. 15.
+        - button "검토 옵션" [ref=e845] [cursor=pointer]:
+          - img [ref=e848]
+        - paragraph [ref=e851]: 항상 잘 쓰고 있습니다~ 감사합니다!
+      - generic [ref=e852]:
+        - img "프로필 사진 검토" [ref=e853]
+        - heading "김승재 별점 5점 중 5점 2026. 1. 15." [level=3] [ref=e855]:
+          - generic [ref=e856]: 김승재
+          - img "별점 5점 중 5점" [ref=e857]:
+            - generic [ref=e858]:
+              - generic [ref=e859]:
+                - img [ref=e860]
+                - img [ref=e863]
+                - img [ref=e866]
+                - img [ref=e869]
+                - img [ref=e872]
+              - generic [ref=e875]:
+                - img [ref=e876]
+                - img [ref=e878]
+                - img [ref=e880]
+                - img [ref=e882]
+                - img [ref=e884]
+          - generic [ref=e886]: 2026. 1. 15.
+        - button "검토 옵션" [ref=e890] [cursor=pointer]:
+          - img [ref=e893]
+        - paragraph [ref=e896]: 브라우저 화면캡쳐를 위한 앱입니다 편하게 잘 사용하고 있습니다 감사합니다~
+      - generic [ref=e897]:
+        - img "프로필 사진 검토" [ref=e898]
+        - heading "real estate 별점 5점 중 5점 2026. 1. 15." [level=3] [ref=e900]:
+          - generic [ref=e901]: real estate
+          - img "별점 5점 중 5점" [ref=e902]:
+            - generic [ref=e903]:
+              - generic [ref=e904]:
+                - img [ref=e905]
+                - img [ref=e908]
+                - img [ref=e911]
+                - img [ref=e914]
+                - img [ref=e917]
+              - generic [ref=e920]:
+                - img [ref=e921]
+                - img [ref=e923]
+                - img [ref=e925]
+                - img [ref=e927]
+                - img [ref=e929]
+          - generic [ref=e931]: 2026. 1. 15.
+        - button "검토 옵션" [ref=e935] [cursor=pointer]:
+          - img [ref=e938]
+        - paragraph [ref=e941]: 사용하기 쉽고 너무 편해서 좋아요!
+      - generic [ref=e942]:
+        - img "프로필 사진 검토" [ref=e943]
+        - heading "정재호 별점 5점 중 5점 2026. 1. 15." [level=3] [ref=e945]:
+          - generic [ref=e946]: 정재호
+          - img "별점 5점 중 5점" [ref=e947]:
+            - generic [ref=e948]:
+              - generic [ref=e949]:
+                - img [ref=e950]
+                - img [ref=e953]
+                - img [ref=e956]
+                - img [ref=e959]
+                - img [ref=e962]
+              - generic [ref=e965]:
+                - img [ref=e966]
+                - img [ref=e968]
+                - img [ref=e970]
+                - img [ref=e972]
+                - img [ref=e974]
+          - generic [ref=e976]: 2026. 1. 15.
+        - button "검토 옵션" [ref=e980] [cursor=pointer]:
+          - img [ref=e983]
+        - paragraph [ref=e986]: 최고입니다!!
+      - button "더보기" [ref=e989] [cursor=pointer]:
+        - generic [ref=e991]: 더보기
+  - contentinfo [ref=e396]:
+    - list [ref=e397]:
+      - listitem [ref=e398]:
+        - link "Chrome 웹 스토어 정보" [ref=e399] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=ko
+        - text: •
+      - listitem [ref=e400]:
+        - link "개발자 대시보드" [ref=e401] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e402]:
+        - link "개인정보처리방침" [ref=e403] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=ko
+        - text: •
+      - listitem [ref=e404]:
+        - link "서비스 약관" [ref=e405] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/ko/gallery_tos.html
+        - text: •
+      - listitem [ref=e406]:
+        - link "도움말" [ref=e407] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=ko
+  - generic [ref=e992]: "리뷰: GoFullPage - Full Page Screen Capture"

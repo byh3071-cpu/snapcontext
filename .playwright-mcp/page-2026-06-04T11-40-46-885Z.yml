@@ -1,0 +1,374 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome Web Store logo Chrome Web Store" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome Web Store logo" [ref=e8]
+          - generic [ref=e9]: Chrome Web Store
+        - search "Sitewide" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Search Chrome Web Store" [active] [ref=e15]
+        - generic [ref=e16]:
+          - button "More options menu" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google apps" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "Sign in" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https://chromewebstore.google.com/detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg/reviews?hl%3Den%26gl%3DUS&followup=https://chromewebstore.google.com/detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg/reviews?hl%3Den%26gl%3DUS&hl=en&ec=GAZApQM
+      - tablist [ref=e42]:
+        - generic [ref=e45]:
+          - tab "Discover" [ref=e46] [cursor=pointer]:
+            - generic:
+              - generic: Discover
+          - tab "Extensions" [selected] [ref=e47] [cursor=pointer]:
+            - generic:
+              - generic: Extensions
+          - tab "Themes" [ref=e48] [cursor=pointer]:
+            - generic:
+              - generic: Themes
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e55]:
+        - generic [ref=e56] [cursor=pointer]:
+          - img [ref=e59]
+          - link "Navigate back to item detail page" [ref=e61]:
+            - /url: ./detail/Take%20Webpage%20Screenshots%20Entirely%20-%20FireShot/mcbpblocgmgfnpjjppndjkmgjaogfceg
+        - generic [ref=e62]:
+          - link "Item logo image for Take Webpage Screenshots Entirely - FireShot Take Webpage Screenshots Entirely - FireShot" [ref=e63] [cursor=pointer]:
+            - /url: ./detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg
+            - img "Item logo image for Take Webpage Screenshots Entirely - FireShot" [ref=e64]
+            - heading "Take Webpage Screenshots Entirely - FireShot" [level=1] [ref=e65]
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e70] [cursor=pointer]:
+                - img [ref=e73]
+                - link "Created by the owner of the listed website. The publisher has a good record with no history of violations. Learn more." [ref=e76]:
+                  - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+              - link "https://getfireshot.com/" [ref=e77] [cursor=pointer]:
+                - /url: https://getfireshot.com/
+            - generic [ref=e78]:
+              - generic [ref=e81] [cursor=pointer]:
+                - img [ref=e84]
+                - link "Follows recommended practices for Chrome extensions. Learn more." [ref=e87]:
+                  - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+              - generic [ref=e88]: Featured
+            - generic [ref=e89]:
+              - img "Average rating 4.8 out of 5 stars. 50.7K ratings." [ref=e90]:
+                - generic [ref=e91]: "4.8"
+                - img [ref=e92]
+                - generic [ref=e94]:
+                  - text: (
+                  - paragraph [ref=e95]: 50.7K ratings
+                  - text: )
+              - button "Ratings are updated daily and may not reflect the most recent reviews." [ref=e97] [cursor=pointer]:
+                - img [ref=e100]
+            - button "Share" [ref=e106] [cursor=pointer]:
+              - img [ref=e109]
+              - generic [ref=e111]: Share
+          - generic [ref=e112]:
+            - link "Extension" [ref=e113] [cursor=pointer]:
+              - /url: ./category/extensions
+            - link "Developer Tools" [ref=e114] [cursor=pointer]:
+              - /url: ./category/extensions/productivity/developer
+            - text: 3,000,000 users
+          - button "Add to Chrome" [ref=e118] [cursor=pointer]:
+            - generic [ref=e120]: Add to Chrome
+      - heading "4.8 out of 5 4.8 out of 5 stars" [level=2] [ref=e122]:
+        - generic [ref=e123]:
+          - text: 4.8 out of 5
+          - img "4.8 out of 5 stars" [ref=e124]:
+            - generic [ref=e125]:
+              - generic [ref=e126]:
+                - img [ref=e127]
+                - img [ref=e130]
+                - img [ref=e133]
+                - img [ref=e136]
+                - img [ref=e139]
+              - generic [ref=e142]:
+                - img [ref=e143]
+                - img [ref=e145]
+                - img [ref=e147]
+                - img [ref=e149]
+                - img [ref=e151]
+      - text: 50.7K ratings•
+      - paragraph [ref=e153]:
+        - link "Learn more about results and reviews." [ref=e154] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results
+      - generic [ref=e155]:
+        - combobox "Filter by" [ref=e158] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: Filter by
+              - generic: Filter by
+          - generic:
+            - generic: All reviews
+          - generic:
+            - img
+        - combobox "Sort by" [ref=e162] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: Sort by
+              - generic: Sort by
+          - generic:
+            - generic: Recent
+          - generic:
+            - img
+        - combobox "Language" [ref=e167] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: Language
+              - generic: Language
+          - generic:
+            - generic: English
+          - generic:
+            - img
+    - generic [ref=e169]:
+      - generic [ref=e170]:
+        - img "Review's profile picture" [ref=e171]
+        - heading "sajad sharifi 5 out of 5 stars Jun 4, 2026" [level=3] [ref=e173]:
+          - generic [ref=e174]: sajad sharifi
+          - img "5 out of 5 stars" [ref=e175]:
+            - generic [ref=e176]:
+              - generic [ref=e177]:
+                - img [ref=e178]
+                - img [ref=e181]
+                - img [ref=e184]
+                - img [ref=e187]
+                - img [ref=e190]
+              - generic [ref=e193]:
+                - img [ref=e194]
+                - img [ref=e196]
+                - img [ref=e198]
+                - img [ref=e200]
+                - img [ref=e202]
+          - generic [ref=e204]: Jun 4, 2026
+        - button "Review options" [ref=e208] [cursor=pointer]:
+          - img [ref=e211]
+        - paragraph [ref=e214]: very fast and cool extension
+      - generic [ref=e215]:
+        - img "Review's profile picture" [ref=e216]
+        - heading "kunjan detroja 5 out of 5 stars Jun 4, 2026" [level=3] [ref=e218]:
+          - generic [ref=e219]: kunjan detroja
+          - img "5 out of 5 stars" [ref=e220]:
+            - generic [ref=e221]:
+              - generic [ref=e222]:
+                - img [ref=e223]
+                - img [ref=e226]
+                - img [ref=e229]
+                - img [ref=e232]
+                - img [ref=e235]
+              - generic [ref=e238]:
+                - img [ref=e239]
+                - img [ref=e241]
+                - img [ref=e243]
+                - img [ref=e245]
+                - img [ref=e247]
+          - generic [ref=e249]: Jun 4, 2026
+        - button "Review options" [ref=e253] [cursor=pointer]:
+          - img [ref=e256]
+        - paragraph [ref=e259]: best app to take screenshots
+      - generic [ref=e260]:
+        - img "Review's profile picture" [ref=e261]
+        - heading "Iris Erasmus-Brugts 5 out of 5 stars Jun 4, 2026" [level=3] [ref=e263]:
+          - generic [ref=e264]: Iris Erasmus-Brugts
+          - img "5 out of 5 stars" [ref=e265]:
+            - generic [ref=e266]:
+              - generic [ref=e267]:
+                - img [ref=e268]
+                - img [ref=e271]
+                - img [ref=e274]
+                - img [ref=e277]
+                - img [ref=e280]
+              - generic [ref=e283]:
+                - img [ref=e284]
+                - img [ref=e286]
+                - img [ref=e288]
+                - img [ref=e290]
+                - img [ref=e292]
+          - generic [ref=e294]: Jun 4, 2026
+        - button "Review options" [ref=e298] [cursor=pointer]:
+          - img [ref=e301]
+        - paragraph [ref=e304]: It is great in my work, I use it multiple times a day
+      - generic [ref=e305]:
+        - img "Review's profile picture" [ref=e306]
+        - heading "Zoey Feng 5 out of 5 stars Jun 4, 2026" [level=3] [ref=e308]:
+          - generic [ref=e309]: Zoey Feng
+          - img "5 out of 5 stars" [ref=e310]:
+            - generic [ref=e311]:
+              - generic [ref=e312]:
+                - img [ref=e313]
+                - img [ref=e316]
+                - img [ref=e319]
+                - img [ref=e322]
+                - img [ref=e325]
+              - generic [ref=e328]:
+                - img [ref=e329]
+                - img [ref=e331]
+                - img [ref=e333]
+                - img [ref=e335]
+                - img [ref=e337]
+          - generic [ref=e339]: Jun 4, 2026
+        - button "Review options" [ref=e343] [cursor=pointer]:
+          - img [ref=e346]
+        - paragraph [ref=e349]: good
+      - generic [ref=e350]:
+        - img "Review's profile picture" [ref=e351]
+        - heading "Jay Ess 5 out of 5 stars Jun 4, 2026" [level=3] [ref=e353]:
+          - generic [ref=e354]: Jay Ess
+          - img "5 out of 5 stars" [ref=e355]:
+            - generic [ref=e356]:
+              - generic [ref=e357]:
+                - img [ref=e358]
+                - img [ref=e361]
+                - img [ref=e364]
+                - img [ref=e367]
+                - img [ref=e370]
+              - generic [ref=e373]:
+                - img [ref=e374]
+                - img [ref=e376]
+                - img [ref=e378]
+                - img [ref=e380]
+                - img [ref=e382]
+          - generic [ref=e384]: Jun 4, 2026
+        - button "Review options" [ref=e388] [cursor=pointer]:
+          - img [ref=e391]
+        - paragraph [ref=e394]: Very useful and intuitive extension. I have tried a couple others in the past two years, but I always come back to Fireshot as my workhorse.
+      - generic [ref=e395]:
+        - img "Review's profile picture" [ref=e396]
+        - heading "Linda Mattson 5 out of 5 stars Jun 4, 2026" [level=3] [ref=e398]:
+          - generic [ref=e399]: Linda Mattson
+          - img "5 out of 5 stars" [ref=e400]:
+            - generic [ref=e401]:
+              - generic [ref=e402]:
+                - img [ref=e403]
+                - img [ref=e406]
+                - img [ref=e409]
+                - img [ref=e412]
+                - img [ref=e415]
+              - generic [ref=e418]:
+                - img [ref=e419]
+                - img [ref=e421]
+                - img [ref=e423]
+                - img [ref=e425]
+                - img [ref=e427]
+          - generic [ref=e429]: Jun 4, 2026
+        - button "Review options" [ref=e433] [cursor=pointer]:
+          - img [ref=e436]
+        - paragraph [ref=e439]: This is an amazing tool. As a former web designer I used it almost daily. Now I love it to save off web page information for personal use. Low cost, but amazing tool!!
+      - generic [ref=e440]:
+        - img "Review's profile picture" [ref=e441]
+        - heading "JC I 5 out of 5 stars Jun 4, 2026" [level=3] [ref=e443]:
+          - generic [ref=e444]: JC I
+          - img "5 out of 5 stars" [ref=e445]:
+            - generic [ref=e446]:
+              - generic [ref=e447]:
+                - img [ref=e448]
+                - img [ref=e451]
+                - img [ref=e454]
+                - img [ref=e457]
+                - img [ref=e460]
+              - generic [ref=e463]:
+                - img [ref=e464]
+                - img [ref=e466]
+                - img [ref=e468]
+                - img [ref=e470]
+                - img [ref=e472]
+          - generic [ref=e474]: Jun 4, 2026
+        - button "Review options" [ref=e478] [cursor=pointer]:
+          - img [ref=e481]
+        - paragraph [ref=e484]: One of the most useful extensions.
+      - generic [ref=e485]:
+        - img "Review's profile picture" [ref=e486]
+        - heading "Nicolas Miachon 5 out of 5 stars Jun 3, 2026" [level=3] [ref=e488]:
+          - generic [ref=e489]: Nicolas Miachon
+          - img "5 out of 5 stars" [ref=e490]:
+            - generic [ref=e491]:
+              - generic [ref=e492]:
+                - img [ref=e493]
+                - img [ref=e496]
+                - img [ref=e499]
+                - img [ref=e502]
+                - img [ref=e505]
+              - generic [ref=e508]:
+                - img [ref=e509]
+                - img [ref=e511]
+                - img [ref=e513]
+                - img [ref=e515]
+                - img [ref=e517]
+          - generic [ref=e519]: Jun 3, 2026
+        - button "Review options" [ref=e523] [cursor=pointer]:
+          - img [ref=e526]
+        - paragraph [ref=e529]: has been reliable for years now and still using it
+      - generic [ref=e530]:
+        - img "Review's profile picture" [ref=e531]
+        - heading "Bindy Bonnette 5 out of 5 stars Jun 3, 2026" [level=3] [ref=e533]:
+          - generic [ref=e534]: Bindy Bonnette
+          - img "5 out of 5 stars" [ref=e535]:
+            - generic [ref=e536]:
+              - generic [ref=e537]:
+                - img [ref=e538]
+                - img [ref=e541]
+                - img [ref=e544]
+                - img [ref=e547]
+                - img [ref=e550]
+              - generic [ref=e553]:
+                - img [ref=e554]
+                - img [ref=e556]
+                - img [ref=e558]
+                - img [ref=e560]
+                - img [ref=e562]
+          - generic [ref=e564]: Jun 3, 2026
+        - button "Review options" [ref=e568] [cursor=pointer]:
+          - img [ref=e571]
+        - paragraph [ref=e574]: One of my constant plugins friends. Simple, reliable and fast.
+        - generic [ref=e576]: 1 person found this review to be helpful
+      - generic [ref=e577]:
+        - img "Review's profile picture" [ref=e578]
+        - heading "Jeffrey Reid 5 out of 5 stars Jun 3, 2026" [level=3] [ref=e580]:
+          - generic [ref=e581]: Jeffrey Reid
+          - img "5 out of 5 stars" [ref=e582]:
+            - generic [ref=e583]:
+              - generic [ref=e584]:
+                - img [ref=e585]
+                - img [ref=e588]
+                - img [ref=e591]
+                - img [ref=e594]
+                - img [ref=e597]
+              - generic [ref=e600]:
+                - img [ref=e601]
+                - img [ref=e603]
+                - img [ref=e605]
+                - img [ref=e607]
+                - img [ref=e609]
+          - generic [ref=e611]: Jun 3, 2026
+        - button "Review options" [ref=e615] [cursor=pointer]:
+          - img [ref=e618]
+        - paragraph [ref=e621]: Great extension. Matches what I had at work at Google.
+      - button "Load more" [ref=e624] [cursor=pointer]:
+        - generic [ref=e626]: Load more
+  - contentinfo [ref=e627]:
+    - list [ref=e628]:
+      - listitem [ref=e629]:
+        - link "About Chrome Web Store" [ref=e630] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=en
+        - text: •
+      - listitem [ref=e631]:
+        - link "Developer Dashboard" [ref=e632] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e633]:
+        - link "Privacy Policy" [ref=e634] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=en
+        - text: •
+      - listitem [ref=e635]:
+        - link "Terms of Service" [ref=e636] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/en/gallery_tos.html
+        - text: •
+      - listitem [ref=e637]:
+        - link "Help" [ref=e638] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=en

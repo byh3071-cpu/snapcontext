@@ -172,7 +172,7 @@
               </div>
               <div class="preview-stage">
                 <div class="pin-container"><img class="preview-img" alt="캡처 미리보기" data-mock-img></div>
-                <button type="button" class="preview-zoom-btn" aria-label="원본 이미지 확대" title="원본 이미지 확대">🔍</button>
+                <button type="button" class="preview-zoom-btn" aria-label="원본 이미지 확대" title="원본 이미지 확대"><i data-icon="zoomin" data-size="16"></i></button>
               </div>
             </div>
           </div>
@@ -204,12 +204,12 @@
       <div class="ph-frame"><div class="app-shell">
         <section class="panel-card context-pack-panel">
           <h2 class="context-pack-panel__title">AI 디버그 팩</h2>
-          <textarea class="context-pack-panel__intent" rows="3" placeholder="증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)"></textarea>
+          <textarea class="context-pack-panel__intent" rows="3" placeholder="증상이나 AI에게 요청할 내용을 적어주세요"></textarea>
           <p class="context-pack-panel__hint muted">AI 디버그 팩을 만들려면 페이지 또는 요소를 캡처하세요.</p>
           <div class="context-pack-panel__template-row">
             <label class="context-pack-panel__template-label">프롬프트 템플릿
               <select class="context-pack-panel__template-select">
-                <option>🐛 버그 리포트</option><option>🔧 리팩토링</option><option>📐 레퍼런스</option>
+                <option>버그 리포트</option><option>리팩토링</option><option>레퍼런스</option>
               </select>
             </label>
           </div>
@@ -240,7 +240,7 @@
               <div class="context-pack-panel__history-row">
                 <div class="context-pack-panel__history-meta">버그 리포트 - 예시 페이지 제목</div>
                 <button type="button">프롬프트</button><button type="button">전체</button>
-                <button type="button" class="context-pack-panel__history-delete" aria-label="히스토리 삭제">×</button>
+                <button type="button" class="context-pack-panel__history-delete" aria-label="히스토리 삭제"><i data-icon="x" data-size="14"></i></button>
               </div>
             </div>
           </details>
@@ -257,7 +257,7 @@
         <section class="panel-card">
           <h2 class="pin-memo__title">핀 메모</h2>
           <div class="pin-memo__list"></div>
-          <p class="pin-memo__placeholder muted">이미지를 클릭하여 핀을 추가하세요</p>
+          <div class="pin-memo__placeholder empty-state"><i data-icon="mappin" data-size="28"></i><p class="empty-state__text">이미지를 클릭하여 핀을 추가하세요</p></div>
         </section>
       </div></div>
     </section>
@@ -269,17 +269,17 @@
           <h2 class="pin-memo__title">핀 메모</h2>
           <div class="pin-memo__list">
             <div class="pin-memo__row pin-memo__row--active" data-pin-id="1">
-              <span class="pin-memo__label">[1]</span>
+              <span class="pin-memo__label">1</span>
               <div class="pin-memo__field">
                 <textarea class="pin-memo__input" rows="1" placeholder="메모 입력…">로그인 버튼 정렬 깨짐</textarea>
-                <button type="button" class="pin-memo__delete" title="핀 삭제" aria-label="핀 삭제">×</button>
+                <button type="button" class="pin-memo__delete" title="핀 삭제" aria-label="핀 삭제"><i data-icon="x" data-size="16"></i></button>
               </div>
             </div>
             <div class="pin-memo__row" data-pin-id="2">
-              <span class="pin-memo__label">[2]</span>
+              <span class="pin-memo__label">2</span>
               <div class="pin-memo__field">
                 <textarea class="pin-memo__input" rows="1" placeholder="메모 입력…"></textarea>
-                <button type="button" class="pin-memo__delete" title="핀 삭제" aria-label="핀 삭제">×</button>
+                <button type="button" class="pin-memo__delete" title="핀 삭제" aria-label="핀 삭제"><i data-icon="x" data-size="16"></i></button>
               </div>
             </div>
           </div>
@@ -296,7 +296,7 @@
             <button type="button" class="capture-history__clear" title="캡처 기록 모두 삭제" aria-label="캡처 기록 모두 삭제" disabled><i data-icon="trash" data-size="15"></i></button>
           </div>
           <div class="capture-history__list">
-            <p class="capture-history__empty muted">저장된 캡처가 아직 없습니다.</p>
+            <div class="capture-history__empty empty-state"><i data-icon="imageoff" data-size="28"></i><p class="empty-state__text">저장된 캡처가 아직 없습니다.</p></div>
           </div>
         </section>
       </div></div>
@@ -317,7 +317,7 @@
                 <div class="capture-history__body">
                   <div class="capture-history__primary">예시 페이지 제목 — 길어지면 말줄임</div>
                   <div class="capture-history__url">https://example.com/some/long/path</div>
-                  <div class="capture-history__meta">6월 04 14:32 | 영역 | 핀 3</div>
+                  <div class="capture-history__meta">6월 04 14:32 · 영역 · 핀 3</div>
                 </div>
               </button>
               <button type="button" class="capture-history__delete" title="캡처 삭제" aria-label="캡처 삭제"><i data-icon="x" data-size="15"></i></button>
@@ -328,7 +328,7 @@
                 <div class="capture-history__body">
                   <div class="capture-history__primary">example.com</div>
                   <div class="capture-history__url">https://example.com/no-thumb</div>
-                  <div class="capture-history__meta">6월 04 09:10 | 문서 | 핀 0</div>
+                  <div class="capture-history__meta">6월 04 09:10 · 문서 · 핀 0</div>
                 </div>
               </button>
               <button type="button" class="capture-history__delete" title="캡처 삭제" aria-label="캡처 삭제"><i data-icon="x" data-size="15"></i></button>
@@ -384,7 +384,7 @@
         <div class="pin-lightbox" role="dialog" aria-modal="true" aria-label="화면 캡처">
           <div class="pin-lightbox__backdrop"></div>
           <div class="pin-lightbox__panel">
-            <div class="pin-lightbox__header"><span class="pin-lightbox__title">화면 캡처</span><span class="pin-lightbox__hint muted">Ctrl+휠: 확대/축소</span><button type="button" class="pin-lightbox__close" aria-label="닫기">×</button></div>
+            <div class="pin-lightbox__header"><span class="pin-lightbox__title">화면 캡처</span><span class="pin-lightbox__hint muted">Ctrl+휠: 확대/축소</span><button type="button" class="pin-lightbox__close" aria-label="닫기"><i data-icon="x" data-size="18"></i></button></div>
             <div class="pin-lightbox__scroll">
               <div class="preview-capture preview-capture--lightbox" data-size="regular">
                 <div class="preview-stage"><div class="pin-container"><img class="preview-img" alt="" data-mock-img></div></div>
@@ -408,7 +408,7 @@
                 <button type="button" class="pin-badge" style="left:70%;top:60%" title="핀 2 — 클릭하면 삭제">2</button>
               </div>
             </div>
-            <button type="button" class="image-lightbox__close" aria-label="닫기">×</button>
+            <button type="button" class="image-lightbox__close" aria-label="닫기"><i data-icon="x" data-size="18"></i></button>
           </div>
         </div>
       </div></div>
@@ -453,7 +453,10 @@
       scan: 'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',
       maximize: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
       sparkles: 'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',
-      braces: 'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2'
+      braces: 'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2',
+      zoomin: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3M8 11h6M11 8v6',
+      imageoff: 'M3 3l18 18M21 15V5a2 2 0 0 0-2-2H9M3 7v12a2 2 0 0 0 2 2h12',
+      mappin: 'M12 21c4-4.5 7-7.6 7-11a7 7 0 1 0-14 0c0 3.4 3 6.5 7 11zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5'
     };
     document.querySelectorAll('[data-icon]').forEach(function (el) {
       var name = el.getAttribute('data-icon');

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SnapContext — 무드 15종 (고급·독보적·감각적)</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#0a0a0c;color:#e6e3d8;font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;padding:0 0 80px}
+  .top{position:sticky;top:0;z-index:9;background:#060608;border-bottom:1px solid #23231d;padding:14px 22px}
+  .top h1{margin:0 0 4px;font-size:16px}
+  .top p{margin:0;font-size:12px;color:#8b8b80;line-height:1.5}
+  .gal{display:flex;flex-wrap:wrap;gap:22px;padding:24px 22px;align-items:flex-start}
+  .board{width:336px}
+  .board > .cap{display:flex;align-items:baseline;gap:8px;margin:0 0 8px}
+  .board > .cap b{font-size:14px} .board > .cap span{font-size:11px;color:#8b8b80}
+  .board.keep > .cap b::after{content:' · 킵';color:#cdf03a}
+  svg{display:block}
+
+  /* ===== 구조(테마 무관) ===== */
+  .theme{--appbg:#0b0b0c;--card:#0e0e10;--card2:#08080a;--tx:#e6e3d8;--mut:#7d7a6e;--acc:#4fd6e0;--on:#04222a;--bd:#23231d;--bd2:#3a3a30;--r:6px;--bw:1px;--fhead:inherit;--shadow:none;--blur:0px}
+  .theme{background:var(--appbg);border:1px solid var(--bd2);border-radius:var(--r);padding:14px;display:grid;gap:12px;color:var(--tx);font-size:14px;line-height:1.45}
+  .theme .head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:var(--bw) solid var(--bd);padding-bottom:10px}
+  .theme .head h1{margin:0;font-size:17px;font-weight:650;font-family:var(--fhead)}
+  .theme .ver{font-size:11px;color:var(--mut)}
+  .theme .card{position:relative;background:var(--card);border:var(--bw) solid var(--bd);border-radius:var(--r);padding:12px;display:grid;gap:10px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur))}
+  .theme .eyebrow{font-size:10px;letter-spacing:.14em;color:var(--mut);display:flex;align-items:center;gap:6px}
+  .theme .eyebrow::before{content:'';width:10px;height:1px;background:var(--acc)}
+  .theme .title{margin:0;font-size:14px;font-weight:650;font-family:var(--fhead)}
+  .theme .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .theme .tbtn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 8px;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:var(--card2);color:var(--tx);font:inherit;font-size:13px;font-weight:550;cursor:pointer}
+  .theme .tbtn svg{color:var(--acc)} .theme .tbtn:hover{border-color:var(--acc)}
+  .theme .tbtn.pri{background:var(--acc);color:var(--on);border-color:var(--acc);font-weight:650} .theme .tbtn.pri svg{color:var(--on)}
+  .theme .field{width:100%;background:var(--card2);border:var(--bw) solid var(--bd2);border-radius:var(--r);color:var(--tx);font:inherit;font-size:13px;padding:8px 10px}
+  .theme .field::placeholder{color:var(--mut)}
+  .theme .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .theme .btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:var(--card2);color:var(--tx);font:inherit;font-size:13px;cursor:pointer}
+  .theme .btn svg{color:var(--acc)} .theme .btn.pri{background:var(--acc);color:var(--on);border-color:var(--acc);font-weight:650} .theme .btn.pri svg{color:var(--on)}
+  .theme .chip{font-size:10px;color:var(--acc);border:var(--bw) solid var(--bd2);border-radius:var(--r);padding:2px 7px;justify-self:start}
+  .theme .row{display:grid;grid-template-columns:46px 1fr auto;gap:10px;align-items:center;padding:8px;border:var(--bw) solid var(--bd);border-radius:var(--r);background:var(--card2)}
+  .theme .thumb{width:46px;aspect-ratio:4/3;border:var(--bw) solid var(--bd2);background:rgba(128,128,128,.14);border-radius:calc(var(--r) - 1px)}
+  .theme .row .body{min-width:0;display:grid;gap:2px}
+  .theme .row .body b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .theme .meta{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .theme .icobtn{width:28px;height:28px;display:grid;place-items:center;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:transparent;color:var(--mut);cursor:pointer}
+  .theme .toast{display:flex;align-items:center;gap:8px;padding:9px 11px;border:var(--bw) solid var(--bd2);border-left:2px solid var(--acc);border-radius:var(--r);background:var(--card);font-size:13px}
+  .theme .tk{font-size:9px;letter-spacing:.1em;color:var(--mut)}
+  .mono .eyebrow,.mono .meta,.mono .ver,.mono .tk,.mono .chip{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+  /* ===== 새 12종 ===== */
+  /* t1 모노크롬 럭셔리 */
+  .t1{--appbg:#0c0c0c;--card:#131313;--card2:#0e0e0e;--tx:#ecebe6;--mut:#7c7c76;--acc:#ecebe6;--on:#0c0c0c;--bd:#222;--bd2:#333;--r:4px;--fhead:Georgia,'Times New Roman',serif}
+  .t1 .title{font-weight:500;letter-spacing:.01em} .t1 .head h1{font-weight:500;letter-spacing:.02em}
+  /* t2 스위스 그리드 */
+  .t2{--appbg:#111;--card:#171717;--card2:#101010;--tx:#f2f2f0;--mut:#8a8a86;--acc:#ff3b30;--on:#fff;--bd:#2a2a2a;--bd2:#3a3a3a;--r:0}
+  .t2 .eyebrow{text-transform:uppercase;font-family:ui-monospace,monospace;letter-spacing:.18em}
+  /* t3 블루프린트 */
+  .t3{--appbg:#0a1830;--card:#0c1d3a;--card2:#0a1730;--tx:#cfe3ff;--mut:#5f86c0;--acc:#5fd0ff;--on:#04223a;--bd:rgba(95,150,220,.22);--bd2:rgba(95,150,220,.4);--r:2px}
+  .t3 .card{background-image:linear-gradient(rgba(95,150,220,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(95,150,220,.07) 1px,transparent 1px);background-size:16px 16px}
+  .t3 .eyebrow,.t3 .meta,.t3 .ver{font-family:ui-monospace,monospace}
+  /* t4 리소그래프 듀오톤 */
+  .t4{--appbg:#171428;--card:#1d1838;--card2:#161232;--tx:#f3e9e0;--mut:#a08fb0;--acc:#ff5e7a;--on:#1a0e20;--bd:#2e2748;--bd2:#3e3560;--r:6px}
+  .t4 .eyebrow::before{background:#7c5cff} .t4 .chip{color:#9b86ff;border-color:#3e3560}
+  /* t5 테크 모노 (Geist b/w) */
+  .t5{--appbg:#000;--card:#0a0a0a;--card2:#050505;--tx:#fafafa;--mut:#888;--acc:#fafafa;--on:#000;--bd:#1f1f1f;--bd2:#2e2e2e;--r:6px}
+  .t5 .eyebrow,.t5 .meta,.t5 .ver,.t5 .tk{font-family:ui-monospace,Menlo,Consolas,monospace}
+  /* t6 앰버 CRT */
+  .t6{--appbg:#0a0700;--card:#0e0a02;--card2:#080500;--tx:#ffcf6e;--mut:#a07a2e;--acc:#ffb52e;--on:#1a0e00;--bd:#2a1e08;--bd2:#3e2e10;--r:2px;--fhead:ui-monospace,monospace}
+  .t6{background-image:repeating-linear-gradient(rgba(255,180,40,.05) 0 1px,transparent 1px 3px)}
+  .t6 .eyebrow,.t6 .meta,.t6 .ver,.t6 .tk,.t6 .title{font-family:ui-monospace,monospace}
+  .t6 .head h1{text-shadow:0 0 9px rgba(255,180,40,.45)}
+  /* t7 카본 메탈 */
+  .t7{--appbg:#0d0f12;--card:#15181d;--card2:#101216;--tx:#dfe3e8;--mut:#8a929c;--acc:#5fa8ff;--on:#06121f;--bd:#23272e;--bd2:#333842;--r:8px;--shadow:0 4px 14px rgba(0,0,0,.4)}
+  .t7 .card{background-image:linear-gradient(135deg,rgba(255,255,255,.035),transparent 42%)}
+  .t7 .btn.pri,.t7 .tbtn.pri{background:linear-gradient(180deg,#7ab8ff,#4f8fe6)}
+  /* t8 에메랄드 럭스 */
+  .t8{--appbg:#06120d;--card:#0a1a13;--card2:#06140e;--tx:#e7efe8;--mut:#7e9a88;--acc:#34d399;--on:#04140d;--bd:#163326;--bd2:#1f4634;--r:6px;--fhead:Georgia,serif}
+  .t8 .chip{color:#d9b16a;border-color:#3a3320} .t8 .title{font-style:italic}
+  /* t9 미드나잇 오로라 */
+  .t9{--appbg:radial-gradient(120% 80% at 50% -10%,#1b3a6b 0%,#0a1226 55%,#070a16 100%);--card:rgba(255,255,255,.055);--card2:rgba(255,255,255,.03);--tx:#eaf0ff;--mut:#8ea0c8;--acc:#7aa2ff;--on:#0a1020;--bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.16);--r:14px;--blur:10px;--shadow:0 8px 30px rgba(0,0,0,.35)}
+  .t9 .btn.pri,.t9 .tbtn.pri{box-shadow:0 0 18px rgba(122,162,255,.45)}
+  /* t10 잉크 & 페이퍼 (라이트 럭스) */
+  .t10{--appbg:#efe9dd;--card:#fbf7ee;--card2:#f2ecdf;--tx:#1c1a16;--mut:#7a7466;--acc:#b5392f;--on:#fff;--bd:#e0d8c6;--bd2:#cfc6b0;--r:3px;--fhead:Georgia,serif;--shadow:0 1px 2px rgba(0,0,0,.05)}
+  .t10 .title{font-style:italic}
+  /* t11 사이버 미니멀 (라운드) */
+  .t11{--appbg:#141019;--card:#1d1727;--card2:#171121;--tx:#f0ecf6;--mut:#a193b3;--acc:#c084fc;--on:#1a0b2e;--bd:rgba(255,255,255,.06);--bd2:rgba(255,255,255,.12);--r:18px;--shadow:0 6px 22px rgba(0,0,0,.3)}
+  .t11 .btn.pri,.t11 .tbtn.pri{background:linear-gradient(135deg,#c084fc,#7c5cff)}
+  /* t12 타이포 볼드 */
+  .t12{--appbg:#0a0a0a;--card:#101010;--card2:#0c0c0c;--tx:#fff;--mut:#888;--acc:#d6f24a;--on:#0a0a0a;--bd:#222;--bd2:#333;--r:4px}
+  .t12 .head h1{font-size:25px;font-weight:800;letter-spacing:-.03em} .t12 .title{font-size:18px;font-weight:800;letter-spacing:-.02em} .t12 .eyebrow{font-weight:700;color:var(--acc)}
+
+  /* ===== 킵 3종 ===== */
+  /* k1 에디토리얼 */
+  .k1{--appbg:#15130e;--card:#1b1810;--card2:#12100a;--tx:#ece6da;--mut:#9a9182;--acc:#d9b16a;--on:#1a1408;--bd:#322c20;--bd2:#473f2e;--r:4px;--fhead:Georgia,'Times New Roman',serif}
+  .k1 .title{font-style:italic}
+  /* k2 브루탈리스트 */
+  .k2{--appbg:#0f0f0f;--card:#141414;--card2:#0d0d0d;--tx:#f5f5f5;--mut:#a0a0a0;--acc:#e8ff00;--on:#000;--bd:#fff;--bd2:#fff;--r:0;--bw:2px}
+  .k2 .eyebrow,.k2 .meta,.k2 .ver,.k2 .tk{font-family:ui-monospace,monospace;text-transform:uppercase} .k2 .eyebrow::before{display:none}
+  /* k3 클린 라이트 */
+  .k3{--appbg:#eceae4;--card:#ffffff;--card2:#f5f4f0;--tx:#1d1f22;--mut:#6b7280;--acc:#2f6df6;--on:#ffffff;--bd:#e6e5df;--bd2:#d6d5cd;--r:10px;--shadow:0 1px 3px rgba(0,0,0,.06)}
+</style>
+</head>
+<body>
+  <div class="top">
+    <h1>SnapContext — 무드 15종 (새 12 + 킵 3)</h1>
+    <p>고급·독보적·감각적 레퍼런스 기반. 끌리는 번호(들) 알려줘 — 예: "t9", "t1·t5·t9 셋 비교", "t9인데 보라 말고 청록". 고르면 그 톤 전용 커스텀 랩으로 디테일 잡음.</p>
+  </div>
+  <div class="gal" id="gal"></div>
+
+  <template id="slice">
+    <header class="head"><h1>SnapContext</h1><span class="ver">v0.1.3</span></header>
+    <div class="toast"><span class="tk">INFO</span>캡처를 불러왔습니다.</div>
+    <div class="card">
+      <div class="eyebrow">캡처 모드</div>
+      <div class="tools">
+        <button class="tbtn pri"><span data-ic="monitor" data-sz="16"></span>화면 캡처</button>
+        <button class="tbtn"><span data-ic="file" data-sz="16"></span>문서 캡처</button>
+        <button class="tbtn"><span data-ic="scan" data-sz="16"></span>요소 캡처</button>
+        <button class="tbtn"><span data-ic="maximize" data-sz="16"></span>전체 캡처</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">AI 디버그 팩</div>
+      <h2 class="title">컨텍스트 팩</h2>
+      <textarea class="field" rows="2" placeholder="증상이나 AI에게 요청할 내용을 적어주세요"></textarea>
+      <div class="pair">
+        <button class="btn pri"><span data-ic="sparkles" data-sz="15"></span>프롬프트 복사</button>
+        <button class="btn"><span data-ic="braces" data-sz="15"></span>JSON 복사</button>
+      </div>
+      <span class="chip">최근 팩 · 2</span>
+    </div>
+    <div class="card">
+      <div class="eyebrow">캡처 기록</div>
+      <div class="row"><div class="thumb"></div><div class="body"><b>예시 페이지 제목 — 길면 말줄임</b><span class="meta">06.04 14:32 · 영역 · 핀 3</span></div><button class="icobtn"><span data-ic="x" data-sz="14"></span></button></div>
+    </div>
+  </template>
+
+<script>
+  var IC={monitor:'M3 4h18v12H3zM8 20h8M12 16v4',file:'M6 2h8l4 4v16H6zM14 2v4h4',scan:'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',maximize:'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',sparkles:'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',braces:'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2',x:'M18 6 6 18M6 6l12 12'};
+  var VIBES=[
+    ['t1','모노크롬 럭셔리','무채색·세리프·여백, 무광 고급','mono'],
+    ['t2','스위스 그리드','레드·각짐·모노 라벨·정연','mono'],
+    ['t3','블루프린트','기술도면 네이비·청록 그리드','mono'],
+    ['t4','리소그래프 듀오톤','잉크 핑크+인디고·프린트풍',''],
+    ['t5','테크 모노 (Geist)','순수 흑백·초미니멀·날카로움','mono'],
+    ['t6','앰버 CRT','인광 앰버·스캔라인·터미널','mono'],
+    ['t7','카본 메탈','카본 텍스처·메탈릭 블루','mono'],
+    ['t8','에메랄드 럭스','딥그린·에메랄드+골드·보석감',''],
+    ['t9','미드나잇 오로라','오로라 글래스·소프트 글로우',''],
+    ['t10','잉크 & 페이퍼','웜 페이퍼·세리프·씰레드(라이트)',''],
+    ['t11','사이버 미니멀','퍼플 그라데·아주 둥근·프리미엄',''],
+    ['t12','타이포 볼드','초대형 볼드 타이포·애시드','mono'],
+    ['k1','에디토리얼','세리프·골드·잡지풍 (킵)','keep'],
+    ['k2','브루탈리스트','흰 두꺼운선·옐로·각짐 (킵)','keep mono'],
+    ['k3','클린 라이트','밝은 배경·블루 라이트모드 (킵)','keep']
+  ];
+  var gal=document.getElementById('gal'), tpl=document.getElementById('slice');
+  VIBES.forEach(function(v){
+    var board=document.createElement('div');board.className='board'+(/keep/.test(v[3])?' keep':'');
+    board.innerHTML='<div class="cap"><b>'+v[0].toUpperCase()+'. '+v[1]+'</b><span>'+v[2]+'</span></div>';
+    var theme=document.createElement('div');theme.className='theme '+v[0]+(/mono/.test(v[3])?' mono':'');
+    theme.appendChild(tpl.content.cloneNode(true));
+    board.appendChild(theme);gal.appendChild(board);
+  });
+  document.querySelectorAll('[data-ic]').forEach(function(el){var n=el.getAttribute('data-ic'),s=el.getAttribute('data-sz')||'18';el.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+(IC[n]||IC.file)+'"/></svg>';});
+</script>
+</body>
+</html>

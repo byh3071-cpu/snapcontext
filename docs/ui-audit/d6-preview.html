@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"/>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#1a1a1c;display:flex;gap:30px;flex-wrap:wrap;justify-content:center;padding:30px;font-family:system-ui,'Malgun Gothic',sans-serif}
+  .wrap{width:336px}
+  svg{display:block}
+  /* ===== 베이스 스켈레톤 (마크업 계약 — 변경 불가) ===== */
+  .theme{--appbg:#0b0b0c;--card:#0e0e10;--card2:#08080a;--tx:#e6e3d8;--mut:#7d7a6e;--acc:#4fd6e0;--on:#04222a;--bd:#23231d;--bd2:#3a3a30;--r:6px;--bw:1px;--fhead:inherit;--shadow:none;--blur:0px}
+  .theme{background:var(--appbg);border:1px solid var(--bd2);border-radius:var(--r);padding:14px;display:grid;gap:12px;color:var(--tx);font-size:14px;line-height:1.45}
+  .theme .head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:var(--bw) solid var(--bd);padding-bottom:10px}
+  .theme .head h1{margin:0;font-size:17px;font-weight:650;font-family:var(--fhead)}
+  .theme .ver{font-size:11px;color:var(--mut)}
+  .theme .card{position:relative;background:var(--card);border:var(--bw) solid var(--bd);border-radius:var(--r);padding:12px;display:grid;gap:10px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur))}
+  .theme .eyebrow{font-size:10px;letter-spacing:.14em;color:var(--mut);display:flex;align-items:center;gap:6px}
+  .theme .eyebrow::before{content:'';width:10px;height:1px;background:var(--acc)}
+  .theme .title{margin:0;font-size:14px;font-weight:650;font-family:var(--fhead)}
+  .theme .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .theme .tbtn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 8px;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:var(--card2);color:var(--tx);font:inherit;font-size:13px;font-weight:550;cursor:pointer}
+  .theme .tbtn svg{color:var(--acc)} .theme .tbtn:hover{border-color:var(--acc)}
+  .theme .tbtn.pri{background:var(--acc);color:var(--on);border-color:var(--acc);font-weight:650} .theme .tbtn.pri svg{color:var(--on)}
+  .theme .field{width:100%;background:var(--card2);border:var(--bw) solid var(--bd2);border-radius:var(--r);color:var(--tx);font:inherit;font-size:13px;padding:8px 10px}
+  .theme .field::placeholder{color:var(--mut)}
+  .theme .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .theme .btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:var(--card2);color:var(--tx);font:inherit;font-size:13px;cursor:pointer}
+  .theme .btn svg{color:var(--acc)} .theme .btn.pri{background:var(--acc);color:var(--on);border-color:var(--acc);font-weight:650} .theme .btn.pri svg{color:var(--on)}
+  .theme .chip{font-size:10px;color:var(--acc);border:var(--bw) solid var(--bd2);border-radius:var(--r);padding:2px 7px;justify-self:start}
+  .theme .row{display:grid;grid-template-columns:46px 1fr auto;gap:10px;align-items:center;padding:8px;border:var(--bw) solid var(--bd);border-radius:var(--r);background:var(--card2)}
+  .theme .thumb{width:46px;aspect-ratio:4/3;border:var(--bw) solid var(--bd2);background:rgba(128,128,128,.12);border-radius:calc(var(--r) - 1px)}
+  .theme .row .body{min-width:0;display:grid;gap:2px}
+  .theme .row .body b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .theme .meta{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .theme .icobtn{width:28px;height:28px;display:grid;place-items:center;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:transparent;color:var(--mut);cursor:pointer}
+  .theme .toast{display:flex;align-items:center;gap:8px;padding:9px 11px;border:var(--bw) solid var(--bd2);border-left:2px solid var(--acc);border-radius:var(--r);background:var(--card);font-size:13px}
+  .theme .tk{font-size:9px;letter-spacing:.1em;color:var(--mut)}
+
+  /* ============================================================
+     SCOPE=.d6 — 모노크롬 스케치 + 한 점 (연필/잉크 무채 + 레드 단 한 색)
+     ============================================================ */
+  .d6{
+    /* 무채 종이 — 살짝 따뜻한 그래파이트, 미세 연필결 노이즈 */
+    --appbg:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 26px),
+      radial-gradient(120% 90% at 22% -8%, #19191b 0%, #141415 48%, #0e0e0f 100%);
+    --card:#161618;          /* 연필 스케치 종이 — 무채 그레이 */
+    --card2:#101012;         /* 한 단계 들어간 무채 */
+    --tx:#ededed;            /* 잉크 본문 — 고대비 무채 (대비 14:1↑) */
+    --mut:#9a9a9d;           /* 연필 보조 그레이 (card 위 4.6:1↑ AA) */
+    --acc:#d83434;           /* 단 하나의 점 — 마커 레드 (흰 텍스트 4.7:1↑) */
+    --on:#ffffff;            /* 레드 채움 위 순백 텍스트 (대비 4.71:1↑ AA) */
+    --bd:#2b2b2e;            /* 가는 연필 헤어라인 */
+    --bd2:#3d3d41;           /* 진한 연필 보더 */
+    --r:7px;                 /* 통일된 라디우스 체계 */
+    --bw:1.4px;              /* 스케치 닙 두께 */
+    --fhead:"Segoe Print","Bradley Hand",ui-rounded,system-ui,sans-serif; /* 라벨 한정 손글씨(한글 폴백) */
+    --shadow:none;
+    --blur:0px;
+
+    position:relative;
+    background:var(--appbg);
+    color:var(--tx);
+    /* 두 번 그은 오프셋 — 그러나 무채로 절제 (x7 DNA, 다듬어 럭스하게) */
+    box-shadow:3px 3px 0 0 rgba(0,0,0,.45);
+    letter-spacing:.1px;
+  }
+
+  /* 독창 디테일 ①: 우상단 '연필 깎인 모서리' — 종이 한 귀가 접힌 무채 폴드 */
+  .d6::after{
+    content:"";
+    position:absolute; top:-1px; right:-1px;
+    width:18px; height:18px;
+    background:linear-gradient(225deg, var(--card) 0 50%, transparent 50%);
+    border-top:var(--bw) solid var(--bd2);
+    border-right:var(--bw) solid var(--bd2);
+    border-radius:0 var(--r) 0 0;
+    pointer-events:none;
+  }
+
+  /* ---- 헤더: 워드마크 밑줄을 레드 마커로 한 번 그음 ---- */
+  .d6 .head{ border-bottom:var(--bw) solid var(--bd); }
+  .d6 .head h1{
+    color:var(--tx);
+    display:inline-block;
+    padding-bottom:3px;
+    /* 살짝 기울어 손으로 그은 마커 밑줄 (절제된 한 점) */
+    background:
+      linear-gradient(91deg, var(--acc) 0%, var(--acc) 62%, transparent 62%) left bottom / 100% 2.4px no-repeat;
+    border-radius:1px;
+  }
+  .d6 .ver{
+    font-family:var(--fhead);
+    color:var(--mut);
+    border:var(--bw) solid var(--bd);
+    border-radius:6px 4px 7px 5px;     /* 손맛 절제 */
+    padding:1px 7px;
+  }
+
+  /* ---- eyebrow: ::before 틱을 레드 마커로 톡 — 라벨은 무채 손글씨 ---- */
+  .d6 .eyebrow{
+    font-family:var(--fhead);
+    color:var(--mut);
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .d6 .eyebrow::before{
+    background:var(--acc);
+    width:13px; height:2.4px;
+    border-radius:2px;
+  }
+  .d6 .title{ color:var(--tx); }
+
+  /* ============ 공통 인터랙션 토큰 ============ */
+  /* (모든 버튼류 동일 트랜지션·오프셋 체계로 통일 — 랜덤 금지) */
+  .d6 .tbtn,.d6 .btn,.d6 .icobtn{
+    transition:transform .08s ease, box-shadow .08s ease, border-color .12s ease, background-color .12s ease, color .12s ease;
+  }
+
+  /* ---- 도구 버튼: 연필로 친 와이어프레임 박스 (두 번 그은 무채 오프셋) ---- */
+  .d6 .tbtn{
+    background:var(--card2);
+    color:var(--tx);
+    border:var(--bw) solid var(--bd2);
+    border-radius:var(--r);
+    box-shadow:2px 2px 0 0 rgba(0,0,0,.40);
+  }
+  .d6 .tbtn svg{ color:var(--mut); transition:color .12s ease; }
+  .d6 .tbtn:hover{
+    transform:translate(-1px,-1px);
+    box-shadow:3px 3px 0 0 rgba(0,0,0,.5);
+    border-color:var(--tx);
+  }
+  .d6 .tbtn:hover svg{ color:var(--acc); }      /* 호버 시에만 한 점이 켜짐 */
+  .d6 .tbtn:focus-visible{
+    outline:none;
+    border-color:var(--acc);
+    box-shadow:2px 2px 0 0 rgba(0,0,0,.4), 0 0 0 2px rgba(216,52,52,.35);
+  }
+  .d6 .tbtn:active{ transform:translate(1px,1px); box-shadow:0 0 0 0 rgba(0,0,0,.4); }
+  .d6 .tbtn:disabled{ opacity:.4; cursor:not-allowed; transform:none; box-shadow:1px 1px 0 0 rgba(0,0,0,.3); border-color:var(--bd); }
+  .d6 .tbtn:disabled svg{ color:var(--mut); }
+  /* pri = 채워진 레드 (마커로 칠한 단 하나의 강조) */
+  .d6 .tbtn.pri{
+    background:var(--acc);
+    color:var(--on);
+    border-color:var(--acc);
+    box-shadow:2px 2px 0 0 rgba(120,18,18,.55);
+  }
+  .d6 .tbtn.pri svg{ color:var(--on); }
+  /* deepen-on-press: 호버 시 잉크가 더 진해짐 — 흰 텍스트 대비 5.5:1 유지 */
+  .d6 .tbtn.pri:hover{ background:#c52d2d; border-color:#c52d2d; box-shadow:3px 3px 0 0 rgba(80,10,10,.6); }
+  .d6 .tbtn.pri:hover svg{ color:var(--on); }
+  .d6 .tbtn.pri:focus-visible{ border-color:var(--on); box-shadow:2px 2px 0 0 rgba(120,18,18,.55), 0 0 0 2px rgba(255,255,255,.55); }
+  .d6 .tbtn.pri:active{ background:#aa2020; border-color:#aa2020; }
+  .d6 .tbtn.pri:disabled{ background:var(--bd2); color:var(--mut); border-color:var(--bd2); opacity:.5; }
+
+  /* ---- 인풋·textarea: 연필 밑줄 와이어프레임 ---- */
+  .d6 .field{
+    background:var(--card2);
+    color:var(--tx);
+    border:var(--bw) solid var(--bd);
+    border-bottom-color:var(--bd2);
+    border-radius:6px 6px 3px 3px;
+    transition:border-color .12s ease, box-shadow .12s ease;
+  }
+  .d6 .field::placeholder{ color:var(--mut); }
+  .d6 .field:hover{ border-color:var(--bd2); }
+  .d6 .field:focus,.d6 .field:focus-visible{
+    outline:none;
+    border-color:var(--bd2);
+    border-bottom-color:var(--acc);   /* 포커스 시 한 점이 밑줄로 켜짐 */
+    box-shadow:0 2px 0 -1px var(--acc), 0 0 0 3px rgba(216,52,52,.12);
+  }
+  .d6 .field:disabled{ opacity:.45; cursor:not-allowed; }
+
+  /* ---- pair 액션 버튼 ---- */
+  .d6 .btn{
+    background:var(--card2);
+    color:var(--tx);
+    border:var(--bw) solid var(--bd2);
+    border-radius:var(--r);
+    box-shadow:2px 2px 0 0 rgba(0,0,0,.40);
+  }
+  .d6 .btn svg{ color:var(--mut); transition:color .12s ease; }
+  .d6 .btn:hover{ transform:translate(-1px,-1px); box-shadow:3px 3px 0 0 rgba(0,0,0,.5); border-color:var(--tx); }
+  .d6 .btn:hover svg{ color:var(--acc); }
+  .d6 .btn:focus-visible{ outline:none; border-color:var(--acc); box-shadow:2px 2px 0 0 rgba(0,0,0,.4), 0 0 0 2px rgba(216,52,52,.35); }
+  .d6 .btn:active{ transform:translate(1px,1px); box-shadow:0 0 0 0 rgba(0,0,0,.4); }
+  .d6 .btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; box-shadow:1px 1px 0 0 rgba(0,0,0,.3); border-color:var(--bd); }
+  .d6 .btn.pri{
+    background:var(--acc);
+    color:var(--on);
+    border-color:var(--acc);
+    box-shadow:2px 2px 0 0 rgba(120,18,18,.55);
+  }
+  .d6 .btn.pri svg{ color:var(--on); }
+  .d6 .btn.pri:hover{ background:#c52d2d; border-color:#c52d2d; box-shadow:3px 3px 0 0 rgba(80,10,10,.6); }
+  .d6 .btn.pri:hover svg{ color:var(--on); }
+  .d6 .btn.pri:focus-visible{ border-color:var(--on); box-shadow:2px 2px 0 0 rgba(120,18,18,.55), 0 0 0 2px rgba(255,255,255,.55); }
+  .d6 .btn.pri:active{ background:#aa2020; border-color:#aa2020; }
+  .d6 .btn.pri:disabled{ background:var(--bd2); color:var(--mut); border-color:var(--bd2); opacity:.5; }
+
+  /* ---- chip: 연필로 동그라미 친 주석 — 한 점 레드 텍스트 ----
+     작은 글씨(10px)라 --acc보다 밝은 레드(#f76d6d)로 AA(6.3:1) 확보 */
+  .d6 .chip{
+    background:transparent;
+    color:#f76d6d;
+    border:var(--bw) solid var(--bd2);
+    border-radius:999px;
+    padding:2px 9px;
+    font-weight:600;
+  }
+  .d6 .chip::before{ content:"●  "; color:#f76d6d; font-size:7px; vertical-align:1.5px; }
+
+  /* ---- row: 연필로 끼운 스케치 카드 ---- */
+  .d6 .row{
+    background:var(--card2);
+    border:var(--bw) solid var(--bd);
+    border-radius:var(--r);
+  }
+  /* 독창 디테일 ②: 빈 썸네일 = 연필로 대각선 그은 와이어프레임 placeholder */
+  .d6 .thumb{
+    background:
+      linear-gradient(45deg, transparent calc(50% - .8px), var(--bd2) calc(50% - .8px), var(--bd2) calc(50% + .8px), transparent calc(50% + .8px)),
+      var(--card);
+    border:var(--bw) solid var(--bd2);
+    border-radius:5px;
+  }
+  .d6 .row .body b{ color:var(--tx); }
+  .d6 .meta{ color:var(--mut); }
+  .d6 .icobtn{
+    background:transparent;
+    color:var(--mut);
+    border:var(--bw) solid var(--bd);
+    border-radius:6px;
+  }
+  .d6 .icobtn:hover{ color:var(--acc); border-color:var(--acc); transform:translate(-1px,-1px); box-shadow:2px 2px 0 0 rgba(0,0,0,.4); }
+  .d6 .icobtn:focus-visible{ outline:none; color:var(--acc); border-color:var(--acc); box-shadow:0 0 0 2px rgba(216,52,52,.35); }
+  .d6 .icobtn:active{ transform:translate(1px,1px); box-shadow:none; }
+  .d6 .icobtn:disabled{ opacity:.4; cursor:not-allowed; color:var(--mut); border-color:var(--bd); transform:none; box-shadow:none; }
+
+  /* ---- 핀(.pin): 채워진 레드 인덱스 ---- */
+  .d6 .pin{
+    background:var(--acc);
+    color:var(--on);
+    border-radius:6px;
+    box-shadow:1px 1px 0 0 rgba(120,18,18,.5);
+  }
+
+  /* ---- 단축키(.kbd): 연필 캡 키 ---- */
+  .d6 .kbd{
+    background:var(--card2);
+    color:var(--tx);
+    border:var(--bw) solid var(--bd2);
+    border-bottom-width:2.4px;        /* 키캡 깊이 — 무채 절제 */
+    border-radius:5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .d6 .dl dt{ color:var(--mut); }
+  .d6 .dl dd{ color:var(--tx); }
+
+  /* ---- empty: 절제된 무채 빈 상태 ---- */
+  .d6 .empty{ color:var(--mut); }
+  .d6 .empty svg{ opacity:.4; color:var(--mut); }
+
+  /* ---- toast: 잉크 메모 톤 — 왼쪽 레드 마커 라인 ---- */
+  .d6 .toast{
+    background:var(--card);
+    color:var(--tx);
+    border:var(--bw) solid var(--bd2);
+    border-left:3px solid var(--acc);
+    border-radius:4px 7px 7px 4px;
+    box-shadow:2px 2px 0 0 rgba(0,0,0,.4);
+  }
+  .d6 .toast .tk{
+    font-family:var(--fhead);
+    color:#f76d6d;             /* 작은 라벨 — 밝은 레드로 AA 확보 */
+    letter-spacing:.1em;
+  }
+  /* 에러 토스트도 같은 레드 한 점 체계 — 단 점선 마커로 구분(무채 일관성 유지) */
+  .d6 .toast.err{ border-left-style:dashed; }
+  .d6 .toast.err .tk{ color:#f76d6d; }
+</style></head>
+<body>
+<div class="wrap">
+  <div class="theme d6" data-mono="on">
+    <header class="head"><h1>SnapContext</h1><span class="ver">v0.1.3</span></header>
+    <div class="toast"><span class="tk">INFO</span>캡처를 불러왔습니다.</div>
+    <div class="toast err"><span class="tk">ERR</span>캡처 기록을 저장하지 못했습니다.</div>
+    <div class="card">
+      <div class="eyebrow">캡처 모드</div>
+      <div class="tools">
+        <button class="tbtn pri"><span data-ic="monitor" data-sz="16"></span>화면 캡처</button>
+        <button class="tbtn"><span data-ic="file" data-sz="16"></span>문서 캡처</button>
+        <button class="tbtn"><span data-ic="scan" data-sz="16"></span>요소 캡처</button>
+        <button class="tbtn" disabled><span data-ic="maximize" data-sz="16"></span>전체 캡처</button>
+      </div>
+    </div>
+    <div class="card"><div class="empty"><span data-ic="camera" data-sz="30"></span><p>위 버튼으로 캡처를 시작하세요</p></div></div>
+    <div class="card">
+      <div class="eyebrow">AI 디버그 팩</div>
+      <h2 class="title">컨텍스트 팩</h2>
+      <textarea class="field" rows="2" placeholder="증상이나 AI에게 요청할 내용을 적어주세요"></textarea>
+      <div class="pair">
+        <button class="btn pri"><span data-ic="sparkles" data-sz="15"></span>프롬프트 복사</button>
+        <button class="btn"><span data-ic="braces" data-sz="15"></span>JSON 복사</button>
+      </div>
+      <span class="chip">최근 팩 · 2</span>
+    </div>
+    <div class="card">
+      <div class="eyebrow">핀 메모</div>
+      <div class="row" style="grid-template-columns:auto 1fr auto"><span class="pin">1</span><input class="field" value="로그인 버튼 정렬 깨짐"><button class="icobtn"><span data-ic="x" data-sz="14"></span></button></div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">캡처 기록</div>
+      <div class="row"><div class="thumb"></div><div class="body"><b>예시 페이지 제목 — 길면 말줄임</b><span class="meta">06.04 14:32 · 영역 · 핀 3</span></div><button class="icobtn"><span data-ic="x" data-sz="14"></span></button></div>
+      <div class="empty" style="padding:14px"><span data-ic="imageoff" data-sz="26"></span><p>저장된 캡처가 아직 없습니다.</p></div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">단축키</div>
+      <dl class="dl"><dt>화면 캡처</dt><dd><span class="kbd">Alt+Shift+V</span></dd><dt>프롬프트 복사</dt><dd><span class="kbd">Alt+Shift+P</span></dd></dl>
+    </div>
+  </div>
+</div>
+<script>
+  var IC={monitor:'M3 4h18v12H3zM8 20h8M12 16v4',camera:'M4 7h3l2-2h6l2 2h3v12H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',file:'M6 2h8l4 4v16H6zM14 2v4h4',scan:'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',maximize:'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',sparkles:'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',braces:'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2',x:'M18 6 6 18M6 6l12 12',imageoff:'M3 3l18 18M21 15V5a2 2 0 0 0-2-2H9M3 7v12a2 2 0 0 0 2 2h12'};
+  document.querySelectorAll('[data-ic]').forEach(function(el){var n=el.getAttribute('data-ic'),s=el.getAttribute('data-sz')||'18';el.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+(IC[n]||IC.file)+'"/></svg>';});
+  /* .dl .kbd .pin 스켈레톤 보강(베이스에 없으므로 프리뷰용) */
+  var s=document.createElement('style');s.textContent='.theme .dl{display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:13px}.theme .dl dt{margin:0}.theme .dl dd{margin:0;justify-self:end}.theme .kbd{font-size:11px;padding:1px 6px}.theme .pin{width:22px;height:22px;font-size:11px;font-weight:700;display:grid;place-items:center}.theme .empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px;text-align:center}.theme .empty p{margin:0;font-size:13px}.theme .toast.err{border-left-color:#e94560}';document.head.appendChild(s);
+</script>
+</body></html>

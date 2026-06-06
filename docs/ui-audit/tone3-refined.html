@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ko" data-accent="acid">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SnapContext — 톤3(Hermes풍) 리파인 목업</title>
+<style>
+  /* ===== 토큰: 터미널/Hermes 감성 — 한글 본문은 sans, 라벨/메타/숫자만 mono ===== */
+  :root{
+    --bg:#0b0b0c; --panel:#0e0e10; --sunken:#08080a;
+    --tx:#e6e3d8;        /* 크림 본문 */
+    --mut:#7d7a6e;       /* 뮤트(올리브 그레이) */
+    --bd:#23231d;        /* 헤어라인 */
+    --bd2:#3a3a30;       /* 강한 헤어라인 */
+    --acc:#cdf03a; --on-acc:#0b0b0c;   /* 애시드 라임 */
+    --sans:system-ui,-apple-system,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --r:3px;
+  }
+  [data-accent="coral"]{--acc:#e94560;--on-acc:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;background:#060607;color:var(--tx);font-family:var(--sans);font-size:14px;line-height:1.45;
+    padding:0 0 80px;
+    background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+    background-size:40px 40px;background-position:-1px -1px}
+  .bar{position:sticky;top:0;z-index:9;display:flex;gap:10px;align-items:center;
+    background:#0a0a0b;border-bottom:1px solid var(--bd2);padding:10px 18px;font-family:var(--mono);font-size:12px}
+  .bar b{color:var(--acc)}
+  .bar button{font:inherit;font-family:var(--mono);cursor:pointer;padding:4px 10px;border:1px solid var(--bd2);
+    background:transparent;color:var(--tx);border-radius:2px}
+  .bar button:hover{border-color:var(--acc);color:var(--acc)}
+  .stage{display:flex;justify-content:center;padding:28px 16px}
+
+  /* ===== 사이드패널 프레임 (코너틱은 최외곽 1회만 — 절제) ===== */
+  .app{width:360px;position:relative;background:var(--bg);border:1px solid var(--bd2);border-radius:var(--r);
+    padding:14px;display:grid;gap:12px}
+  .app::before,.app::after{content:'';position:absolute;width:10px;height:10px;border:1px solid var(--acc);opacity:.7}
+  .app::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+  .app::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+
+  .head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--bd);padding-bottom:10px}
+  .head h1{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em}
+  .head .ver{font-family:var(--mono);font-size:11px;color:var(--mut)}
+
+  .card{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r);padding:12px;display:grid;gap:10px}
+  .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--mut);display:flex;align-items:center;gap:6px}
+  .eyebrow::before{content:'';width:10px;height:1px;background:var(--acc)}
+  .title{margin:0;font-size:14px;font-weight:650}
+  .desc{margin:0;font-size:12px;color:var(--mut)}
+  svg{display:block}
+
+  /* ===== 캡처 툴바 — 정렬 B (가로 1줄 중앙) ===== */
+  .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tbtn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 8px;
+    border:1px solid var(--bd2);border-radius:2px;background:var(--sunken);color:var(--tx);
+    font:inherit;font-size:13px;font-weight:550;cursor:pointer;transition:border-color .12s,background .12s}
+  .tbtn svg{color:var(--acc)}
+  .tbtn:hover{border-color:var(--acc)}
+  .tbtn.pri{background:var(--acc);color:var(--on-acc);border-color:var(--acc);font-weight:650}
+  .tbtn.pri svg{color:var(--on-acc)}
+
+  /* ===== 버튼(액션) ===== */
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;border:1px solid var(--bd2);
+    border-radius:2px;background:var(--sunken);color:var(--tx);font:inherit;font-size:13px;cursor:pointer;
+    transition:border-color .12s,background .12s}
+  .btn svg{color:var(--acc)} .btn:hover{border-color:var(--acc)}
+  .btn .mono{font-family:var(--mono);font-size:12px}
+  .btn.pri{background:var(--acc);color:var(--on-acc);border-color:var(--acc);font-weight:650}
+  .btn.pri svg{color:var(--on-acc)}
+  .btn.full{grid-column:1/-1}
+
+  /* 인풋/셀렉트 */
+  .field{width:100%;background:var(--sunken);border:1px solid var(--bd2);border-radius:2px;color:var(--tx);
+    font:inherit;font-size:13px;padding:8px 10px;resize:vertical}
+  .field::placeholder{color:var(--mut)}
+  .field:focus-visible{outline:none;border-color:var(--acc)}
+  select.field{font-family:var(--mono);font-size:12px;cursor:pointer}
+
+  /* 리스트/메타 */
+  .row{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;padding:8px;
+    border:1px solid var(--bd);border-radius:2px;background:var(--sunken)}
+  .row:hover{border-color:var(--bd2)}
+  .thumb{width:48px;aspect-ratio:4/3;border:1px solid var(--bd2);background:#121210;border-radius:0}
+  .row .body{min-width:0;display:grid;gap:2px}
+  .row .body b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .body .meta{font-family:var(--mono);font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .icobtn{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--bd2);border-radius:2px;
+    background:transparent;color:var(--mut);cursor:pointer}
+  .icobtn:hover{border-color:var(--acc);color:var(--acc)}
+
+  /* 빈 상태 */
+  .empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px;text-align:center;color:var(--mut)}
+  .empty svg{color:var(--mut);opacity:.5}
+  .empty p{margin:0;font-size:13px}
+
+  /* 칩 / kbd */
+  .chip{font-family:var(--mono);font-size:10px;color:var(--acc);border:1px solid var(--bd2);border-radius:2px;padding:2px 7px}
+  .kbd{font-family:var(--mono);font-size:11px;color:var(--mut);border:1px solid var(--bd2);border-radius:2px;padding:1px 6px;background:var(--sunken)}
+  .dl{display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:13px}
+  .dl dt{color:var(--mut);margin:0} .dl dd{margin:0;justify-self:end}
+
+  /* 토스트 */
+  .toast{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--bd2);border-left:2px solid var(--acc);
+    border-radius:2px;background:var(--panel);font-size:13px}
+  .toast.err{border-left-color:#e94560}
+  .toast .tk{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--mut)}
+
+  /* 핀 배지 */
+  .pin{width:22px;height:22px;border-radius:2px;background:var(--acc);color:var(--on-acc);font-family:var(--mono);
+    font-size:11px;font-weight:700;display:grid;place-items:center}
+
+  .label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--mut);margin:18px 0 6px}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <b>SnapContext</b> · 톤3 리파인 (정렬 B) · 한글 sans + 라벨 mono
+    <span style="margin-left:auto"></span>
+    <span>악센트:</span>
+    <button onclick="document.documentElement.setAttribute('data-accent','acid')">애시드</button>
+    <button onclick="document.documentElement.setAttribute('data-accent','coral')">코랄</button>
+  </div>
+
+  <div class="stage">
+    <div class="app">
+      <header class="head"><h1>SnapContext</h1><span class="ver">v0.1.3</span></header>
+
+      <!-- 토스트 -->
+      <div class="toast"><span class="tk">INFO</span>캡처를 불러왔습니다.</div>
+      <div class="toast err"><span class="tk">ERR</span>캡처 기록을 저장하지 못했습니다.</div>
+
+      <!-- 캡처 툴바 (정렬 B) -->
+      <div class="card">
+        <div class="eyebrow">캡처 모드</div>
+        <div class="tools">
+          <button class="tbtn pri"><span data-ic="monitor" data-sz="16"></span>화면 캡처</button>
+          <button class="tbtn"><span data-ic="file" data-sz="16"></span>문서 캡처</button>
+          <button class="tbtn"><span data-ic="scan" data-sz="16"></span>요소 캡처</button>
+          <button class="tbtn"><span data-ic="maximize" data-sz="16"></span>전체 캡처</button>
+        </div>
+      </div>
+
+      <!-- 프리뷰 빈 상태 -->
+      <div class="card">
+        <div class="empty">
+          <span data-ic="camera" data-sz="30"></span>
+          <p>위 버튼으로 캡처를 시작하세요</p>
+        </div>
+      </div>
+
+      <!-- 컨텍스트 팩 -->
+      <div class="card">
+        <div class="eyebrow">AI 디버그 팩</div>
+        <h2 class="title">컨텍스트 팩</h2>
+        <textarea class="field" rows="2" placeholder="증상이나 AI에게 요청할 내용을 적어주세요"></textarea>
+        <select class="field"><option>버그 리포트</option><option>리팩토링</option><option>레퍼런스</option></select>
+        <div class="pair">
+          <button class="btn pri"><span data-ic="sparkles" data-sz="15"></span>프롬프트 복사</button>
+          <button class="btn"><span data-ic="braces" data-sz="15"></span><span class="mono">JSON</span> 복사</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="chip">최근 팩 · 2</span>
+          <span class="label" style="margin:0">// RECENT</span>
+        </div>
+      </div>
+
+      <!-- 핀 메모 -->
+      <div class="card">
+        <div class="eyebrow">핀 메모</div>
+        <div class="row" style="grid-template-columns:auto 1fr auto">
+          <span class="pin">1</span>
+          <input class="field" value="로그인 버튼 정렬 깨짐" />
+          <button class="icobtn"><span data-ic="x" data-sz="14"></span></button>
+        </div>
+        <div class="row" style="grid-template-columns:auto 1fr auto">
+          <span class="pin" style="background:transparent;color:var(--mut);border:1px solid var(--bd2)">2</span>
+          <input class="field" placeholder="메모 입력" />
+          <button class="icobtn"><span data-ic="x" data-sz="14"></span></button>
+        </div>
+      </div>
+
+      <!-- 히스토리 -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="eyebrow">캡처 기록</div>
+          <button class="icobtn"><span data-ic="trash" data-sz="14"></span></button>
+        </div>
+        <div class="row">
+          <div class="thumb"></div>
+          <div class="body"><b>예시 페이지 제목 — 길면 말줄임</b><span class="meta">06.04 14:32 · 영역 · 핀 3</span></div>
+          <button class="icobtn"><span data-ic="x" data-sz="14"></span></button>
+        </div>
+        <div class="empty" style="padding:14px"><span data-ic="imageoff" data-sz="26"></span><p>저장된 캡처가 아직 없습니다.</p></div>
+      </div>
+
+      <!-- 단축키 -->
+      <div class="card">
+        <div class="eyebrow">단축키</div>
+        <dl class="dl">
+          <dt>화면 캡처</dt><dd><span class="kbd">Alt+Shift+V</span></dd>
+          <dt>요소 캡처</dt><dd><span class="kbd">Alt+Shift+E</span></dd>
+          <dt>프롬프트 복사</dt><dd><span class="kbd">Alt+Shift+P</span></dd>
+        </dl>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  var IC={
+    monitor:'M3 4h18v12H3zM8 20h8M12 16v4', camera:'M4 7h3l2-2h6l2 2h3v12H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+    file:'M6 2h8l4 4v16H6zM14 2v4h4', scan:'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',
+    maximize:'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5', sparkles:'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',
+    braces:'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2',
+    x:'M18 6 6 18M6 6l12 12', trash:'M3 6h18M8 6V4h8v2M6 6l1 14h12l1-14', imageoff:'M3 3l18 18M21 15V5a2 2 0 0 0-2-2H9M3 7v12a2 2 0 0 0 2 2h12'
+  };
+  document.querySelectorAll('[data-ic]').forEach(function(el){
+    var n=el.getAttribute('data-ic'),s=el.getAttribute('data-sz')||'18';
+    el.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+(IC[n]||IC.file)+'"/></svg>';
+  });
+</script>
+</body>
+</html>

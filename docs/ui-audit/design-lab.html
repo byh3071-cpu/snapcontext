@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SnapContext 디자인 조절기</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#060607;color:#e6e3d8;display:flex;min-height:100vh}
+  /* ===== 왼쪽 조절기 ===== */
+  .ctrl{width:300px;flex-shrink:0;background:#0c0c0e;border-right:1px solid #23231d;padding:16px;position:sticky;top:0;height:100vh;overflow:auto}
+  .ctrl h2{margin:0 0 2px;font-size:15px}
+  .ctrl .sub{margin:0 0 14px;font-size:11px;color:#7d7a6e;line-height:1.5}
+  .grp{margin:0 0 14px;padding:0 0 14px;border-bottom:1px solid #1a1a16}
+  .grp > label{display:block;font-size:12px;font-weight:600;margin:0 0 2px}
+  .grp .help{font-size:10.5px;color:#7d7a6e;margin:0 0 8px;line-height:1.4}
+  .opts{display:flex;flex-wrap:wrap;gap:6px}
+  .opts button{font:inherit;font-size:11px;padding:5px 9px;border:1px solid #3a3a30;background:transparent;color:#e6e3d8;border-radius:4px;cursor:pointer}
+  .opts button.on{background:#cdf03a;color:#0b0b0c;border-color:#cdf03a;font-weight:700}
+  .sw{display:flex;gap:6px;flex-wrap:wrap}
+  .sw button{width:26px;height:26px;border-radius:5px;border:2px solid transparent;cursor:pointer;padding:0}
+  .sw button.on{border-color:#fff}
+  input[type=range]{width:100%;accent-color:#cdf03a}
+  .val{font-size:10.5px;color:#7d7a6e;font-family:ui-monospace,monospace}
+  .presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .presets button{font:inherit;font-size:11px;padding:7px 8px;border:1px solid #3a3a30;background:#111;color:#e6e3d8;border-radius:4px;cursor:pointer;text-align:left}
+  .presets button:hover{border-color:#cdf03a}
+  textarea#memo{width:100%;min-height:70px;background:#08080a;border:1px solid #3a3a30;border-radius:4px;color:#e6e3d8;font:inherit;font-size:12px;padding:8px;resize:vertical}
+  .copybtn{width:100%;margin-top:8px;padding:10px;border:0;border-radius:4px;background:#cdf03a;color:#0b0b0c;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+  .copybtn:active{transform:translateY(1px)}
+  .copied{font-size:11px;color:#cdf03a;text-align:center;margin-top:6px;min-height:14px}
+
+  /* ===== 오른쪽 미리보기 ===== */
+  .view{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:32px 20px;overflow:auto}
+  .view.grid{background-image:linear-gradient(#15150f 1px,transparent 1px),linear-gradient(90deg,#15150f 1px,transparent 1px);background-size:40px 40px}
+
+  /* ===== 미리보기 패널 (모든 스타일이 CSS 변수 기반 → 조절기로 실시간 변경) ===== */
+  #app{
+    --acc:#cdf03a; --on-acc:#0b0b0c; --tx:#e6e3d8; --mut:#7d7a6e;
+    --panel:#0e0e10; --sunken:#08080a; --bd:#23231d; --bd2:#3a3a30;
+    --r:3px; --gap:12px; --pad:12px;
+    width:360px;position:relative;background:#0b0b0c;border:1px solid var(--bd2);border-radius:var(--r);
+    padding:var(--pad);display:grid;gap:var(--gap);color:var(--tx);font-size:14px;line-height:1.45
+  }
+  /* 코너틱 */
+  #app[data-ticks=off]::before,#app[data-ticks=off]::after{display:none}
+  #app::before,#app::after{content:'';position:absolute;width:10px;height:10px;border:1px solid var(--acc);opacity:.75}
+  #app::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+  #app::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+  .card{position:relative;background:var(--panel);border:1px solid var(--bd);border-radius:var(--r);padding:var(--pad);display:grid;gap:10px}
+  #app[data-ticks=all] .card::before{content:'';position:absolute;top:-1px;left:-1px;width:8px;height:8px;border:1px solid var(--acc);border-right:0;border-bottom:0;opacity:.6}
+  .head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--bd);padding-bottom:10px}
+  .head h1{margin:0;font-size:17px;font-weight:650}
+  .ver{font-size:11px;color:var(--mut)}
+  #app[data-mono=on] .ver,#app[data-mono=on] .eyebrow,#app[data-mono=on] .meta,#app[data-mono=on] .kbd,#app[data-mono=on] .chip{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .eyebrow{font-size:10px;letter-spacing:.14em;color:var(--mut);display:flex;align-items:center;gap:6px}
+  .eyebrow::before{content:'';width:10px;height:1px;background:var(--acc)}
+  .title{margin:0;font-size:14px;font-weight:650}
+  svg{display:block}
+  .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tbtn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 8px;border:1px solid var(--bd2);border-radius:var(--r);background:var(--sunken);color:var(--tx);font:inherit;font-size:13px;font-weight:550;cursor:pointer}
+  .tbtn svg{color:var(--acc)} .tbtn:hover{border-color:var(--acc)}
+  .tbtn.pri{background:var(--acc);color:var(--on-acc);border-color:var(--acc);font-weight:650}
+  .tbtn.pri svg{color:var(--on-acc)}
+  #app[data-prifill=outline] .tbtn.pri,#app[data-prifill=outline] .btn.pri{background:transparent;color:var(--acc);border-color:var(--acc)}
+  #app[data-prifill=outline] .tbtn.pri svg,#app[data-prifill=outline] .btn.pri svg{color:var(--acc)}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;border:1px solid var(--bd2);border-radius:var(--r);background:var(--sunken);color:var(--tx);font:inherit;font-size:13px;cursor:pointer}
+  .btn svg{color:var(--acc)} .btn:hover{border-color:var(--acc)}
+  .btn.pri{background:var(--acc);color:var(--on-acc);border-color:var(--acc);font-weight:650} .btn.pri svg{color:var(--on-acc)}
+  .field{width:100%;background:var(--sunken);border:1px solid var(--bd2);border-radius:var(--r);color:var(--tx);font:inherit;font-size:13px;padding:8px 10px}
+  .field::placeholder{color:var(--mut)}
+  .row{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--bd);border-radius:var(--r);background:var(--sunken)}
+  .thumb{width:48px;aspect-ratio:4/3;border:1px solid var(--bd2);background:#121210;border-radius:calc(var(--r) - 1px)}
+  .row .body{min-width:0;display:grid;gap:2px}
+  .row .body b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .icobtn{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--bd2);border-radius:var(--r);background:transparent;color:var(--mut);cursor:pointer}
+  .icobtn:hover{border-color:var(--acc);color:var(--acc)}
+  .empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px;text-align:center;color:var(--mut)}
+  .empty svg{opacity:.5} .empty p{margin:0;font-size:13px}
+  .chip{font-size:10px;color:var(--acc);border:1px solid var(--bd2);border-radius:var(--r);padding:2px 7px}
+  .kbd{font-size:11px;color:var(--mut);border:1px solid var(--bd2);border-radius:var(--r);padding:1px 6px;background:var(--sunken)}
+  .dl{display:grid;grid-template-columns:1fr auto;gap:7px 12px;font-size:13px} .dl dt{color:var(--mut);margin:0} .dl dd{margin:0;justify-self:end}
+  .toast{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--bd2);border-left:2px solid var(--acc);border-radius:var(--r);background:var(--panel);font-size:13px}
+  .toast.err{border-left-color:#e94560}
+  .tk{font-size:9px;letter-spacing:.1em;color:var(--mut)}
+  .pin{width:22px;height:22px;border-radius:var(--r);background:var(--acc);color:var(--on-acc);font-size:11px;font-weight:700;display:grid;place-items:center}
+</style>
+</head>
+<body>
+  <aside class="ctrl">
+    <h2>디자인 조절기</h2>
+    <p class="sub">버튼·슬라이더 만지면 오른쪽이 바로 바뀜. 마음에 들면 맨 아래 <b>복사</b> 눌러 채팅에 붙여넣기.</p>
+
+    <div class="grp">
+      <label>빠른 프리셋</label>
+      <p class="help">통째로 바뀜. 하나 누르고 나서 세부 조정.</p>
+      <div class="presets" id="presets"></div>
+    </div>
+
+    <div class="grp">
+      <label>강조색 (액센트)</label>
+      <p class="help">버튼·포인트 색.</p>
+      <div class="sw" id="accSw"></div>
+    </div>
+
+    <div class="grp">
+      <label>글자색</label>
+      <div class="opts" id="txOpt"></div>
+    </div>
+
+    <div class="grp">
+      <label>모서리 둥글기 <span class="val" id="rVal"></span></label>
+      <p class="help">왼쪽=각짐(터미널), 오른쪽=둥글게.</p>
+      <input type="range" id="rRange" min="0" max="14" step="1" />
+    </div>
+
+    <div class="grp">
+      <label>카드 밝기 <span class="val" id="pVal"></span></label>
+      <p class="help">카드 배경을 더 어둡게/밝게.</p>
+      <input type="range" id="pRange" min="0" max="3" step="1" />
+    </div>
+
+    <div class="grp">
+      <label>여백 (밀도)</label>
+      <div class="opts" id="dOpt"></div>
+    </div>
+
+    <div class="grp">
+      <label>모서리 장식(코너틱)</label>
+      <p class="help">ㄱ자 모양 코너 장식.</p>
+      <div class="opts" id="tickOpt"></div>
+    </div>
+
+    <div class="grp">
+      <label>배경 격자무늬</label>
+      <div class="opts" id="gridOpt"></div>
+    </div>
+
+    <div class="grp">
+      <label>라벨 글꼴(영문·숫자)</label>
+      <p class="help">eyebrow·날짜·단축키를 고정폭(터미널) 글꼴로.</p>
+      <div class="opts" id="monoOpt"></div>
+    </div>
+
+    <div class="grp">
+      <label>강조 버튼 채움</label>
+      <div class="opts" id="fillOpt"></div>
+    </div>
+
+    <div class="grp" style="border:0">
+      <label>메모 (편하게 한국어로)</label>
+      <p class="help">예: "히스토리 날짜 글자 너무 작음", "핀 번호 더 크게", "토스트 ERR 빨강 말고…"</p>
+      <textarea id="memo" placeholder="이 부분 이렇게 했으면…"></textarea>
+      <button class="copybtn" id="copy">① 내 설정 + 메모 복사하기</button>
+      <div class="copied" id="copied"></div>
+    </div>
+  </aside>
+
+  <main class="view grid" id="view">
+    <div id="app" data-ticks="frame" data-mono="on" data-prifill="fill">
+      <header class="head"><h1>SnapContext</h1><span class="ver">v0.1.3</span></header>
+      <div class="toast"><span class="tk">INFO</span>캡처를 불러왔습니다.</div>
+      <div class="toast err"><span class="tk">ERR</span>캡처 기록을 저장하지 못했습니다.</div>
+      <div class="card">
+        <div class="eyebrow">캡처 모드</div>
+        <div class="tools">
+          <button class="tbtn pri"><span data-ic="monitor" data-sz="16"></span>화면 캡처</button>
+          <button class="tbtn"><span data-ic="file" data-sz="16"></span>문서 캡처</button>
+          <button class="tbtn"><span data-ic="scan" data-sz="16"></span>요소 캡처</button>
+          <button class="tbtn"><span data-ic="maximize" data-sz="16"></span>전체 캡처</button>
+        </div>
+      </div>
+      <div class="card"><div class="empty"><span data-ic="camera" data-sz="30"></span><p>위 버튼으로 캡처를 시작하세요</p></div></div>
+      <div class="card">
+        <div class="eyebrow">AI 디버그 팩</div>
+        <h2 class="title">컨텍스트 팩</h2>
+        <textarea class="field" rows="2" placeholder="증상이나 AI에게 요청할 내용을 적어주세요"></textarea>
+        <div class="pair">
+          <button class="btn pri"><span data-ic="sparkles" data-sz="15"></span>프롬프트 복사</button>
+          <button class="btn"><span data-ic="braces" data-sz="15"></span>JSON 복사</button>
+        </div>
+        <span class="chip">최근 팩 · 2</span>
+      </div>
+      <div class="card">
+        <div class="eyebrow">핀 메모</div>
+        <div class="row" style="grid-template-columns:auto 1fr auto"><span class="pin">1</span><input class="field" value="로그인 버튼 정렬 깨짐"><button class="icobtn"><span data-ic="x" data-sz="14"></span></button></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">캡처 기록</div>
+        <div class="row"><div class="thumb"></div><div class="body"><b>예시 페이지 제목 — 길면 말줄임</b><span class="meta">06.04 14:32 · 영역 · 핀 3</span></div><button class="icobtn"><span data-ic="x" data-sz="14"></span></button></div>
+        <div class="empty" style="padding:14px"><span data-ic="imageoff" data-sz="26"></span><p>저장된 캡처가 아직 없습니다.</p></div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">단축키</div>
+        <dl class="dl"><dt>화면 캡처</dt><dd><span class="kbd">Alt+Shift+V</span></dd><dt>프롬프트 복사</dt><dd><span class="kbd">Alt+Shift+P</span></dd></dl>
+      </div>
+    </div>
+  </main>
+
+<script>
+  var IC={monitor:'M3 4h18v12H3zM8 20h8M12 16v4',camera:'M4 7h3l2-2h6l2 2h3v12H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',file:'M6 2h8l4 4v16H6zM14 2v4h4',scan:'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',maximize:'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',sparkles:'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',braces:'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2',x:'M18 6 6 18M6 6l12 12',trash:'M3 6h18M8 6V4h8v2M6 6l1 14h12l1-14',imageoff:'M3 3l18 18M21 15V5a2 2 0 0 0-2-2H9M3 7v12a2 2 0 0 0 2 2h12'};
+  function drawIcons(){document.querySelectorAll('[data-ic]').forEach(function(el){var n=el.getAttribute('data-ic'),s=el.getAttribute('data-sz')||'18';el.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+(IC[n]||IC.file)+'"/></svg>';});}
+  drawIcons();
+
+  var app=document.getElementById('app'), view=document.getElementById('view');
+  // 옵션 정의
+  var ACCENTS=[['애시드','#cdf03a','#0b0b0c'],['코랄','#e94560','#ffffff'],['시안','#4fd6e0','#04222a'],['앰버','#f0b53a','#1a1200'],['바이올렛','#a78bfa','#160b2e'],['화이트','#f2f2f2','#0b0b0c']];
+  var TXC=[['크림','#e6e3d8'],['순백','#f4f4f2'],['차분','#cfd2cf']];
+  var PANELS=[['#0c0c0e','가장 어둠'],['#0e0e10','어두움'],['#15151a','보통'],['#1c1c22','밝음']];
+  var DENS=[['컴팩트',8,10],['보통',12,12],['넉넉',16,16]];
+  var state={acc:0,tx:0,panel:1,r:3,dens:1,ticks:'frame',grid:'on',mono:'on',fill:'fill'};
+
+  var PRESETS={
+    '기본(터미널)':{acc:0,tx:0,panel:1,r:3,dens:1,ticks:'frame',grid:'on',mono:'on',fill:'fill'},
+    '각진 터미널 강':{acc:0,tx:0,panel:0,r:0,dens:0,ticks:'all',grid:'on',mono:'on',fill:'outline'},
+    '부드럽게':{acc:0,tx:0,panel:2,r:10,dens:2,ticks:'off',grid:'off',mono:'off',fill:'fill'},
+    '코랄 브랜드':{acc:1,tx:1,panel:1,r:6,dens:1,ticks:'off',grid:'off',mono:'on',fill:'fill'},
+    '미니멀 화이트':{acc:5,tx:1,panel:0,r:2,dens:1,ticks:'off',grid:'off',mono:'on',fill:'outline'},
+    '시안 사이버':{acc:2,tx:0,panel:0,r:2,dens:1,ticks:'all',grid:'on',mono:'on',fill:'fill'}
+  };
+
+  function apply(){
+    var a=ACCENTS[state.acc];
+    app.style.setProperty('--acc',a[1]); app.style.setProperty('--on-acc',a[2]);
+    app.style.setProperty('--tx',TXC[state.tx][1]);
+    app.style.setProperty('--panel',PANELS[state.panel][0]);
+    app.style.setProperty('--r',state.r+'px');
+    app.style.setProperty('--gap',DENS[state.dens][1]+'px');
+    app.style.setProperty('--pad',DENS[state.dens][2]+'px');
+    app.setAttribute('data-ticks',state.ticks);
+    app.setAttribute('data-mono',state.mono);
+    app.setAttribute('data-prifill',state.fill);
+    view.classList.toggle('grid',state.grid==='on');
+    // 조절기 UI 강조색도 따라가게
+    document.documentElement.style.setProperty('--ui',a[1]);
+    document.getElementById('rVal').textContent=state.r+'px';
+    document.getElementById('pVal').textContent=PANELS[state.panel][1];
+    syncUI();
+  }
+  function mkOpts(id,arr,key){var box=document.getElementById(id);box.innerHTML='';arr.forEach(function(o){var b=document.createElement('button');b.textContent=o[0];b.onclick=function(){state[key]=o[1];apply()};b.dataset.v=o[1];box.appendChild(b)})}
+  function syncUI(){
+    document.querySelectorAll('#txOpt button').forEach(function(b){b.classList.toggle('on',b.dataset.v==TXC[state.tx][1])});
+    ['dOpt','tickOpt','gridOpt','monoOpt','fillOpt'].forEach(function(id){document.querySelectorAll('#'+id+' button').forEach(function(b){b.classList.toggle('on',b.dataset.v==state[idKey(id)])})});
+    document.querySelectorAll('#accSw button').forEach(function(b,i){b.classList.toggle('on',i==state.acc)});
+    document.getElementById('rRange').value=state.r; document.getElementById('pRange').value=state.panel;
+  }
+  function idKey(id){return {dOpt:'dens',tickOpt:'ticks',gridOpt:'grid',monoOpt:'mono',fillOpt:'fill'}[id]}
+
+  // 강조색 스와치
+  var accSw=document.getElementById('accSw');
+  ACCENTS.forEach(function(a,i){var b=document.createElement('button');b.style.background=a[1];b.title=a[0];b.onclick=function(){state.acc=i;apply()};accSw.appendChild(b)});
+  // 글자색
+  var txOpt=document.getElementById('txOpt');TXC.forEach(function(t,i){var b=document.createElement('button');b.textContent=t[0];b.dataset.v=t[1];b.onclick=function(){state.tx=i;apply()};txOpt.appendChild(b)});
+  // 여백
+  var dOpt=document.getElementById('dOpt');DENS.forEach(function(d,i){var b=document.createElement('button');b.textContent=d[0];b.dataset.v=i;b.onclick=function(){state.dens=i;apply()};dOpt.appendChild(b)});
+  // 토글류
+  function toggleGrp(id,key,arr){var box=document.getElementById(id);arr.forEach(function(o){var b=document.createElement('button');b.textContent=o[0];b.dataset.v=o[1];b.onclick=function(){state[key]=o[1];apply()};box.appendChild(b)})}
+  toggleGrp('tickOpt','ticks',[['끔','off'],['모서리만','frame'],['카드마다','all']]);
+  toggleGrp('gridOpt','grid',[['끔','off'],['켬','on']]);
+  toggleGrp('monoOpt','mono',[['보통(sans)','off'],['고정폭(mono)','on']]);
+  toggleGrp('fillOpt','fill',[['꽉찬','fill'],['외곽선','outline']]);
+  // 슬라이더
+  document.getElementById('rRange').addEventListener('input',function(e){state.r=+e.target.value;apply()});
+  document.getElementById('pRange').addEventListener('input',function(e){state.panel=+e.target.value;apply()});
+  // 프리셋
+  var pBox=document.getElementById('presets');
+  Object.keys(PRESETS).forEach(function(name){var b=document.createElement('button');b.textContent=name;b.onclick=function(){state=Object.assign({},PRESETS[name]);apply()};pBox.appendChild(b)});
+
+  // 복사
+  document.getElementById('copy').onclick=function(){
+    var a=ACCENTS[state.acc];
+    var txt='[SnapContext 디자인 선택]\n'+
+      '- 강조색: '+a[0]+' ('+a[1]+'), 글자색 위: '+a[2]+'\n'+
+      '- 글자색: '+TXC[state.tx][0]+' ('+TXC[state.tx][1]+')\n'+
+      '- 카드 밝기: '+PANELS[state.panel][1]+' ('+PANELS[state.panel][0]+')\n'+
+      '- 모서리 둥글기: '+state.r+'px\n'+
+      '- 여백(밀도): '+DENS[state.dens][0]+'\n'+
+      '- 코너틱: '+({off:'끔',frame:'모서리만',all:'카드마다'}[state.ticks])+'\n'+
+      '- 배경 격자: '+(state.grid==='on'?'켬':'끔')+'\n'+
+      '- 라벨 글꼴: '+(state.mono==='on'?'고정폭(mono)':'보통(sans)')+'\n'+
+      '- 강조버튼: '+(state.fill==='fill'?'꽉찬':'외곽선')+'\n'+
+      '- 정렬: B (가로 1줄 중앙)\n'+
+      '- 메모: '+(document.getElementById('memo').value||'(없음)');
+    var done=document.getElementById('copied');
+    navigator.clipboard.writeText(txt).then(function(){done.textContent='✓ 복사됨 — 채팅에 붙여넣기(Ctrl+V)'}).catch(function(){
+      var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done.textContent='✓ 복사됨 — Ctrl+V'}catch(e){done.textContent='복사 실패 — 아래 텍스트 직접 복사';alert(txt)}ta.remove();
+    });
+  };
+
+  apply();
+</script>
+</body>
+</html>

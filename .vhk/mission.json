@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "objective": "사이드패널/오버레이 UI 리파인 (토큰화·일관성·디테일, 다크 브랜드 유지·정돈)",
+  "scope": [
+    "src/sidepanel/**",
+    "src/content/**",
+    "docs/ui-audit/**"
+  ],
+  "forbidden": [
+    "src/storage/**",
+    "src/background/**",
+    "src/notion/**",
+    "**/*.env"
+  ],
+  "createdAt": "2026-06-04T13:32:15.559Z",
+  "updatedAt": "2026-06-04T13:32:15.559Z"
+}

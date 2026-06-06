@@ -1,0 +1,275 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome Web Store logo Chrome Web Store" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome Web Store logo" [ref=e8]
+          - generic [ref=e9]: Chrome Web Store
+        - search "Sitewide" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Search Chrome Web Store" [active] [ref=e15]
+        - generic [ref=e16]:
+          - button "More options menu" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google apps" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "Sign in" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https://chromewebstore.google.com/detail/lightshot-screenshot-tool/mbniclmhobmnbdlbpiphghaielnnpgdp?hl%3Den%26gl%3DUS&followup=https://chromewebstore.google.com/detail/lightshot-screenshot-tool/mbniclmhobmnbdlbpiphghaielnnpgdp?hl%3Den%26gl%3DUS&hl=en&ec=GAZApQM
+      - tablist [ref=e42]:
+        - generic [ref=e45]:
+          - tab "Discover" [ref=e46] [cursor=pointer]:
+            - generic:
+              - generic: Discover
+          - tab "Extensions" [selected] [ref=e47] [cursor=pointer]:
+            - generic:
+              - generic: Extensions
+          - tab "Themes" [ref=e48] [cursor=pointer]:
+            - generic:
+              - generic: Themes
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - img "Item logo image for Lightshot (screenshot tool)" [ref=e58]
+          - heading "Lightshot (screenshot tool)" [level=1] [ref=e59]
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - generic [ref=e64] [cursor=pointer]:
+              - img [ref=e67]
+              - link "Created by the owner of the listed website. The publisher has a good record with no history of violations. Learn more." [ref=e70]:
+                - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+            - link "https://app.prntscr.com/" [ref=e71] [cursor=pointer]:
+              - /url: https://app.prntscr.com/
+          - generic [ref=e72]:
+            - generic [ref=e73]:
+              - generic [ref=e74]: "4.4"
+              - img [ref=e75]
+              - generic [ref=e77]:
+                - text: (
+                - link "7K ratings" [ref=e78] [cursor=pointer]:
+                  - /url: ./detail/lightshot-screenshot-tool/mbniclmhobmnbdlbpiphghaielnnpgdp/reviews
+                  - paragraph [ref=e79]: 7K ratings
+                - text: )
+            - button "Ratings are updated daily and may not reflect the most recent reviews." [ref=e81] [cursor=pointer]:
+              - img [ref=e84]
+          - button "Share" [ref=e90] [cursor=pointer]:
+            - img [ref=e93]
+            - generic [ref=e95]: Share
+        - generic [ref=e96]:
+          - link "Extension" [ref=e97] [cursor=pointer]:
+            - /url: ./category/extensions
+          - link "Tools" [ref=e98] [cursor=pointer]:
+            - /url: ./category/extensions/productivity/tools
+          - text: 2,000,000 users
+        - button "Add to Chrome" [ref=e102] [cursor=pointer]:
+          - generic [ref=e104]: Add to Chrome
+      - generic [ref=e105]:
+        - region "Media carousel" [ref=e106]:
+          - button "Previous slide" [ref=e108] [cursor=pointer]:
+            - img [ref=e111]
+          - generic [ref=e115]:
+            - button "Item media 4 (screenshot) for Lightshot (screenshot tool)" [ref=e117] [cursor=pointer]:
+              - img "Item media 4 (screenshot) for Lightshot (screenshot tool)" [ref=e118]
+            - generic [ref=e121] [cursor=pointer]:
+              - button "Item media 1 (video) for Lightshot (screenshot tool)" [ref=e123]
+              - img "Item video thumbnail" [ref=e129]
+            - button "Item media 2 (screenshot) for Lightshot (screenshot tool)" [ref=e131] [cursor=pointer]:
+              - img "Item media 2 (screenshot) for Lightshot (screenshot tool)" [ref=e132]
+            - button "Item media 3 (screenshot) for Lightshot (screenshot tool)" [ref=e134] [cursor=pointer]:
+              - img "Item media 3 (screenshot) for Lightshot (screenshot tool)" [ref=e135]
+            - button "Item media 4 (screenshot) for Lightshot (screenshot tool)" [ref=e137] [cursor=pointer]:
+              - img "Item media 4 (screenshot) for Lightshot (screenshot tool)" [ref=e138]
+            - generic [ref=e141] [cursor=pointer]:
+              - button "Item media 1 (video) for Lightshot (screenshot tool)" [ref=e143]
+              - img "Item video thumbnail" [ref=e149]
+          - button "Next slide" [ref=e151] [cursor=pointer]:
+            - img [ref=e154]
+        - generic [ref=e157]:
+          - button "Preview slide 1 for Lightshot (screenshot tool)" [ref=e158] [cursor=pointer]:
+            - img "Item video thumbnail" [ref=e159]
+          - button "Preview slide 2 for Lightshot (screenshot tool)" [ref=e161] [cursor=pointer]:
+            - img "Item media 2 (screenshot) for Lightshot (screenshot tool)" [ref=e163]
+          - button "Preview slide 3 for Lightshot (screenshot tool)" [ref=e165] [cursor=pointer]:
+            - img "Item media 3 (screenshot) for Lightshot (screenshot tool)" [ref=e167]
+          - button "Preview slide 4 for Lightshot (screenshot tool)" [ref=e169] [cursor=pointer]:
+            - img "Item media 4 (screenshot) for Lightshot (screenshot tool)" [ref=e171]
+      - generic [ref=e173]:
+        - heading "Overview" [level=2] [ref=e175]:
+          - generic [ref=e176]: Overview
+        - generic [ref=e177]:
+          - generic [ref=e178]:
+            - paragraph [ref=e179]: Simple and convenient screenshot tool. Select an area, edit your screenshot and upload it to the server.
+            - paragraph [ref=e180]: "Lightshot is the fastest way to take a customizable screenshot. Simple interface, nothing useless and light weight. Features: * take screenshot and share it in few clicks * select any part of the page * edit screenshot in place * save on a disk or upload to the cloud * search for similar screenshots * copy screenshot in clipboard More information here: http://app.prntscr.com/ Privacy policy: https://app.prntscr.com/en/privacy.html?privacy Clarification of the extension permissions: * Read your browsing history - Chrome adds this line when we request tabs manipulation permission. Lightshot opens screenshot in a new tab, that is why we need it. * Display notifications - Lightshot displays notification every time you upload screenshot * Modify data you copy and paste - Lightshot allows you to copy screenshot into your Clipboard * Manage your downloads - Lightshot allows you to save screenshot as a new file (works using download functions) Contact e-mail: support@skillbrains.com Send your requests and bug reports here. We appreciate your contribution!"
+          - button "See more" [ref=e181] [cursor=pointer]
+      - generic [ref=e184]:
+        - heading "4.4 out of 5 4.4 out of 5 stars 7K ratings• Learn more about results and reviews." [level=2] [ref=e186]:
+          - generic [ref=e187]:
+            - text: 4.4 out of 5
+            - img "4.4 out of 5 stars" [ref=e188]:
+              - generic [ref=e189]:
+                - generic [ref=e190]:
+                  - img [ref=e191]
+                  - img [ref=e194]
+                  - img [ref=e197]
+                  - img [ref=e200]
+                  - img [ref=e203]
+                - generic [ref=e206]:
+                  - img [ref=e207]
+                  - img [ref=e209]
+                  - img [ref=e211]
+                  - img [ref=e213]
+                  - img [ref=e215]
+          - text: 7K ratings•
+          - paragraph [ref=e217]:
+            - link "Learn more about results and reviews." [ref=e218] [cursor=pointer]:
+              - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results
+        - generic [ref=e220] [cursor=pointer]:
+          - generic [ref=e221]: See all reviews
+          - link "See all reviews" [ref=e222]:
+            - /url: ./detail/lightshot-screenshot-tool/mbniclmhobmnbdlbpiphghaielnnpgdp/reviews
+      - generic [ref=e223]:
+        - heading "Details" [level=2] [ref=e225]
+        - list [ref=e227]:
+          - listitem [ref=e228]:
+            - generic [ref=e229]: Version
+            - generic [ref=e230]: 7.0.1
+          - listitem [ref=e231]:
+            - generic [ref=e232]: Updated
+            - generic [ref=e233]: July 23, 2024
+          - listitem [ref=e234]:
+            - link "Flag concern" [ref=e236] [cursor=pointer]:
+              - /url: ./detail/mbniclmhobmnbdlbpiphghaielnnpgdp/report
+          - listitem [ref=e237]:
+            - generic [ref=e238]: Size
+            - generic [ref=e239]: 685KiB
+          - listitem [ref=e240]:
+            - generic [ref=e241]: Languages
+            - generic [ref=e243]:
+              - text: 40 languages
+              - button "Show more languages" [ref=e245] [cursor=pointer]:
+                - img [ref=e248]
+          - listitem [ref=e251]:
+            - generic [ref=e252]: Developer
+            - generic [ref=e254]:
+              - link "Website" [ref=e255] [cursor=pointer]:
+                - /url: https://app.prntscr.com/
+                - img [ref=e256]
+                - text: Website
+              - group [ref=e258]:
+                - generic "Email" [ref=e259]:
+                  - img [ref=e260]
+                  - text: Email
+                  - img [ref=e262]
+          - listitem [ref=e264]:
+            - generic [ref=e265]: Non-trader
+            - generic [ref=e266]: This developer has not identified itself as a trader. For consumers in the European Union, please note that consumer rights do not apply to contracts between you and this developer.
+      - generic [ref=e267]:
+        - heading "Privacy" [level=2] [ref=e269]
+        - generic [ref=e271]:
+          - generic [ref=e272]:
+            - img [ref=e273]
+            - generic [ref=e276]:
+              - text: The developer has disclosed that it will not collect or use your data. To learn more, see the developer’s
+              - link "privacy policy" [ref=e277] [cursor=pointer]:
+                - /url: https://app.prntscr.com/en/privacy.html?privacy
+              - text: .
+          - generic [ref=e278]:
+            - heading "This developer declares that your data is" [level=2] [ref=e279]
+            - list [ref=e280]:
+              - listitem [ref=e281]:
+                - text: Not being sold to third parties, outside of the
+                - link "approved use cases" [ref=e282] [cursor=pointer]:
+                  - /url: https://developer.chrome.com/docs/webstore/program-policies/limited-use/
+              - listitem [ref=e283]: Not being used or transferred for purposes that are unrelated to the item's core functionality
+              - listitem [ref=e284]: Not being used or transferred to determine creditworthiness or for lending purposes
+      - generic [ref=e285]:
+        - heading "Support" [level=2] [ref=e287]
+        - paragraph [ref=e288]:
+          - text: For help with questions, suggestions, or problems, visit the developer's
+          - link "support site" [ref=e289] [cursor=pointer]:
+            - /url: https://app.prntscr.com/help.html
+    - generic [ref=e290]:
+      - heading "You might also like…" [level=2] [ref=e291]
+      - generic [ref=e292]:
+        - generic [ref=e294]:
+          - link "Loom – Screen Recorder & Screen Capture" [ref=e295] [cursor=pointer]:
+            - /url: ./detail/loom-%E2%80%93-screen-recorder-sc/liecbddmkiiihnedobmlmillhodjkdmb
+          - generic [ref=e296]:
+            - heading "Loom – Screen Recorder & Screen Capture" [level=3] [ref=e297]
+            - generic [ref=e298]:
+              - img "Average rating 4.6 out of 5 stars." [ref=e299]:
+                - generic [ref=e300]: "4.6"
+                - img [ref=e301]
+              - generic [ref=e304] [cursor=pointer]:
+                - img [ref=e307]
+                - link "Learn more about results and reviews \"Loom – Screen Recorder & Screen Capture\"." [ref=e309]:
+                  - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+            - paragraph [ref=e310]: Record your screen and camera with one click. Share that content in an instant with a link.
+        - generic [ref=e312]:
+          - link "Screenshot Tool - Screen Capture & Editor" [ref=e313] [cursor=pointer]:
+            - /url: ./detail/screenshot-tool-screen-ca/edlifbnjlicfpckhgjhflgkeeibhhcii
+          - generic [ref=e314]:
+            - heading "Screenshot Tool - Screen Capture & Editor" [level=3] [ref=e315]
+            - generic [ref=e316]:
+              - img "Average rating 4.7 out of 5 stars." [ref=e317]:
+                - generic [ref=e318]: "4.7"
+                - img [ref=e319]
+              - generic [ref=e322] [cursor=pointer]:
+                - img [ref=e325]
+                - link "Learn more about results and reviews \"Screenshot Tool - Screen Capture & Editor\"." [ref=e327]:
+                  - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+            - paragraph [ref=e328]: Innovative screenshot tool lets users screen capture and edit screenshot. Full page screen capture.
+        - generic [ref=e330]:
+          - link "InkShot — Webpage Screenshot & Draw Tool" [ref=e331] [cursor=pointer]:
+            - /url: ./detail/inkshot-%E2%80%94-webpage-screens/feegbolpalcgkffoflihokcfembmcmbl
+          - generic [ref=e332]:
+            - heading "InkShot — Webpage Screenshot & Draw Tool" [level=3] [ref=e333]
+            - generic [ref=e334]:
+              - img "Average rating 5 out of 5 stars." [ref=e335]:
+                - generic [ref=e336]: "5.0"
+                - img [ref=e337]
+              - generic [ref=e340] [cursor=pointer]:
+                - img [ref=e343]
+                - link "Learn more about results and reviews \"InkShot — Webpage Screenshot & Draw Tool\"." [ref=e345]:
+                  - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+            - paragraph [ref=e346]: Capture any webpage as a screenshot, then draw arrows, boxes & text on it. The fastest screenshot & annotate tool for Chrome
+        - generic [ref=e348]:
+          - link "Screenshot Tool by cloudHQ" [ref=e349] [cursor=pointer]:
+            - /url: ./detail/screenshot-tool-by-cloudh/boepdnhlmfleonjnaoaemgcggppoikog
+          - generic [ref=e350]:
+            - heading "Screenshot Tool by cloudHQ" [level=3] [ref=e351]
+            - generic [ref=e352]:
+              - img "Average rating 4.6 out of 5 stars." [ref=e353]:
+                - generic [ref=e354]: "4.6"
+                - img [ref=e355]
+              - generic [ref=e358] [cursor=pointer]:
+                - img [ref=e361]
+                - link "Learn more about results and reviews \"Screenshot Tool by cloudHQ\"." [ref=e363]:
+                  - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+            - paragraph [ref=e364]: Take a screenshot, markup and annotate it. Easy share, anywhere
+  - contentinfo [ref=e365]:
+    - list [ref=e366]:
+      - listitem [ref=e367]:
+        - link "About Chrome Web Store" [ref=e368] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=en
+        - text: •
+      - listitem [ref=e369]:
+        - link "Developer Dashboard" [ref=e370] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e371]:
+        - link "Privacy Policy" [ref=e372] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=en
+        - text: •
+      - listitem [ref=e373]:
+        - link "Terms of Service" [ref=e374] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/en/gallery_tos.html
+        - text: •
+      - listitem [ref=e375]:
+        - link "Help" [ref=e376] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=en

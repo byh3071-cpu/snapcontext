@@ -1,0 +1,300 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "주요 콘텐츠로 이동" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome 웹 스토어 로고 Chrome 웹 스토어" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome 웹 스토어 로고" [ref=e8]
+          - generic [ref=e9]: Chrome 웹 스토어
+        - search "사이트 전체" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Chrome 웹 스토어 검색" [active] [ref=e15]
+        - generic [ref=e16]:
+          - button "옵션 메뉴 더보기" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google 앱" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "로그인" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https://chromewebstore.google.com/detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl&followup=https://chromewebstore.google.com/detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl&ec=GAZApQM
+      - tablist [ref=e42]:
+        - generic [ref=e45]:
+          - tab "탐색" [ref=e46] [cursor=pointer]:
+            - generic:
+              - generic: 탐색
+          - tab "확장 프로그램" [selected] [ref=e47] [cursor=pointer]:
+            - generic:
+              - generic: 확장 프로그램
+          - tab "테마" [ref=e48] [cursor=pointer]:
+            - generic:
+              - generic: 테마
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - img "GoFullPage - Full Page Screen Capture의 상품 로고 이미지" [ref=e58]
+          - heading "GoFullPage - Full Page Screen Capture" [level=1] [ref=e59]
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - generic [ref=e64] [cursor=pointer]:
+              - img [ref=e67]
+              - link "정책 위반 이력이 없는 양호한 기록을 보유한 게시자입니다. 자세히 알아보기" [ref=e70]:
+                - /url: https://support.google.com/chrome_webstore/?hl=ko&p=cws_badges
+            - link "Full Page LLC" [ref=e71] [cursor=pointer]:
+              - /url: ./publisher/full-page-llc/u67df6addf0e0e65cc17152a973e0131f
+          - generic [ref=e72]:
+            - generic [ref=e75] [cursor=pointer]:
+              - img [ref=e78]
+              - link "Chrome 확장 프로그램의 권장사항을 따릅니다. 자세히 알아보기" [ref=e81]:
+                - /url: https://support.google.com/chrome_webstore/?hl=ko&p=cws_badges
+            - generic [ref=e82]: 추천
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - generic [ref=e85]: "4.9"
+              - img [ref=e86]
+              - generic [ref=e88]:
+                - text: (
+                - link "평점 8.4만개" [ref=e89] [cursor=pointer]:
+                  - /url: ./detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl/reviews
+                  - paragraph [ref=e90]: 평점 8.4만개
+                - text: )
+            - button "평점은 매일 업데이트되며, 최신 리뷰가 반영되지 않을 수도 있습니다." [ref=e92] [cursor=pointer]:
+              - img [ref=e95]
+          - button "공유" [ref=e101] [cursor=pointer]:
+            - img [ref=e104]
+            - generic [ref=e106]: 공유
+        - generic [ref=e107]:
+          - link "확장 프로그램" [ref=e108] [cursor=pointer]:
+            - /url: ./category/extensions
+          - link "개발자 도구" [ref=e109] [cursor=pointer]:
+            - /url: ./category/extensions/productivity/developer
+          - text: 11,000,000 사용자
+        - button "Chrome에 추가" [ref=e113] [cursor=pointer]:
+          - generic [ref=e115]: Chrome에 추가
+      - generic [ref=e116]:
+        - region "미디어 캐러셀" [ref=e117]:
+          - button "이전 슬라이드" [ref=e119] [cursor=pointer]:
+            - img [ref=e122]
+          - generic [ref=e126]:
+            - button "GoFullPage - Full Page Screen Capture의 항목 미디어 2(스크린샷)" [ref=e128] [cursor=pointer]:
+              - img "GoFullPage - Full Page Screen Capture의 항목 미디어 2(스크린샷)" [ref=e129]
+            - button "GoFullPage - Full Page Screen Capture의 항목 미디어 3(스크린샷)" [ref=e131] [cursor=pointer]:
+              - img "GoFullPage - Full Page Screen Capture의 항목 미디어 3(스크린샷)" [ref=e132]
+            - button "GoFullPage - Full Page Screen Capture의 항목 미디어 1(스크린샷)" [ref=e134] [cursor=pointer]:
+              - img "GoFullPage - Full Page Screen Capture의 항목 미디어 1(스크린샷)" [ref=e135]
+            - button "GoFullPage - Full Page Screen Capture의 항목 미디어 2(스크린샷)" [ref=e137] [cursor=pointer]:
+              - img "GoFullPage - Full Page Screen Capture의 항목 미디어 2(스크린샷)" [ref=e138]
+            - button "GoFullPage - Full Page Screen Capture의 항목 미디어 3(스크린샷)" [ref=e140] [cursor=pointer]:
+              - img "GoFullPage - Full Page Screen Capture의 항목 미디어 3(스크린샷)" [ref=e141]
+            - button "GoFullPage - Full Page Screen Capture의 항목 미디어 1(스크린샷)" [ref=e143] [cursor=pointer]:
+              - img "GoFullPage - Full Page Screen Capture의 항목 미디어 1(스크린샷)" [ref=e144]
+            - button "GoFullPage - Full Page Screen Capture의 항목 미디어 2(스크린샷)" [ref=e146] [cursor=pointer]:
+              - img "GoFullPage - Full Page Screen Capture의 항목 미디어 2(스크린샷)" [ref=e147]
+          - button "다음 슬라이드" [ref=e149] [cursor=pointer]:
+            - img [ref=e152]
+        - generic [ref=e155]:
+          - button "GoFullPage - Full Page Screen Capture의1 슬라이드 미리보기" [ref=e156] [cursor=pointer]:
+            - img "GoFullPage - Full Page Screen Capture의 항목 미디어 1(스크린샷)" [ref=e158]
+          - button "GoFullPage - Full Page Screen Capture의2 슬라이드 미리보기" [ref=e160] [cursor=pointer]:
+            - img "GoFullPage - Full Page Screen Capture의 항목 미디어 2(스크린샷)" [ref=e162]
+          - button "GoFullPage - Full Page Screen Capture의3 슬라이드 미리보기" [ref=e164] [cursor=pointer]:
+            - img "GoFullPage - Full Page Screen Capture의 항목 미디어 3(스크린샷)" [ref=e166]
+      - generic [ref=e168]:
+        - heading "개요" [level=2] [ref=e170]:
+          - generic [ref=e171]: 개요
+        - generic [ref=e172]:
+          - generic [ref=e173]:
+            - paragraph [ref=e174]: 추가 권한을 요청하지 않고 현재 페이지의 스크린샷을 전체적으로 캡처하고 신뢰할 수 있습니다!
+            - paragraph [ref=e175]: "The simplest way to take a full page screenshot of your current browser window. Click on the extension icon (or press Alt+Shift+P), watch the extension capture each part of the page, and be transported to a new tab of your screenshot where you can download it as an image or PDF or even just drag it to your desktop. *No bloat, no ads, no unnecessary permissions, just a simple way to turn a full web page into an image.* *NEW:* The advanced screen capture technology handles complex pages—including inner scrollable elements as well as embedded iframes—unlike any other extension. If you encounter an issue, please report it via the customer support flag icon on the capture page, so we can improve the extension for you and everyone else who uses it. In order to screenshot the entire page it must scroll to each visible part, so please be patient as it quickly assembles all the pieces. For the rare scenario where your page is too large for Chrome to store in one image, it will let you know and split it up into images in separate tabs. Export your result to PNG, JPEG, or various PDF paper sizes—all configurable from the extension’s options. This extension is run by an independent developer. View the original open source project on github: https://github.com/mrcoles/full-page-screen-capture-chrome-extension Change Log: 4.9 — 2018-09-15 — various bugfixes from user-reported issues, including Salesforce lightning dashboards 4.8 — 2018-08-14 — extra handling for Chrome 68 bug with downloads related to allow incognito setting (stay tuned for updates to handle issues with downloading in Chrome Beta & Canary >= v69) 4.7 — 2018-08-08 — bugfixes for some parallax sites and other edge cases 4.6 — 2018-07-23 — fixed regression with a number of pages that stopped scrolling, improvements for fixed background images 4.5 — 2018-07-18 — bugfixes, zoomed in white lines fix 4.4 — 2018-07-16 — new support for fixed header jump, new permissions controls, downloads fix, parallax improvements 4.3 — 2018-06-29 — bugfix for sporadic iframe error 4.2 — 2018-06-14 — bugfixes from user reports 4.1 — 2018-06-12 — bugfixes, zoomed out white lines fix 4.0 — 2018-06-10 — new support for iframes and framesets, Chrome 67 compatability updates 3.17 — 2018-05-30 — improvements to scrolling issue and handling of animations 3.16 — 2018-05-21 — fix for user-reported scrolling issue 3.15 — 2018-05-08 — additional improvements to fixed elements, better capture of feeds 3.14 — 2018-05-02 — improvement to export to PDF filenames 3.13 — 2018-05-01 — fix save as recent download location issue, improvement to fixed elements 3.12 — 2018-04-27 — added export to PDF option, plus bugfixes and performance improvements 3.11 — 2018-04-09 — improvements to captured screen, support for fixed backgrounds 3.10 — 2018-03-30 — bugfixes for various pages, cleaner Options page 3.9 — 2018-03-24 — fix issue saving options, improvements to scrollbar handling 3.8 — 2018-03-22 — add ability to specify download directory, bugfixes 3.7 — 2018-03-20 — download as PNG or JPG via options page, bugfixes for user reported issues 3.6 — 2018-03-16 — bugfixes for various pages including adwords, improved download functionality 3.5 — 2018-03-14 — bugfixes from user reports, stability improvements to capture page 3.4 — 2018-03-09 — improvements with scrollbars and fixed position elements via user reports 3.3 — 2018-03-07 — timestamps in filenames, batch download/delete feature, auto-download option 3.2 — 2018-03-05 — improvements to scrollbars and fixed position elements via user reports 3.1 — 2018-03-03 — updates to customer support feature 3.0 — 2018-02-27 — new advanced scrolling algorithm for difficult pages like Gmail and more! 2.12 — 2018-02-23 — bugfixes for svgs and user-reported pages 2.11 — 2018-02-21 — bugfixes for several user-reported pages 2.10 — 2018-02-20 — advanced support for fixed position elements 2.9 — 2018-02-13 — bugfix for some body scroll issues, natural size for zoom in on high pixel ratio displays 2.8 — 2018-02-08 — improved messaging for restricted URLs 2.7 — 2018-02-06 — bug fix for Chrome version 60 and below 2.6 — 2018-02-05 — style updates, bug fixes 2.4 — 2018-02-02 — fix for quota errors that can prevent capturing an image 2.3 — 2018-01-31 — new customer support feature for better service! 2.2 — 2016-09-01 — support for ctrl+s (or cmd+s on Mac) to save the screenshot 2.1 — 2016-08-22 — fixed capture zoom in/out issues, add an expand button to capture header 2.0 — 2016-08-19 — updated result tab for screenshots with click to download and ability to view/delete your screenshots 1.0.1 — 2016-05-14 — fix incognito mode \"File not found\" bug and better tab handling 1.0.0 — 2016-05-09 — this is a major release: introduces keyboard shortcut, splitting of images for pages that are too long, better handling of zoomed/emulator pages, more subtle gray icon, SVG support, and stability fixes (thank you @bluememory14, @BSierakowski, @denilsonsa, and all submitters of bug reports) 0.0.15 — 2015-04-05 — add timestamp to images so they are unique paths (via @HetIsNiels) and popup display fix 0.0.14 — 2015-02-14 — more “retina” fixes 0.0.13 — 2015-01-02 — remove scale feature to hopefully fix bugs experienced on “retina” displays 0.0.12 — 2014-08-24 — change permissions to more restrictive “activeTab” 0.0.11 — 2014-04-19 — backwards compatible permissions update 0.0.10 — 2014-04-17 — fixed permissions issue that prevents screen capture in Chrome 34 0.0.9 — 2013-12-08 — fixed bugs when the image is pieced together on retina screens 0.0.8 — 2013-11-17 — improved calculation of page width and height on non-standard pages 0.0.7 — 2013-10-10 — 10x speed improvement in capture time and restore to original scroll positions after capture (via @terrycojones) 0.0.6 — 2013-01-26 — Fixed scenario when captured image can load as a broken icon (caused by loading image before it has been written to the file system) 0.0.5 — 2013–01–21 — Fixed small bug in 0.0.4 0.0.4 — 2013–01–21 — Replaced deprecated BlobBuilder with Blob (via @gleitz) 0.0.3 — 2012-11-25 — Removed need to reload pages that were open before the extension is installed 0.0.2 — 2012-11-21 — Better messaging for pages that can't be screen captured (e.g., content scripts cannot run on the chrome webstore), and the generated image now incorporates the URL into its name 0.0.1 — 2012-11-06 — Initial release"
+          - button "더보기" [ref=e176] [cursor=pointer]
+      - generic [ref=e179]:
+        - heading "5점 만점에 4.9점 별점 5점 중 4.9점 평점 8.4만개• 검색결과 및 리뷰에 관해 자세히 알아보기" [level=2] [ref=e181]:
+          - generic [ref=e182]:
+            - text: 5점 만점에 4.9점
+            - img "별점 5점 중 4.9점" [ref=e183]:
+              - generic [ref=e184]:
+                - generic [ref=e185]:
+                  - img [ref=e186]
+                  - img [ref=e189]
+                  - img [ref=e192]
+                  - img [ref=e195]
+                  - img [ref=e198]
+                - generic [ref=e201]:
+                  - img [ref=e202]
+                  - img [ref=e204]
+                  - img [ref=e206]
+                  - img [ref=e208]
+                  - img [ref=e210]
+          - text: 평점 8.4만개•
+          - paragraph [ref=e212]:
+            - link "검색결과 및 리뷰에 관해 자세히 알아보기" [ref=e213] [cursor=pointer]:
+              - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results
+        - generic [ref=e215] [cursor=pointer]:
+          - generic [ref=e216]: 리뷰 전체 보기
+          - link "리뷰 전체 보기" [ref=e217]:
+            - /url: ./detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl/reviews
+      - generic [ref=e218]:
+        - heading "세부정보" [level=2] [ref=e220]
+        - list [ref=e222]:
+          - listitem [ref=e223]:
+            - generic [ref=e224]: 버전
+            - generic [ref=e225]: "8.6"
+          - listitem [ref=e226]:
+            - generic [ref=e227]: 업데이트됨
+            - generic [ref=e228]: 2026년 1월 21일
+          - listitem [ref=e229]:
+            - link "우려사항 신고" [ref=e231] [cursor=pointer]:
+              - /url: ./detail/fdpohaocaechififmbbbbbknoalclacl/report
+          - listitem [ref=e232]:
+            - generic [ref=e233]: 크기
+            - generic [ref=e234]: 1.7MiB
+          - listitem [ref=e235]:
+            - generic [ref=e236]: 언어
+            - generic [ref=e238]:
+              - text: 언어 5개
+              - button "언어 더보기" [ref=e240] [cursor=pointer]:
+                - img [ref=e243]
+          - listitem [ref=e246]:
+            - generic [ref=e247]: 개발자
+            - generic [ref=e249]:
+              - generic [ref=e250]:
+                - text: Full Page LLC
+                - text: "217 W 18th St #522 New York, NY 10113 US"
+              - link "웹사이트" [ref=e251] [cursor=pointer]:
+                - /url: https://gofullpage.com
+                - img [ref=e252]
+                - text: 웹사이트
+              - group [ref=e254]:
+                - generic "이메일" [ref=e255]:
+                  - img [ref=e256]
+                  - text: 이메일
+                  - img [ref=e258]
+              - group [ref=e260]:
+                - generic "전화" [ref=e261]:
+                  - img [ref=e262]
+                  - text: 전화
+                  - img [ref=e264]
+          - listitem [ref=e266]:
+            - generic [ref=e267]: 판매자
+            - generic [ref=e268]: 개발자가 유럽연합에서 정의한 바에 따라 본인을 판매자로 밝혔으며 EU 법규를 준수하는 제품 또는 서비스만 제공하기로 약정했습니다.
+          - listitem [ref=e269]:
+            - generic [ref=e270]:
+              - text: D-U-N-S
+              - button "검색결과 및 리뷰에 관해 자세히 알아보기" [ref=e272] [cursor=pointer]:
+                - img [ref=e275]
+            - generic [ref=e278]: "112406701"
+      - generic [ref=e279]:
+        - heading "개인정보 보호" [level=2] [ref=e281]
+        - generic [ref=e283]:
+          - generic [ref=e284]:
+            - img [ref=e285]
+            - generic [ref=e288]:
+              - text: 개발자가 데이터를 수집하거나 사용하지 않겠다고 명시했습니다. 자세히 알아보려면 개발자의
+              - link "privacy policy" [ref=e289] [cursor=pointer]:
+                - /url: https://gofullpage.com/privacy
+              - text: 문서를 참고하세요.
+          - generic [ref=e290]:
+            - heading "개발자가 사용자 데이터에 관해 다음과 같이 선언했습니다" [level=2] [ref=e291]
+            - list [ref=e292]:
+              - listitem [ref=e293]:
+                - link "승인된 사용 사례" [ref=e294] [cursor=pointer]:
+                  - /url: https://developer.chrome.com/docs/webstore/program-policies/limited-use/
+                - text: 를 제외하고 서드 파티에 판매하지 않음
+              - listitem [ref=e295]: 항목의 핵심 기능과 관련 없는 목적으로 사용하거나 전송하지 않음
+              - listitem [ref=e296]: 신용도 판단 또는 대출 목적으로 사용하거나 전송하지 않음
+      - generic [ref=e297]:
+        - heading "지원" [level=2] [ref=e299]
+        - paragraph [ref=e300]:
+          - text: 질문, 제안 또는 문제와 관련하여 도움이 필요하시면 개발자의
+          - link "지원 사이트" [ref=e301] [cursor=pointer]:
+            - /url: https://screencapture.mrcoles.com/
+          - text: 를 방문하세요.
+      - generic [ref=e302]:
+        - heading "관련 항목" [level=2] [ref=e303]
+        - region "관련 상품 캐러셀" [ref=e306]:
+          - button "이전 슬라이드" [ref=e308] [cursor=pointer]:
+            - img [ref=e311]
+          - region "관련 상품 슬라이드" [ref=e315]:
+            - generic [ref=e316]:
+              - generic [ref=e318]:
+                - link "캡춰 (전체 웹 스크롤) - FireShot" [ref=e319] [cursor=pointer]:
+                  - /url: ./detail/%EC%BA%A1%EC%B6%B0-%EC%A0%84%EC%B2%B4-%EC%9B%B9-%EC%8A%A4%ED%81%AC%EB%A1%A4-fireshot/mcbpblocgmgfnpjjppndjkmgjaogfceg
+                - generic [ref=e320]:
+                  - heading "캡춰 (전체 웹 스크롤) - FireShot" [level=3] [ref=e321]
+                  - generic [ref=e322]:
+                    - img "평균 평점은 별점 5점 중 4.8점입니다." [ref=e323]:
+                      - generic [ref=e324]: "4.8"
+                      - img [ref=e325]
+                    - generic [ref=e328] [cursor=pointer]:
+                      - img [ref=e331]
+                      - link "검색 결과 및 리뷰에 관해 자세히 알아보기 \"캡춰 (전체 웹 스크롤) - FireShot\"" [ref=e333]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=ko
+                  - paragraph [ref=e334]: 캡춰 (전체 웹) 편집 및 저장 (PDF/JPEG/GIF/PNG) 업로드, 인쇄 보내기 OneNote, 클립보드 혹은 E-mail.
+              - generic [ref=e336]:
+                - link "Screenshot Tool - 스크린샷 캡처 및 편집기 도구" [ref=e337] [cursor=pointer]:
+                  - /url: ./detail/screenshot-tool-%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7-%EC%BA%A1%EC%B2%98-%EB%B0%8F/edlifbnjlicfpckhgjhflgkeeibhhcii
+                - generic [ref=e338]:
+                  - heading "Screenshot Tool - 스크린샷 캡처 및 편집기 도구" [level=3] [ref=e339]
+                  - generic [ref=e340]:
+                    - img "평균 평점은 별점 5점 중 4.7점입니다." [ref=e341]:
+                      - generic [ref=e342]: "4.7"
+                      - img [ref=e343]
+                    - generic [ref=e346] [cursor=pointer]:
+                      - img [ref=e349]
+                      - link "검색 결과 및 리뷰에 관해 자세히 알아보기 \"Screenshot Tool - 스크린샷 캡처 및 편집기 도구\"" [ref=e351]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=ko
+                  - paragraph [ref=e352]: Screenshot tool - 혁신적인 스크린 샷 도구를 사용하면 화면에 표시되는 이미지를 캡처하고 편집 할 수 있습니다!
+              - generic [ref=e354]:
+                - link "스크린샷 - Screenshot Extension" [ref=e355] [cursor=pointer]:
+                  - /url: ./detail/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7-screenshot-extension/akgpcdalpfphjmfifkmfbpdmgdmeeaeo
+                - generic [ref=e356]:
+                  - heading "스크린샷 - Screenshot Extension" [level=3] [ref=e357]
+                  - generic [ref=e358]:
+                    - img "평균 평점은 별점 5점 중 4.7점입니다." [ref=e359]:
+                      - generic [ref=e360]: "4.7"
+                      - img [ref=e361]
+                    - generic [ref=e364] [cursor=pointer]:
+                      - img [ref=e367]
+                      - link "검색 결과 및 리뷰에 관해 자세히 알아보기 \"스크린샷 - Screenshot Extension\"" [ref=e369]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=ko
+                  - paragraph [ref=e370]: 웹페이지 스크린샷.
+              - generic [ref=e372]:
+                - link "Screenshot Capture" [ref=e373] [cursor=pointer]:
+                  - /url: ./detail/screenshot-capture/giabbpobpebjfegnpcclkocepcgockkc
+                - generic [ref=e374]:
+                  - heading "Screenshot Capture" [level=3] [ref=e375]
+                  - generic [ref=e376]:
+                    - img "평균 평점은 별점 5점 중 4.1점입니다." [ref=e377]:
+                      - generic [ref=e378]: "4.1"
+                      - img [ref=e379]
+                    - generic [ref=e382] [cursor=pointer]:
+                      - img [ref=e385]
+                      - link "검색 결과 및 리뷰에 관해 자세히 알아보기 \"Screenshot Capture\"" [ref=e387]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=ko
+                  - paragraph [ref=e388]: Capture viewport, crop & save to file, copy to clipboard as binary or data URL
+          - button "다음 슬라이드" [ref=e390] [cursor=pointer]:
+            - img [ref=e393]
+  - contentinfo [ref=e396]:
+    - list [ref=e397]:
+      - listitem [ref=e398]:
+        - link "Chrome 웹 스토어 정보" [ref=e399] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=ko
+        - text: •
+      - listitem [ref=e400]:
+        - link "개발자 대시보드" [ref=e401] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e402]:
+        - link "개인정보처리방침" [ref=e403] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=ko
+        - text: •
+      - listitem [ref=e404]:
+        - link "서비스 약관" [ref=e405] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/ko/gallery_tos.html
+        - text: •
+      - listitem [ref=e406]:
+        - link "도움말" [ref=e407] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=ko

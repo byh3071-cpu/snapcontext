@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SnapContext — 측정기 사이드패널</title>
+<style>
+/* ============================================================
+   SnapContext — "CALIPER" 시안
+   시그니처 시스템: 정밀 측정기(캘리퍼) 언어.
+   - 모든 섹션은 왼쪽에 새겨진 눈금(tick-rail) 스파인을 가진 "측정 슬롯".
+   - 활성/작업 상태는 슬롯을 따라 흐르는 차분한 스캔 라인으로 말한다.
+   - 라벨/숫자만 모노 장식. 한글 본문은 산세리프로 또렷하게.
+   ============================================================ */
+
+:root{
+  /* 베이스: 차가운 잉크 종이 톤 — 측정 도구의 정밀함 */
+  --ink-900:#0b0d12;
+  --ink-850:#10131a;
+  --ink-800:#141823;
+  --ink-750:#181d29;
+  --ink-700:#1d2330;
+  --line:rgba(150,168,200,.14);
+  --line-soft:rgba(150,168,200,.08);
+  --line-strong:rgba(150,168,200,.28);
+
+  /* 텍스트 — AA 대비 확보 */
+  --txt:#eef1f7;          /* 본문 4.5:1↑ on ink */
+  --txt-mid:#c4ccdb;
+  --txt-dim:#8b95ab;      /* 보조 — 본문엔 미사용 */
+  --txt-faint:#5d6678;
+
+  /* 시그니처 컬러: 측정 인디케이터 — 라임-시안 "계측" 빛 */
+  --gauge:#7df0c8;        /* 계측 활성 */
+  --gauge-deep:#27c79b;
+  --amber:#ffc56b;        /* 주의/대기 */
+  --alert:#ff7a8a;        /* 에러 */
+  --glow:rgba(125,240,200,.5);
+
+  --r-slot:14px;
+  --r-ctl:9px;
+  --r-pill:999px;
+
+  --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono",Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+
+  --tick:14px; /* 눈금 간격 */
+}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--sans);
+  color:var(--txt);
+  background:
+    radial-gradient(1200px 700px at 18% -10%, #161b27 0%, transparent 55%),
+    radial-gradient(900px 600px at 110% 8%, #15212a 0%, transparent 50%),
+    #07080c;
+  display:grid;
+  place-items:start center;
+  min-height:100vh;
+  padding:34px 18px 56px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* 페이지 배경 위 미세한 측정 격자 — 패널을 "작업대" 위에 올린 느낌 */
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(125,240,200,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125,240,200,.025) 1px, transparent 1px);
+  background-size:56px 56px, 56px 56px;
+  mask-image:radial-gradient(720px 520px at 50% 26%, #000 0%, transparent 78%);
+}
+
+/* ========================== PANEL SHELL ========================== */
+.panel{
+  position:relative; z-index:1;
+  width:360px;
+  display:flex; flex-direction:column; gap:11px;
+  padding:13px 13px 18px;
+  border-radius:20px;
+  background:
+    linear-gradient(180deg, rgba(125,240,200,.04), transparent 120px),
+    var(--ink-850);
+  border:1px solid var(--line);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.04) inset,
+    0 40px 90px -30px rgba(0,0,0,.85),
+    0 0 0 1px rgba(0,0,0,.5);
+}
+
+/* ===== 시그니처: 측정 슬롯 — 왼쪽 눈금 스파인 ===== */
+.slot{
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:var(--r-slot);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent 40%),
+    var(--ink-800);
+  padding:13px 13px 13px 22px;
+  overflow:hidden;
+}
+/* 눈금 레일 — data-uri 없이 순수 repeating-gradient로 새김 */
+.slot::before{
+  content:"";
+  position:absolute; left:0; top:0; bottom:0; width:11px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      var(--line) 0 1px,
+      transparent 1px var(--tick)
+    );
+  border-right:1px solid var(--line-soft);
+  opacity:.7;
+}
+/* 슬롯 측정 라인(상단 인덱스 틱) — 굵은 기준선 */
+.slot::after{
+  content:"";
+  position:absolute; left:0; top:0; width:11px; height:2px;
+  background:var(--gauge-deep);
+  opacity:.55;
+}
+/* 작업 중 슬롯: 스파인을 따라 흐르는 스캔 펄스 */
+.slot[data-live="1"]::before{ opacity:1; }
+.slot[data-live="1"] .scanbeam{ opacity:1; }
+.scanbeam{
+  position:absolute; left:0; top:0; width:11px; height:34px;
+  background:linear-gradient(180deg, transparent, var(--glow), transparent);
+  opacity:0; pointer-events:none;
+  animation:scan 1.9s linear infinite;
+}
+@keyframes scan{
+  0%{ transform:translateY(-40px) }
+  100%{ transform:translateY(420px) }
+}
+
+.slot-head{
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:11px;
+}
+.slot-tag{
+  font-family:var(--mono);
+  font-size:9px; font-weight:700; letter-spacing:.18em;
+  color:var(--gauge);
+  text-transform:uppercase;
+  padding:2px 7px;
+  border:1px solid rgba(125,240,200,.28);
+  border-radius:var(--r-pill);
+  background:rgba(125,240,200,.06);
+  white-space:nowrap;
+}
+.slot-title{
+  margin:0;
+  font-size:.86rem; font-weight:650; letter-spacing:-.01em;
+  color:var(--txt);
+}
+.slot-rule{
+  flex:1; height:1px;
+  background:repeating-linear-gradient(90deg,var(--line) 0 4px,transparent 4px 8px);
+}
+
+/* ============================ HEADER ============================ */
+.hdr{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:10px; padding:3px 4px 2px;
+}
+.hdr-id{ display:flex; align-items:center; gap:9px; }
+.mark{
+  width:30px; height:30px; flex-shrink:0;
+  display:grid; place-items:center;
+  border-radius:9px;
+  border:1px solid var(--line-strong);
+  background:
+    radial-gradient(10px 10px at 50% 40%, rgba(125,240,200,.22), transparent 70%),
+    var(--ink-750);
+  position:relative;
+}
+.mark svg{ display:block }
+.hdr-txt h1{
+  margin:0; font-size:1.02rem; font-weight:750; letter-spacing:-.03em;
+  line-height:1; color:#fff;
+}
+.hdr-txt .tag{
+  margin:4px 0 0; font-family:var(--mono);
+  font-size:.62rem; letter-spacing:.16em; color:var(--txt-dim);
+  text-transform:uppercase;
+}
+.ver{
+  font-family:var(--mono);
+  font-size:.64rem; letter-spacing:.06em;
+  color:var(--gauge);
+  padding:3px 8px;
+  border:1px solid rgba(125,240,200,.3);
+  border-radius:var(--r-pill);
+  background:rgba(125,240,200,.05);
+  white-space:nowrap;
+}
+
+/* ========================= CAPTURE GRID ========================= */
+.cap-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+}
+.cap-btn{
+  position:relative;
+  display:flex; align-items:center; gap:9px;
+  padding:11px 11px;
+  text-align:left;
+  border:1px solid var(--line);
+  border-radius:var(--r-ctl);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.02), transparent 60%),
+    var(--ink-750);
+  color:var(--txt);
+  font:inherit; cursor:pointer;
+  transition:border-color .16s ease, background .16s ease, transform .08s ease;
+  overflow:hidden;
+}
+.cap-btn .gx{
+  width:30px; height:30px; flex-shrink:0;
+  display:grid; place-items:center;
+  border-radius:8px;
+  border:1px solid var(--line-soft);
+  background:var(--ink-850);
+  color:var(--gauge);
+  transition:color .16s ease, border-color .16s ease, background .16s ease;
+}
+.cap-btn .cl{ display:flex; flex-direction:column; min-width:0; gap:2px }
+.cap-btn .cl b{ font-size:.8rem; font-weight:650; letter-spacing:-.01em; line-height:1.05 }
+.cap-btn .cl span{
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.02em;
+  color:var(--txt-dim);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.cap-btn:hover{
+  border-color:rgba(125,240,200,.4);
+  background:linear-gradient(180deg, rgba(125,240,200,.07), transparent 70%), var(--ink-700);
+}
+.cap-btn:hover .gx{ color:#bdffe8; border-color:rgba(125,240,200,.4); background:rgba(125,240,200,.1) }
+.cap-btn:active{ transform:translateY(1px) }
+.cap-btn:focus-visible{ outline:2px solid var(--gauge); outline-offset:2px }
+/* primary = 화면 캡처 */
+.cap-btn.is-primary{
+  border-color:rgba(125,240,200,.45);
+  background:
+    linear-gradient(180deg, rgba(125,240,200,.14), rgba(125,240,200,.04));
+}
+.cap-btn.is-primary .gx{ background:rgba(125,240,200,.16); border-color:rgba(125,240,200,.45); color:#d6fff1 }
+.cap-btn.is-primary:hover{ background:linear-gradient(180deg, rgba(125,240,200,.2), rgba(125,240,200,.06)) }
+/* 모서리 계측 마크 — primary에만 미세 시그니처 */
+.cap-btn.is-primary::after{
+  content:""; position:absolute; top:7px; right:7px;
+  width:5px; height:5px; border-top:1px solid var(--gauge); border-right:1px solid var(--gauge);
+  opacity:.65;
+}
+
+/* ========================= PREVIEW (EMPTY) ====================== */
+.pv-empty{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:11px; min-height:150px; padding:26px 16px; text-align:center;
+  border:1px dashed var(--line-strong);
+  border-radius:11px;
+  background:
+    radial-gradient(120px 90px at 50% 38%, rgba(125,240,200,.06), transparent 70%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.014) 0 10px, transparent 10px 20px),
+    var(--ink-850);
+}
+.pv-cross{ position:relative; width:60px; height:60px; opacity:.9 }
+.pv-cross svg{ display:block }
+.pv-empty p{ margin:0; font-size:.84rem; color:var(--txt-mid); line-height:1.5 }
+.pv-empty .hint{
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.1em;
+  color:var(--txt-faint); text-transform:uppercase;
+}
+
+/* preview with capture (filled state shown for completeness) */
+.pv-stage{
+  position:relative;
+  border:1px solid var(--line); border-radius:11px;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(125,240,200,.08), transparent 55%),
+    repeating-conic-gradient(from 0deg, rgba(255,255,255,.03) 0% 25%, transparent 0% 50%) 0/16px 16px,
+    var(--ink-900);
+  min-height:118px;
+  display:grid; place-items:center; overflow:hidden;
+}
+.pv-meta{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  margin-bottom:9px;
+}
+.pv-meta b{ font-size:.8rem; font-weight:650 }
+.pv-chip{
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.04em;
+  color:var(--txt-mid);
+  padding:3px 7px; border-radius:var(--r-pill);
+  border:1px solid var(--line); background:var(--ink-850);
+}
+.pv-fake{
+  width:100%; height:100px; border-radius:8px;
+  background:
+    linear-gradient(135deg, #1c2740, #243a4d 60%, #1a2f3a);
+  border:1px solid rgba(125,240,200,.18);
+  position:relative;
+}
+.pv-fake .pin{
+  position:absolute; width:20px; height:20px; border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:var(--gauge); color:#06241b;
+  font:700 .68rem/20px var(--mono); text-align:center;
+  box-shadow:0 0 0 3px rgba(125,240,200,.25), 0 4px 10px rgba(0,0,0,.4);
+}
+
+/* ============================ DEBUG PACK ======================== */
+.field-lbl{
+  display:block; margin:0 0 6px;
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.14em;
+  color:var(--txt-dim); text-transform:uppercase;
+}
+.ta, .sel, .txt-in{
+  width:100%; font:inherit; color:var(--txt);
+  border:1px solid var(--line);
+  border-radius:var(--r-ctl);
+  background:var(--ink-900);
+  transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.ta{ padding:9px 11px; font-size:.84rem; line-height:1.45; resize:vertical; min-height:64px }
+.ta::placeholder, .txt-in::placeholder{ color:var(--txt-faint) }
+.ta:hover, .sel:hover, .txt-in:hover{ border-color:var(--line-strong) }
+.ta:focus-visible, .sel:focus-visible, .txt-in:focus-visible{
+  outline:none; border-color:var(--gauge);
+  box-shadow:0 0 0 3px rgba(125,240,200,.16);
+  background:var(--ink-850);
+}
+
+.tmpl-wrap{ margin:11px 0 11px; position:relative }
+.sel{
+  padding:9px 30px 9px 11px; font-size:.85rem; cursor:pointer;
+  appearance:none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--gauge) 50%),
+    linear-gradient(135deg, var(--gauge) 50%, transparent 50%);
+  background-position:calc(100% - 16px) calc(50% + 1px), calc(100% - 11px) calc(50% + 1px);
+  background-size:5px 5px, 5px 5px;
+  background-repeat:no-repeat;
+}
+.sel option{ background:var(--ink-800); color:var(--txt) }
+
+.pack-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  padding:10px 12px;
+  border:1px solid var(--line); border-radius:var(--r-ctl);
+  background:var(--ink-750); color:var(--txt);
+  font:inherit; font-size:.8rem; font-weight:600; cursor:pointer;
+  transition:border-color .15s ease, background .15s ease, transform .08s ease, color .15s;
+}
+.btn svg{ flex-shrink:0 }
+.btn:hover{ border-color:var(--line-strong); background:var(--ink-700) }
+.btn:active{ transform:translateY(1px) }
+.btn:focus-visible{ outline:2px solid var(--gauge); outline-offset:2px }
+.btn:disabled{ opacity:.4; cursor:not-allowed }
+.btn:disabled:hover{ border-color:var(--line); background:var(--ink-750) }
+
+.btn--primary{
+  border-color:transparent; color:#06241b; font-weight:700;
+  background:linear-gradient(135deg, var(--gauge), var(--gauge-deep));
+  box-shadow:0 6px 18px -8px var(--glow);
+}
+.btn--primary:hover{ filter:brightness(1.06); border-color:transparent; background:linear-gradient(135deg, var(--gauge), var(--gauge-deep)) }
+.btn--primary svg{ color:#06241b }
+.btn--full{ width:100%; grid-column:1 / -1 }
+
+.pack-hint{
+  margin:11px 0 0; font-size:.74rem; line-height:1.5; color:var(--txt-dim);
+}
+
+/* details (최근 팩) */
+.fold{
+  margin-top:11px; padding-top:11px;
+  border-top:1px dashed var(--line);
+}
+.fold summary{
+  cursor:pointer; list-style:none;
+  display:flex; align-items:center; gap:7px;
+  font-size:.78rem; font-weight:600; color:var(--txt-mid);
+}
+.fold summary::-webkit-details-marker{ display:none }
+.fold summary::before{
+  content:"›"; font-family:var(--mono); color:var(--gauge);
+  transition:transform .18s ease; display:inline-block;
+}
+.fold[open] summary::before{ transform:rotate(90deg) }
+.fold-empty{ margin:9px 0 2px; font-size:.76rem; color:var(--txt-faint) }
+
+/* ============================ PIN MEMO ========================== */
+.pin-row{
+  display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:start;
+  padding:8px 0; border-bottom:1px solid var(--line-soft);
+}
+.pin-no{
+  font-family:var(--mono); font-size:.74rem; font-weight:700;
+  color:#06241b; background:var(--gauge);
+  min-width:22px; height:22px; padding:0 5px; margin-top:4px;
+  border-radius:6px; display:grid; place-items:center;
+}
+.pin-in{
+  width:100%; resize:none; min-height:32px;
+  padding:7px 9px; font:inherit; font-size:.82rem; line-height:1.4;
+  color:var(--txt);
+  border:1px solid var(--line); border-radius:8px; background:var(--ink-900);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.pin-in::placeholder{ color:var(--txt-faint) }
+.pin-in:focus-visible{ outline:none; border-color:var(--gauge); box-shadow:0 0 0 3px rgba(125,240,200,.16) }
+.pin-del{
+  width:30px; height:30px; flex-shrink:0;
+  border:1px solid var(--line); border-radius:8px;
+  background:var(--ink-850); color:var(--txt-dim);
+  cursor:pointer; font-size:1rem; line-height:1;
+  display:grid; place-items:center;
+  transition:color .15s ease, border-color .15s ease, background .15s ease;
+}
+.pin-del:hover{ color:var(--alert); border-color:rgba(255,122,138,.45); background:rgba(255,122,138,.1) }
+.pin-del:focus-visible{ outline:2px solid var(--alert); outline-offset:2px }
+.pin-empty{ margin:6px 0 0; font-size:.78rem; color:var(--txt-faint) }
+
+/* ============================ HISTORY ========================== */
+.hist-item{
+  display:grid; grid-template-columns:58px 1fr auto; gap:10px; align-items:center;
+  width:100%; padding:8px; text-align:left;
+  border:1px solid var(--line); border-radius:11px;
+  background:var(--ink-850); color:var(--txt);
+  font:inherit; cursor:pointer;
+  transition:border-color .15s ease, background .15s ease;
+}
+.hist-item:hover{ border-color:rgba(125,240,200,.4); background:var(--ink-800) }
+.hist-item:focus-visible{ outline:2px solid var(--gauge); outline-offset:2px }
+.hist-thumb{
+  width:58px; aspect-ratio:4/3; border-radius:7px; overflow:hidden;
+  border:1px solid var(--line);
+  background:linear-gradient(135deg,#1a2740,#22323f); position:relative;
+}
+.hist-thumb::after{
+  content:""; position:absolute; left:50%; top:50%; width:14px; height:14px;
+  transform:translate(-50%,-50%);
+  border:1px solid rgba(125,240,200,.5); border-radius:50%;
+}
+.hist-body{ min-width:0; display:flex; flex-direction:column; gap:3px }
+.hist-body b{ font-size:.8rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.hist-body span{
+  font-family:var(--mono); font-size:.62rem; letter-spacing:.02em; color:var(--txt-dim);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.hist-del{
+  width:30px; height:30px; flex-shrink:0;
+  border:1px solid var(--line); border-radius:8px;
+  background:transparent; color:var(--txt-dim); cursor:pointer;
+  font-size:1rem; display:grid; place-items:center;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.hist-del:hover{ color:var(--alert); border-color:rgba(255,122,138,.4); background:rgba(255,122,138,.08) }
+.hist-empty{
+  display:flex; align-items:center; gap:9px;
+  padding:13px 12px; border:1px dashed var(--line-strong); border-radius:11px;
+  background:var(--ink-850); color:var(--txt-faint); font-size:.78rem;
+}
+.hist-empty svg{ flex-shrink:0; color:var(--txt-dim) }
+.hist-clear{
+  margin-left:auto; width:28px; height:28px;
+  border:1px solid var(--line); border-radius:8px;
+  background:var(--ink-850); color:var(--txt-dim); cursor:pointer;
+  display:grid; place-items:center;
+  transition:color .15s, border-color .15s;
+}
+.hist-clear:hover{ color:var(--alert); border-color:rgba(255,122,138,.4) }
+
+/* ============================ TOASTS =========================== */
+.toasts{ display:flex; flex-direction:column; gap:7px }
+.toast{
+  position:relative;
+  display:flex; align-items:center; gap:9px;
+  padding:10px 12px 10px 14px;
+  border:1px solid var(--line); border-radius:10px;
+  background:var(--ink-750); color:var(--txt);
+  font-size:.8rem; line-height:1.35;
+  overflow:hidden;
+}
+.toast::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--gauge);
+}
+.toast .ti{ flex-shrink:0; display:grid; place-items:center; color:var(--gauge) }
+.toast--error{ border-color:rgba(255,122,138,.4) }
+.toast--error::before{ background:var(--alert) }
+.toast--error .ti{ color:var(--alert) }
+
+/* ============================ SHORTCUTS ======================== */
+.kbd-list{ display:grid; gap:6px; margin:2px 0 0 }
+.kbd-row{
+  display:flex; align-items:center; gap:10px;
+  font-size:.78rem; color:var(--txt-mid);
+}
+.kbd-row .dots{
+  flex:1; height:0; border-bottom:1px dotted var(--line-strong); margin-top:6px;
+}
+kbd{
+  font-family:var(--mono); font-size:.66rem; letter-spacing:.02em;
+  color:var(--txt); white-space:nowrap;
+  padding:3px 8px; border-radius:6px;
+  border:1px solid var(--line-strong);
+  background:var(--ink-900);
+  box-shadow:0 2px 0 rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.04) inset;
+}
+.kbd-note{
+  margin:11px 0 0; font-size:.72rem; line-height:1.5; color:var(--txt-dim);
+}
+.kbd-note code{ font-family:var(--mono); color:var(--gauge); font-size:.92em }
+
+/* ===== reduced motion ===== */
+@media (prefers-reduced-motion:reduce){
+  .scanbeam{ animation:none; opacity:0 !important }
+  *{ transition-duration:.01ms !important }
+}
+</style>
+</head>
+<body>
+
+<main class="panel" role="region" aria-label="SnapContext 사이드패널">
+
+  <!-- ============ HEADER ============ -->
+  <header class="hdr">
+    <div class="hdr-id">
+      <div class="mark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7df0c8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 7V4h3"/><path d="M20 7V4h-3"/><path d="M4 17v3h3"/><path d="M20 17v3h-3"/>
+          <circle cx="12" cy="12" r="3.2"/>
+          <path d="M12 7.5v1.3M12 15.2v1.3M7.5 12h1.3M15.2 12h1.3"/>
+        </svg>
+      </div>
+      <div class="hdr-txt">
+        <h1>SnapContext</h1>
+        <p class="tag">CAPTURE · MEASURE · SHIP</p>
+      </div>
+    </div>
+    <span class="ver">v0.1.3</span>
+  </header>
+
+  <!-- ============ CAPTURE ============ -->
+  <section class="slot" aria-labelledby="s-cap">
+    <span class="scanbeam" aria-hidden="true"></span>
+    <div class="slot-head">
+      <span class="slot-tag">01 · CAPTURE</span>
+      <h2 class="slot-title" id="s-cap">캡처 모드</h2>
+      <span class="slot-rule" aria-hidden="true"></span>
+    </div>
+
+    <div class="cap-grid" role="toolbar" aria-label="캡처 모드">
+      <button class="cap-btn is-primary" type="button" title="화면 캡처 (Alt+Shift+V)">
+        <span class="gx" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2.5" y="4.5" width="19" height="13" rx="2"/><path d="M8 20.5h8"/><path d="M12 17.5v3"/>
+            <circle cx="12" cy="11" r="2.4"/>
+          </svg>
+        </span>
+        <span class="cl"><b>화면 캡처</b><span>현재 보이는 화면</span></span>
+      </button>
+
+      <button class="cap-btn" type="button" title="문서 캡처 (Alt+Shift+M)">
+        <span class="gx" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 3h9l5 5v13H5z"/><path d="M14 3v5h5"/><path d="M8.5 12.5h7M8.5 16h7M8.5 9h3"/>
+          </svg>
+        </span>
+        <span class="cl"><b>문서 캡처</b><span>본문 영역 자동 감지</span></span>
+      </button>
+
+      <button class="cap-btn" type="button" title="요소 캡처 (Alt+Shift+E)">
+        <span class="gx" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 5l6.5 16 2-6.5 6.5-2z"/>
+          </svg>
+        </span>
+        <span class="cl"><b>요소 캡처</b><span>페이지 요소 선택</span></span>
+      </button>
+
+      <button class="cap-btn" type="button" title="전체 캡처 (Alt+Shift+G)">
+        <span class="gx" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>
+            <path d="M12 3v18" opacity=".0"/>
+          </svg>
+        </span>
+        <span class="cl"><b>전체 캡처</b><span>스크롤 전체 페이지</span></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ PREVIEW (EMPTY) ============ -->
+  <section class="slot" aria-labelledby="s-pv">
+    <span class="scanbeam" aria-hidden="true"></span>
+    <div class="slot-head">
+      <span class="slot-tag">02 · FRAME</span>
+      <h2 class="slot-title" id="s-pv">프리뷰</h2>
+      <span class="slot-rule" aria-hidden="true"></span>
+    </div>
+
+    <div class="pv-empty">
+      <div class="pv-cross" aria-hidden="true">
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="#7df0c8" stroke-width="1.4" stroke-linecap="round">
+          <path d="M30 8v14M30 38v14M8 30h14M38 30h14" opacity=".55"/>
+          <circle cx="30" cy="30" r="11" stroke-dasharray="3 4"/>
+          <circle cx="30" cy="30" r="2.4" fill="#7df0c8" stroke="none"/>
+          <path d="M14 14h5M14 14v5M46 14h-5M46 14v5M14 46h5M14 46v-5M46 46h-5M46 46v-5" stroke-width="1.6"/>
+        </svg>
+      </div>
+      <p>위 버튼으로 캡처를 시작하세요</p>
+      <span class="hint">NO FRAME LOADED</span>
+    </div>
+  </section>
+
+  <!-- ============ AI DEBUG PACK ============ -->
+  <section class="slot" aria-labelledby="s-pack">
+    <span class="scanbeam" aria-hidden="true"></span>
+    <div class="slot-head">
+      <span class="slot-tag">03 · PACK</span>
+      <h2 class="slot-title" id="s-pack">AI 디버그 팩</h2>
+      <span class="slot-rule" aria-hidden="true"></span>
+    </div>
+
+    <label class="field-lbl" for="note">메모 · 증상 / 요청</label>
+    <textarea class="ta" id="note" rows="3"
+      placeholder="증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)"></textarea>
+
+    <div class="tmpl-wrap">
+      <label class="field-lbl" for="tmpl">프롬프트 템플릿</label>
+      <select class="sel" id="tmpl" aria-label="프롬프트 템플릿">
+        <option value="bug">🐛 버그 리포트</option>
+        <option value="refactor">🔧 리팩토링</option>
+        <option value="reference">📐 레퍼런스</option>
+      </select>
+    </div>
+
+    <div class="pack-grid">
+      <button class="btn btn--primary" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l1.6 4.8L18 9.4l-4.4 1.6L12 16l-1.6-4.9L6 9.4l4.4-1.6z"/>
+        </svg>
+        프롬프트 복사
+      </button>
+      <button class="btn" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 4c-2 0-2 1.4-2 3s0 2-2 2c2 0 2 .4 2 2s0 3 2 3"/>
+          <path d="M16 4c2 0 2 1.4 2 3s0 2 2 2c-2 0-2 .4-2 2s0 3-2 3"/>
+        </svg>
+        JSON 복사
+      </button>
+      <button class="btn btn--full" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/>
+          <path d="M11.5 13.7l1.7 1.7 3.3-3.6"/>
+        </svg>
+        프롬프트 + JSON 복사
+      </button>
+    </div>
+
+    <p class="pack-hint">AI 디버그 팩을 만들려면 페이지 또는 요소를 캡처하세요.</p>
+
+    <details class="fold">
+      <summary>최근 팩</summary>
+      <p class="fold-empty">아직 저장된 팩이 없습니다.</p>
+    </details>
+  </section>
+
+  <!-- ============ PIN MEMO ============ -->
+  <section class="slot" aria-labelledby="s-pin">
+    <span class="scanbeam" aria-hidden="true"></span>
+    <div class="slot-head">
+      <span class="slot-tag">04 · PINS</span>
+      <h2 class="slot-title" id="s-pin">핀 메모</h2>
+      <span class="slot-rule" aria-hidden="true"></span>
+    </div>
+
+    <div class="pin-row">
+      <span class="pin-no">1</span>
+      <textarea class="pin-in" rows="1" placeholder="메모 입력…"></textarea>
+      <button class="pin-del" type="button" aria-label="핀 삭제" title="핀 삭제">×</button>
+    </div>
+    <p class="pin-empty">이미지를 클릭하여 핀을 추가하세요</p>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="slot" aria-labelledby="s-hist" data-live="1">
+    <span class="scanbeam" aria-hidden="true"></span>
+    <div class="slot-head">
+      <span class="slot-tag">05 · LOG</span>
+      <h2 class="slot-title" id="s-hist">캡처 기록</h2>
+      <span class="slot-rule" aria-hidden="true"></span>
+      <button class="hist-clear" type="button" aria-label="기록 전체 삭제" title="기록 전체 삭제">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 채워진 1항목 -->
+    <button class="hist-item" type="button" style="margin-bottom:8px">
+      <span class="hist-thumb" aria-hidden="true"></span>
+      <span class="hist-body">
+        <b>대시보드 — 차트 정렬 깨짐</b>
+        <span>localhost:5173 · 1280×720 · 14:22</span>
+      </span>
+      <span class="hist-del" role="button" aria-label="기록 삭제" title="기록 삭제">×</span>
+    </button>
+
+    <!-- 빈 상태 (참고용 동시 표시) -->
+    <div class="hist-empty">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/><path d="M7 14h5"/>
+      </svg>
+      <span>아직 캡처 기록이 없습니다.</span>
+    </div>
+  </section>
+
+  <!-- ============ TOASTS ============ -->
+  <div class="toasts" aria-live="polite">
+    <div class="toast">
+      <span class="ti" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>
+        </svg>
+      </span>
+      AI 프롬프트를 복사했습니다.
+    </div>
+    <div class="toast toast--error">
+      <span class="ti" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.3 3.8L2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0z"/>
+          <path d="M12 9v4M12 17h.01"/>
+        </svg>
+      </span>
+      캡처 데이터가 없습니다.
+    </div>
+  </div>
+
+  <!-- ============ SHORTCUTS ============ -->
+  <section class="slot" aria-labelledby="s-kbd">
+    <div class="slot-head">
+      <span class="slot-tag">06 · KEYS</span>
+      <h2 class="slot-title" id="s-kbd">단축키</h2>
+      <span class="slot-rule" aria-hidden="true"></span>
+    </div>
+
+    <div class="kbd-list">
+      <div class="kbd-row"><span>화면 캡처</span><span class="dots" aria-hidden="true"></span><kbd>Alt+Shift+V</kbd></div>
+      <div class="kbd-row"><span>요소 캡처</span><span class="dots" aria-hidden="true"></span><kbd>Alt+Shift+E</kbd></div>
+      <div class="kbd-row"><span>문서 캡처</span><span class="dots" aria-hidden="true"></span><kbd>Alt+Shift+M</kbd></div>
+    </div>
+
+    <p class="kbd-note">
+      브라우저에서 이미 사용 중인 단축키와 충돌하면 자동 등록되지 않을 수 있습니다.
+      그럴 때는 <code>whale://extensions/shortcuts</code> 에서 직접 지정하세요.
+    </p>
+  </section>
+
+</main>
+
+<script>
+/* ───── 마이크로 인터랙션 (CSS/JS only, reduced-motion 존중) ─────
+   1) 캡처 버튼 클릭 → 해당 슬롯의 스캔빔이 한 차례 흐른 뒤 멈춤
+      ("측정이 진행되었다"는 차분한 피드백)
+   2) 핀 메모 textarea 자동 높이 증가 (실제 동작과 동일)               */
+
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// 1) 캡처 버튼 → 프리뷰 슬롯 스캔 펄스
+const capSlot = document.querySelector('[aria-labelledby="s-cap"]');
+const pvSlot  = document.querySelector('[aria-labelledby="s-pv"]');
+document.querySelectorAll('.cap-btn').forEach((b) => {
+  b.addEventListener('click', () => {
+    if (reduce) return;
+    [capSlot, pvSlot].forEach((s) => {
+      s.dataset.live = '1';
+      // 두 사이클 후 정지 — 과시적이지 않게
+      window.clearTimeout(s._t);
+      s._t = window.setTimeout(() => { s.dataset.live = '0'; }, 3800);
+    });
+  });
+});
+
+// 2) 핀 메모 / 노트 자동 높이
+function autoGrow(el){ el.style.height = '0px'; el.style.height = el.scrollHeight + 'px'; }
+document.querySelectorAll('.pin-in').forEach((ta) => {
+  autoGrow(ta);
+  ta.addEventListener('input', () => autoGrow(ta));
+});
+</script>
+
+</body>
+</html>

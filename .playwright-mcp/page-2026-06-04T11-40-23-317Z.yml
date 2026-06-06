@@ -1,0 +1,370 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome Web Store logo Chrome Web Store" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome Web Store logo" [ref=e8]
+          - generic [ref=e9]: Chrome Web Store
+        - search "Sitewide" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Search Chrome Web Store" [active] [ref=e15]
+        - generic [ref=e16]:
+          - button "More options menu" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google apps" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "Sign in" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https://chromewebstore.google.com/detail/lightshot-screenshot-tool/mbniclmhobmnbdlbpiphghaielnnpgdp/reviews?hl%3Den%26gl%3DUS&followup=https://chromewebstore.google.com/detail/lightshot-screenshot-tool/mbniclmhobmnbdlbpiphghaielnnpgdp/reviews?hl%3Den%26gl%3DUS&hl=en&ec=GAZApQM
+      - tablist [ref=e42]:
+        - generic [ref=e45]:
+          - tab "Discover" [ref=e46] [cursor=pointer]:
+            - generic:
+              - generic: Discover
+          - tab "Extensions" [selected] [ref=e47] [cursor=pointer]:
+            - generic:
+              - generic: Extensions
+          - tab "Themes" [ref=e48] [cursor=pointer]:
+            - generic:
+              - generic: Themes
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e55]:
+        - generic [ref=e56] [cursor=pointer]:
+          - img [ref=e59]
+          - link "Navigate back to item detail page" [ref=e61]:
+            - /url: ./detail/Lightshot%20%28screenshot%20tool%29/mbniclmhobmnbdlbpiphghaielnnpgdp
+        - generic [ref=e62]:
+          - link "Item logo image for Lightshot (screenshot tool) Lightshot (screenshot tool)" [ref=e63] [cursor=pointer]:
+            - /url: ./detail/lightshot-screenshot-tool/mbniclmhobmnbdlbpiphghaielnnpgdp
+            - img "Item logo image for Lightshot (screenshot tool)" [ref=e64]
+            - heading "Lightshot (screenshot tool)" [level=1] [ref=e65]
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e70] [cursor=pointer]:
+                - img [ref=e73]
+                - link "Created by the owner of the listed website. The publisher has a good record with no history of violations. Learn more." [ref=e76]:
+                  - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+              - link "https://app.prntscr.com/" [ref=e77] [cursor=pointer]:
+                - /url: https://app.prntscr.com/
+            - generic [ref=e78]:
+              - img "Average rating 4.4 out of 5 stars. 7K ratings." [ref=e79]:
+                - generic [ref=e80]: "4.4"
+                - img [ref=e81]
+                - generic [ref=e83]:
+                  - text: (
+                  - paragraph [ref=e84]: 7K ratings
+                  - text: )
+              - button "Ratings are updated daily and may not reflect the most recent reviews." [ref=e86] [cursor=pointer]:
+                - img [ref=e89]
+            - button "Share" [ref=e95] [cursor=pointer]:
+              - img [ref=e98]
+              - generic [ref=e100]: Share
+          - generic [ref=e101]:
+            - link "Extension" [ref=e102] [cursor=pointer]:
+              - /url: ./category/extensions
+            - link "Tools" [ref=e103] [cursor=pointer]:
+              - /url: ./category/extensions/productivity/tools
+            - text: 2,000,000 users
+          - button "Add to Chrome" [ref=e107] [cursor=pointer]:
+            - generic [ref=e109]: Add to Chrome
+      - heading "4.4 out of 5 4.4 out of 5 stars" [level=2] [ref=e111]:
+        - generic [ref=e112]:
+          - text: 4.4 out of 5
+          - img "4.4 out of 5 stars" [ref=e113]:
+            - generic [ref=e114]:
+              - generic [ref=e115]:
+                - img [ref=e116]
+                - img [ref=e119]
+                - img [ref=e122]
+                - img [ref=e125]
+                - img [ref=e128]
+              - generic [ref=e131]:
+                - img [ref=e132]
+                - img [ref=e134]
+                - img [ref=e136]
+                - img [ref=e138]
+                - img [ref=e140]
+      - text: 7K ratings•
+      - paragraph [ref=e142]:
+        - link "Learn more about results and reviews." [ref=e143] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results
+      - generic [ref=e144]:
+        - combobox "Filter by" [ref=e147] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: Filter by
+              - generic: Filter by
+          - generic:
+            - generic: All reviews
+          - generic:
+            - img
+        - combobox "Sort by" [ref=e151] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: Sort by
+              - generic: Sort by
+          - generic:
+            - generic: Recent
+          - generic:
+            - img
+        - combobox "Language" [ref=e156] [cursor=pointer]:
+          - generic:
+            - generic:
+              - generic: Language
+              - generic: Language
+          - generic:
+            - generic: English
+          - generic:
+            - img
+    - generic [ref=e158]:
+      - generic [ref=e159]:
+        - img "Review's profile picture" [ref=e160]
+        - heading "Himanshu Nigam 4 out of 5 stars May 29, 2026" [level=3] [ref=e162]:
+          - generic [ref=e163]: Himanshu Nigam
+          - img "4 out of 5 stars" [ref=e164]:
+            - generic [ref=e165]:
+              - generic [ref=e166]:
+                - img [ref=e167]
+                - img [ref=e170]
+                - img [ref=e173]
+                - img [ref=e176]
+                - img [ref=e179]
+              - generic [ref=e182]:
+                - img [ref=e183]
+                - img [ref=e185]
+                - img [ref=e187]
+                - img [ref=e189]
+                - img [ref=e191]
+          - generic [ref=e193]: May 29, 2026
+        - button "Review options" [ref=e197] [cursor=pointer]:
+          - img [ref=e200]
+        - paragraph [ref=e203]: this tool is not proper working in My Computer .
+      - generic [ref=e204]:
+        - img "Review's profile picture" [ref=e205]
+        - heading "Aaron 5 out of 5 stars May 17, 2026" [level=3] [ref=e207]:
+          - generic [ref=e208]: Aaron
+          - img "5 out of 5 stars" [ref=e209]:
+            - generic [ref=e210]:
+              - generic [ref=e211]:
+                - img [ref=e212]
+                - img [ref=e215]
+                - img [ref=e218]
+                - img [ref=e221]
+                - img [ref=e224]
+              - generic [ref=e227]:
+                - img [ref=e228]
+                - img [ref=e230]
+                - img [ref=e232]
+                - img [ref=e234]
+                - img [ref=e236]
+          - generic [ref=e238]: May 17, 2026
+        - button "Review options" [ref=e242] [cursor=pointer]:
+          - img [ref=e245]
+        - paragraph [ref=e248]: First time using it was great I recommend it for ChromeOS users who doesn't know to take a screenshot like me
+      - generic [ref=e249]:
+        - img "Review's profile picture" [ref=e250]
+        - heading "customer service BO5 41O 5OO3 Jeera 4 out of 5 stars May 4, 2026" [level=3] [ref=e252]:
+          - generic [ref=e253]: customer service BO5 41O 5OO3 Jeera
+          - img "4 out of 5 stars" [ref=e254]:
+            - generic [ref=e255]:
+              - generic [ref=e256]:
+                - img [ref=e257]
+                - img [ref=e260]
+                - img [ref=e263]
+                - img [ref=e266]
+                - img [ref=e269]
+              - generic [ref=e272]:
+                - img [ref=e273]
+                - img [ref=e275]
+                - img [ref=e277]
+                - img [ref=e279]
+                - img [ref=e281]
+          - generic [ref=e283]: May 4, 2026
+        - button "Review options" [ref=e287] [cursor=pointer]:
+          - img [ref=e290]
+        - paragraph [ref=e293]: Fast and user-friendly screenshot tool with easy sharing options.
+      - generic [ref=e294]:
+        - img "Review's profile picture" [ref=e295]
+        - heading "Eilane Lizardo 1 out of 5 stars Apr 29, 2026" [level=3] [ref=e297]:
+          - generic [ref=e298]: Eilane Lizardo
+          - img "1 out of 5 stars" [ref=e299]:
+            - generic [ref=e300]:
+              - generic [ref=e301]:
+                - img [ref=e302]
+                - img [ref=e305]
+                - img [ref=e308]
+                - img [ref=e311]
+                - img [ref=e314]
+              - generic [ref=e317]:
+                - img [ref=e318]
+                - img [ref=e320]
+                - img [ref=e322]
+                - img [ref=e324]
+                - img [ref=e326]
+          - generic [ref=e328]: Apr 29, 2026
+        - button "Review options" [ref=e332] [cursor=pointer]:
+          - img [ref=e335]
+        - paragraph [ref=e338]: not working
+        - generic [ref=e340]: 1 person found this review to be helpful
+      - generic [ref=e341]:
+        - img "Review's profile picture" [ref=e342]
+        - heading "Muhammad Shaeel Abbas (Moe) 1 out of 5 stars Apr 27, 2026" [level=3] [ref=e344]:
+          - generic [ref=e345]: Muhammad Shaeel Abbas (Moe)
+          - img "1 out of 5 stars" [ref=e346]:
+            - generic [ref=e347]:
+              - generic [ref=e348]:
+                - img [ref=e349]
+                - img [ref=e352]
+                - img [ref=e355]
+                - img [ref=e358]
+                - img [ref=e361]
+              - generic [ref=e364]:
+                - img [ref=e365]
+                - img [ref=e367]
+                - img [ref=e369]
+                - img [ref=e371]
+                - img [ref=e373]
+          - generic [ref=e375]: Apr 27, 2026
+        - button "Review options" [ref=e379] [cursor=pointer]:
+          - img [ref=e382]
+        - paragraph [ref=e385]: The extension is broken and takes blank screenshots. Uninstalling this
+        - generic [ref=e387]: 1 person found this review to be helpful
+      - generic [ref=e388]:
+        - img "Review's profile picture" [ref=e389]
+        - heading "The Concerned Bangali 5 out of 5 stars Apr 23, 2026" [level=3] [ref=e391]:
+          - generic [ref=e392]: The Concerned Bangali
+          - img "5 out of 5 stars" [ref=e393]:
+            - generic [ref=e394]:
+              - generic [ref=e395]:
+                - img [ref=e396]
+                - img [ref=e399]
+                - img [ref=e402]
+                - img [ref=e405]
+                - img [ref=e408]
+              - generic [ref=e411]:
+                - img [ref=e412]
+                - img [ref=e414]
+                - img [ref=e416]
+                - img [ref=e418]
+                - img [ref=e420]
+          - generic [ref=e422]: Apr 23, 2026
+        - button "Review options" [ref=e426] [cursor=pointer]:
+          - img [ref=e429]
+        - paragraph [ref=e432]: I used to use it but recently changed into Primeshot which is lot modern and smooth with lots of extra features alsong with screen recording and beautify.
+      - generic [ref=e433]:
+        - img "Review's profile picture" [ref=e434]
+        - heading "Al-Arsh Corp 4 out of 5 stars Apr 23, 2026" [level=3] [ref=e436]:
+          - generic [ref=e437]: Al-Arsh Corp
+          - img "4 out of 5 stars" [ref=e438]:
+            - generic [ref=e439]:
+              - generic [ref=e440]:
+                - img [ref=e441]
+                - img [ref=e444]
+                - img [ref=e447]
+                - img [ref=e450]
+                - img [ref=e453]
+              - generic [ref=e456]:
+                - img [ref=e457]
+                - img [ref=e459]
+                - img [ref=e461]
+                - img [ref=e463]
+                - img [ref=e465]
+          - generic [ref=e467]: Apr 23, 2026
+        - button "Review options" [ref=e471] [cursor=pointer]:
+          - img [ref=e474]
+        - paragraph [ref=e477]: It is an easy to use screenshot extension but occasionally while you take a screenshot it turns out to be blank, meaning no image was captured, which is quite frustrating at time. Because if you are taking multiple screenshots and do not necessarily look at it right away, as I sometimes need to take screenshots of either my own pdfs I have sent or on the web. Its kinda frustrating.
+      - generic [ref=e478]:
+        - img "Review's profile picture" [ref=e479]
+        - heading "Abdo Trader 5 out of 5 stars Apr 3, 2026" [level=3] [ref=e481]:
+          - generic [ref=e482]: Abdo Trader
+          - img "5 out of 5 stars" [ref=e483]:
+            - generic [ref=e484]:
+              - generic [ref=e485]:
+                - img [ref=e486]
+                - img [ref=e489]
+                - img [ref=e492]
+                - img [ref=e495]
+                - img [ref=e498]
+              - generic [ref=e501]:
+                - img [ref=e502]
+                - img [ref=e504]
+                - img [ref=e506]
+                - img [ref=e508]
+                - img [ref=e510]
+          - generic [ref=e512]: Apr 3, 2026
+        - button "Review options" [ref=e516] [cursor=pointer]:
+          - img [ref=e519]
+        - paragraph [ref=e522]: amazing
+      - generic [ref=e523]:
+        - img "Review's profile picture" [ref=e524]
+        - heading "SEMCREST Marketing 5 out of 5 stars Mar 30, 2026" [level=3] [ref=e526]:
+          - generic [ref=e527]: SEMCREST Marketing
+          - img "5 out of 5 stars" [ref=e528]:
+            - generic [ref=e529]:
+              - generic [ref=e530]:
+                - img [ref=e531]
+                - img [ref=e534]
+                - img [ref=e537]
+                - img [ref=e540]
+                - img [ref=e543]
+              - generic [ref=e546]:
+                - img [ref=e547]
+                - img [ref=e549]
+                - img [ref=e551]
+                - img [ref=e553]
+                - img [ref=e555]
+          - generic [ref=e557]: Mar 30, 2026
+        - button "Review options" [ref=e561] [cursor=pointer]:
+          - img [ref=e564]
+        - paragraph [ref=e567]: best tool ever
+      - generic [ref=e568]:
+        - img "Review's profile picture" [ref=e569]
+        - heading "Alan Rada 1 out of 5 stars Mar 19, 2026" [level=3] [ref=e571]:
+          - generic [ref=e572]: Alan Rada
+          - img "1 out of 5 stars" [ref=e573]:
+            - generic [ref=e574]:
+              - generic [ref=e575]:
+                - img [ref=e576]
+                - img [ref=e579]
+                - img [ref=e582]
+                - img [ref=e585]
+                - img [ref=e588]
+              - generic [ref=e591]:
+                - img [ref=e592]
+                - img [ref=e594]
+                - img [ref=e596]
+                - img [ref=e598]
+                - img [ref=e600]
+          - generic [ref=e602]: Mar 19, 2026
+        - button "Review options" [ref=e606] [cursor=pointer]:
+          - img [ref=e609]
+        - paragraph [ref=e612]: Many blank screenshots once copied to paste or save. Unsure What's wrong. Was working great when first downloaded
+        - generic [ref=e614]: 2 out of 2 found this helpful
+      - button "Load more" [ref=e617] [cursor=pointer]:
+        - generic [ref=e619]: Load more
+  - contentinfo [ref=e620]:
+    - list [ref=e621]:
+      - listitem [ref=e622]:
+        - link "About Chrome Web Store" [ref=e623] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=en
+        - text: •
+      - listitem [ref=e624]:
+        - link "Developer Dashboard" [ref=e625] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e626]:
+        - link "Privacy Policy" [ref=e627] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=en
+        - text: •
+      - listitem [ref=e628]:
+        - link "Terms of Service" [ref=e629] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/en/gallery_tos.html
+        - text: •
+      - listitem [ref=e630]:
+        - link "Help" [ref=e631] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=en

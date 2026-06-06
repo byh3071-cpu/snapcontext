@@ -1,0 +1,306 @@
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome Web Store logo Chrome Web Store" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome Web Store logo" [ref=e8]
+          - generic [ref=e9]: Chrome Web Store
+        - search "Sitewide" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Search Chrome Web Store" [active] [ref=e15]
+        - generic [ref=e16]:
+          - button "More options menu" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google apps" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "Sign in" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https://chromewebstore.google.com/detail/awesome-screen-recorder-s/nlipoenfbbikpbjkfpfillcgkoblgpmj?hl%3Den%26gl%3DUS&followup=https://chromewebstore.google.com/detail/awesome-screen-recorder-s/nlipoenfbbikpbjkfpfillcgkoblgpmj?hl%3Den%26gl%3DUS&hl=en&ec=GAZApQM
+      - tablist [ref=e42]:
+        - generic [ref=e45]:
+          - tab "Discover" [ref=e46] [cursor=pointer]:
+            - generic:
+              - generic: Discover
+          - tab "Extensions" [selected] [ref=e47] [cursor=pointer]:
+            - generic:
+              - generic: Extensions
+          - tab "Themes" [ref=e48] [cursor=pointer]:
+            - generic:
+              - generic: Themes
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - img "Item logo image for Awesome Screen Recorder & Screenshot" [ref=e58]
+          - heading "Awesome Screen Recorder & Screenshot" [level=1] [ref=e59]
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - generic [ref=e64] [cursor=pointer]:
+              - img [ref=e67]
+              - link "Created by the owner of the listed website. The publisher has a good record with no history of violations. Learn more." [ref=e70]:
+                - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+            - link "http://www.awesomescreenshot.com/" [ref=e71] [cursor=pointer]:
+              - /url: http://www.awesomescreenshot.com/
+          - generic [ref=e72]:
+            - generic [ref=e75] [cursor=pointer]:
+              - img [ref=e78]
+              - link "Follows recommended practices for Chrome extensions. Learn more." [ref=e81]:
+                - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+            - generic [ref=e82]: Featured
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - generic [ref=e85]: "4.7"
+              - img [ref=e86]
+              - generic [ref=e88]:
+                - text: (
+                - link "29.2K ratings" [ref=e89] [cursor=pointer]:
+                  - /url: ./detail/awesome-screen-recorder-s/nlipoenfbbikpbjkfpfillcgkoblgpmj/reviews
+                  - paragraph [ref=e90]: 29.2K ratings
+                - text: )
+            - button "Ratings are updated daily and may not reflect the most recent reviews." [ref=e92] [cursor=pointer]:
+              - img [ref=e95]
+          - button "Share" [ref=e101] [cursor=pointer]:
+            - img [ref=e104]
+            - generic [ref=e106]: Share
+        - generic [ref=e107]:
+          - link "Extension" [ref=e108] [cursor=pointer]:
+            - /url: ./category/extensions
+          - link "Workflow & Planning" [ref=e109] [cursor=pointer]:
+            - /url: ./category/extensions/productivity/workflow
+          - text: 3,000,000 users
+        - button "Add to Chrome" [ref=e113] [cursor=pointer]:
+          - generic [ref=e115]: Add to Chrome
+      - generic [ref=e116]:
+        - region "Media carousel" [ref=e117]:
+          - button "Previous slide" [ref=e119] [cursor=pointer]:
+            - img [ref=e122]
+          - generic [ref=e126]:
+            - button "Item media 5 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e128] [cursor=pointer]:
+              - img "Item media 5 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e129]
+            - button "Item media 6 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e131] [cursor=pointer]:
+              - img "Item media 6 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e132]
+            - generic [ref=e135] [cursor=pointer]:
+              - button "Item media 1 (video) for Awesome Screen Recorder & Screenshot" [ref=e137]
+              - img "Item video thumbnail" [ref=e143]
+            - button "Item media 2 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e145] [cursor=pointer]:
+              - img "Item media 2 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e146]
+            - button "Item media 3 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e148] [cursor=pointer]:
+              - img "Item media 3 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e149]
+            - button "Item media 4 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e151] [cursor=pointer]:
+              - img "Item media 4 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e152]
+            - button "Item media 5 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e154] [cursor=pointer]:
+              - img "Item media 5 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e155]
+            - button "Item media 6 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e157] [cursor=pointer]:
+              - img "Item media 6 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e158]
+            - generic [ref=e161] [cursor=pointer]:
+              - button "Item media 1 (video) for Awesome Screen Recorder & Screenshot" [ref=e163]
+              - img "Item video thumbnail" [ref=e169]
+            - button "Item media 2 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e171] [cursor=pointer]:
+              - img "Item media 2 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e172]
+          - button "Next slide" [ref=e174] [cursor=pointer]:
+            - img [ref=e177]
+        - generic [ref=e180]:
+          - button "Preview slide 1 for Awesome Screen Recorder & Screenshot" [ref=e181] [cursor=pointer]:
+            - img "Item video thumbnail" [ref=e182]
+          - button "Preview slide 2 for Awesome Screen Recorder & Screenshot" [ref=e184] [cursor=pointer]:
+            - img "Item media 2 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e186]
+          - button "Preview slide 3 for Awesome Screen Recorder & Screenshot" [ref=e188] [cursor=pointer]:
+            - img "Item media 3 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e190]
+          - button "Preview slide 4 for Awesome Screen Recorder & Screenshot" [ref=e192] [cursor=pointer]:
+            - img "Item media 4 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e194]
+          - button "Preview slide 5 for Awesome Screen Recorder & Screenshot" [ref=e196] [cursor=pointer]:
+            - img "Item media 5 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e198]
+          - button "Preview slide 6 for Awesome Screen Recorder & Screenshot" [ref=e200] [cursor=pointer]:
+            - img "Item media 6 (screenshot) for Awesome Screen Recorder & Screenshot" [ref=e202]
+      - generic [ref=e204]:
+        - heading "Overview" [level=2] [ref=e206]:
+          - generic [ref=e207]: Overview
+        - generic [ref=e208]:
+          - generic [ref=e209]:
+            - paragraph [ref=e210]: The best screen recorder and screen capture & screenshot tool to record screen.
+            - paragraph [ref=e211]: "Want to share your screen for purposes such as reporting technical issues, creating product demos, or crafting how-to tutorials? Here are 🔟 reasons to choose Awesome Screen Recorder & Screenshot. 1️⃣ Provide stable service for more than 10 years 2️⃣ Loved by more than 4 million users across different platforms 👍 3️⃣ Local Screen Recorder & Cloud Screen Recorder 2 in 1 4️⃣ Screenshot/Screen Capture & Screen Recording 2 in 1 5️⃣ Record in WebM or MP4 6️⃣ Powerful features specially designed for work and educational scenarios 7️⃣ No ads and respect your privacy 8️⃣ Easy to use 9️⃣ Instantly share your screenshots and screen recordings 🔟 Most importantly, your voice matters! 🗣 & continuous improvements Here are some features for recording screens and capturing screenshots: 🎦🎦🎦 Screen Recorder 🎦🎦🎦 🎥 Record ▸ Record your Desktop (Entire Screen or Window), Current Tab or Camera only ▸ Include your voice in recording with the Microphone option on ▸ Include your face in your video by embedding your webcam ▸ Choose video dimensions from 720p, 1080p or 4K 💾 Save ▸ Save recordings to your local disk ▸ Save recordings to your online account ▸ Download uploaded videos in the MP4 or WebM format 🚀 Share Recordings ▸ Instantly get a shareable link of a video after finishing recording ▸ Easily share a recording video to Jira, Slack, Trello, Asana, GitHub 🖍 Annotate ＆ Edit ▸ Annotate the screen while recording ▸ Annotate and edit the video after recording Prefer to screenshot web pages as images? No problem, you can set the Capture tab as the primary tab. 📸📸📸 Capture Screenshot 📸📸📸 📷 Screen Capture ▸ Capture a screenshot of the page you visit, full page, selected area or visible part ▸ Capture a screenshot of your entire screen or a specific application window ▸ Capture visible part, entire screen or app window after delay 🖍 Annotate Screenshot ▸ Resize or crop a screenshot to the size you need ▸ Annotate your screenshot with rectangles, circles, arrows, lines, etc. ▸ Add text to your screenshot with or without background color, change text font and font size ▸ Blur sensitive information on your screenshot ▸ Highlight important part on your screenshot ▸ Select a local image or paste a copied image from your clipboard to annotate 📥 Save & Share Screenshot ▸ Save screenshot as image in PNG or JPG format, or download screenshot as PDF ▸ One click to save screenshot to your Awesome Screenshot account and get a shareable link ▸ Send a screenshot to a destination in Jira, Slack, Trello, Asana, GitHub ▸ Copy a screenshot directly when capturing selected area for quick pasting 📧 Contact us📧 If you have any questions, suggestions, or feature requests, feel free to contact us by clicking Feedback (recommended) in our browser extension’s popup menu or by this page https://www.awesomescreenshot.com/contact_us. Thank you."
+          - button "See more" [ref=e212] [cursor=pointer]
+      - generic [ref=e215]:
+        - heading "4.7 out of 5 4.7 out of 5 stars 29.2K ratings• Learn more about results and reviews." [level=2] [ref=e217]:
+          - generic [ref=e218]:
+            - text: 4.7 out of 5
+            - img "4.7 out of 5 stars" [ref=e219]:
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - img [ref=e222]
+                  - img [ref=e225]
+                  - img [ref=e228]
+                  - img [ref=e231]
+                  - img [ref=e234]
+                - generic [ref=e237]:
+                  - img [ref=e238]
+                  - img [ref=e240]
+                  - img [ref=e242]
+                  - img [ref=e244]
+                  - img [ref=e246]
+          - text: 29.2K ratings•
+          - paragraph [ref=e248]:
+            - link "Learn more about results and reviews." [ref=e249] [cursor=pointer]:
+              - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results
+        - generic [ref=e251] [cursor=pointer]:
+          - generic [ref=e252]: See all reviews
+          - link "See all reviews" [ref=e253]:
+            - /url: ./detail/awesome-screen-recorder-s/nlipoenfbbikpbjkfpfillcgkoblgpmj/reviews
+      - generic [ref=e254]:
+        - heading "Details" [level=2] [ref=e256]
+        - list [ref=e258]:
+          - listitem [ref=e259]:
+            - generic [ref=e260]: Version
+            - generic [ref=e261]: 4.4.41
+          - listitem [ref=e262]:
+            - generic [ref=e263]: Updated
+            - generic [ref=e264]: May 14, 2026
+          - listitem [ref=e265]:
+            - link "Flag concern" [ref=e267] [cursor=pointer]:
+              - /url: ./detail/nlipoenfbbikpbjkfpfillcgkoblgpmj/report
+          - listitem [ref=e268]:
+            - generic [ref=e269]: Size
+            - generic [ref=e270]: 9.03MiB
+          - listitem [ref=e271]:
+            - generic [ref=e272]: Languages
+            - generic [ref=e274]:
+              - text: 54 languages
+              - button "Show more languages" [ref=e276] [cursor=pointer]:
+                - img [ref=e279]
+          - listitem [ref=e282]:
+            - generic [ref=e283]: Developer
+            - generic [ref=e285]:
+              - link "Website" [ref=e286] [cursor=pointer]:
+                - /url: http://www.awesomescreenshot.com/
+                - img [ref=e287]
+                - text: Website
+              - group [ref=e289]:
+                - generic "Email" [ref=e290]:
+                  - img [ref=e291]
+                  - text: Email
+                  - img [ref=e293]
+          - listitem [ref=e295]:
+            - generic [ref=e296]: Non-trader
+            - generic [ref=e297]: This developer has not identified itself as a trader. For consumers in the European Union, please note that consumer rights do not apply to contracts between you and this developer.
+      - generic [ref=e298]:
+        - heading "Privacy" [level=2] [ref=e300]
+        - generic [ref=e302]:
+          - generic [ref=e303]:
+            - paragraph [ref=e304]:
+              - text: Awesome Screen Recorder & Screenshot has disclosed the following information regarding the collection and usage of your data. More detailed information can be found in the developer's
+              - link "privacy policy" [ref=e305] [cursor=pointer]:
+                - /url: https://www.awesomescreenshot.com/privacy/
+              - text: .
+            - heading "Awesome Screen Recorder & Screenshot handles the following:" [level=3] [ref=e306]
+            - generic [ref=e308]:
+              - img [ref=e310]
+              - generic [ref=e312]: Website content
+            - generic [ref=e315] [cursor=pointer]:
+              - generic [ref=e316]: See details
+              - link "See details" [ref=e317]:
+                - /url: ./detail/nlipoenfbbikpbjkfpfillcgkoblgpmj/privacy
+          - generic [ref=e319]:
+            - heading "This developer declares that your data is" [level=2] [ref=e320]
+            - list [ref=e321]:
+              - listitem [ref=e322]:
+                - text: Not being sold to third parties, outside of the
+                - link "approved use cases" [ref=e323] [cursor=pointer]:
+                  - /url: https://developer.chrome.com/docs/webstore/program-policies/limited-use/
+              - listitem [ref=e324]: Not being used or transferred for purposes that are unrelated to the item's core functionality
+              - listitem [ref=e325]: Not being used or transferred to determine creditworthiness or for lending purposes
+      - generic [ref=e326]:
+        - heading "Support" [level=2] [ref=e328]
+        - paragraph [ref=e329]:
+          - text: For help with questions, suggestions, or problems, visit the developer's
+          - link "support site" [ref=e330] [cursor=pointer]:
+            - /url: https://www.awesomescreenshot.com/contact_us
+      - generic [ref=e331]:
+        - heading "Related" [level=2] [ref=e332]
+        - region "Related items carousel" [ref=e335]:
+          - button "Previous slide" [ref=e337] [cursor=pointer]:
+            - img [ref=e340]
+          - region "Related item slides" [ref=e344]:
+            - generic [ref=e345]:
+              - generic [ref=e347]:
+                - link "Take Webpage Screenshots Entirely - FireShot" [ref=e348] [cursor=pointer]:
+                  - /url: ./detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg
+                - generic [ref=e349]:
+                  - heading "Take Webpage Screenshots Entirely - FireShot" [level=3] [ref=e350]
+                  - generic [ref=e351]:
+                    - img "Average rating 4.8 out of 5 stars." [ref=e352]:
+                      - generic [ref=e353]: "4.8"
+                      - img [ref=e354]
+                    - generic [ref=e357] [cursor=pointer]:
+                      - img [ref=e360]
+                      - link "Learn more about results and reviews \"Take Webpage Screenshots Entirely - FireShot\"." [ref=e362]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e363]: Take FULL webpage screenshots. Capture, edit and save them to PDF/JPEG/GIF/PNG, upload, print, send to OneNote, clipboard or email.
+              - generic [ref=e365]:
+                - link "Screenshot Tool - Screen Capture & Editor" [ref=e366] [cursor=pointer]:
+                  - /url: ./detail/screenshot-tool-screen-ca/edlifbnjlicfpckhgjhflgkeeibhhcii
+                - generic [ref=e367]:
+                  - heading "Screenshot Tool - Screen Capture & Editor" [level=3] [ref=e368]
+                  - generic [ref=e369]:
+                    - img "Average rating 4.7 out of 5 stars." [ref=e370]:
+                      - generic [ref=e371]: "4.7"
+                      - img [ref=e372]
+                    - generic [ref=e375] [cursor=pointer]:
+                      - img [ref=e378]
+                      - link "Learn more about results and reviews \"Screenshot Tool - Screen Capture & Editor\"." [ref=e380]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e381]: Innovative screenshot tool lets users screen capture and edit screenshot. Full page screen capture.
+              - generic [ref=e383]:
+                - link "Handy Screenshot - Full Page Screen Capture" [ref=e384] [cursor=pointer]:
+                  - /url: ./detail/handy-screenshot-full-pag/dajlhodahakobmgdiglkajjgbchiiccf
+                - generic [ref=e385]:
+                  - heading "Handy Screenshot - Full Page Screen Capture" [level=3] [ref=e386]
+                  - generic [ref=e387]:
+                    - img "Average rating 4.8 out of 5 stars." [ref=e388]:
+                      - generic [ref=e389]: "4.8"
+                      - img [ref=e390]
+                    - generic [ref=e393] [cursor=pointer]:
+                      - img [ref=e396]
+                      - link "Learn more about results and reviews \"Handy Screenshot - Full Page Screen Capture\"." [ref=e398]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e399]: Take screenshots of web pages with ease. Capture, edit, annotate and save them as PNG / JPG / WEBP formats.
+              - generic [ref=e401]:
+                - link "Screen Capture and Screen Recorder" [ref=e402] [cursor=pointer]:
+                  - /url: ./detail/screen-capture-and-screen/imopknpgdihifjkjpmjaagcagkefddnb
+                - generic [ref=e403]:
+                  - heading "Screen Capture and Screen Recorder" [level=3] [ref=e404]
+                  - generic [ref=e405]:
+                    - img "Average rating 4.5 out of 5 stars." [ref=e406]:
+                      - generic [ref=e407]: "4.5"
+                      - img [ref=e408]
+                    - generic [ref=e411] [cursor=pointer]:
+                      - img [ref=e414]
+                      - link "Learn more about results and reviews \"Screen Capture and Screen Recorder\"." [ref=e416]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e417]: Screen capture and screen recorder tool to record screen. Get more out of your screen captures! Take screenshots for free.
+          - button "Next slide" [ref=e419] [cursor=pointer]:
+            - img [ref=e422]
+  - contentinfo [ref=e425]:
+    - list [ref=e426]:
+      - listitem [ref=e427]:
+        - link "About Chrome Web Store" [ref=e428] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=en
+        - text: •
+      - listitem [ref=e429]:
+        - link "Developer Dashboard" [ref=e430] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e431]:
+        - link "Privacy Policy" [ref=e432] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=en
+        - text: •
+      - listitem [ref=e433]:
+        - link "Terms of Service" [ref=e434] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/en/gallery_tos.html
+        - text: •
+      - listitem [ref=e435]:
+        - link "Help" [ref=e436] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=en

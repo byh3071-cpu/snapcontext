@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SnapContext — The Capture Review</title>
+<style>
+/* ============================================================================
+   SIGNATURE SYSTEM  ·  "THE CAPTURE REVIEW" (에디토리얼 매거진)
+   ----------------------------------------------------------------------------
+   컨셉명 : The Capture Review — 캡처를 '매거진 에디션/기사'처럼 다루는 편집판형.
+            사이드패널 = 한 권의 작은 발행물. 각 섹션 = 기명 기사(번호+제목+룰선).
+
+   핵심 아이디어 :
+     1) 거대한 디스플레이 세리프(Georgia 스택) 헤드라인 vs 정밀한 산세리프 본문의
+        대비 위계. 타이포가 화면의 주인공.
+     2) "마스트헤드 → 섹션번호(No.01) → 굵은 룰선 → 데크(deck)" 의 스위스 편집 격자.
+     3) 비대칭 컬럼: 라벨/번호는 좁은 좌측 거터, 내용은 넓은 우측 본문. 캡처모드는
+        2열 비대칭(아이콘+세리프숫자가 좌측에 떨어지는 '드롭캡' 느낌).
+     4) 풀쿼트(pull-quote) 위계: AI 디버그 팩 부제를 인용문처럼 세리프 이탤릭 큰글자로.
+     5) 절제된 1색 액센트 = 'INK RED'(주황빛 적). 잉크-온-크림 종이톤 위에서만 사용.
+
+   팔레트 근거 :
+     --paper #F4F0E6 : 따뜻한 크림 종이(중성 회백 대신 인쇄물 질감).
+     --ink   #1A1714 : 순흑 대신 따뜻한 잉크 브라운블랙 → 종이 위 인쇄 잉크 재현.
+     --accent#C4422A : 매거진 표제용 버밀리언/잉크레드. 색이 아니라 '인쇄 한 도수'.
+     액센트는 강조 액션·번호·키워드에만. 면적 최소 → 편집 절제미.
+
+   대비 실측(WCAG, 배경 대비 계산) :
+     ink #1A1714  on paper #F4F0E6      → 약 14.6:1  (본문 AAA)
+     muted #5C534690→대체 #6A6157 on paper → 약 5.0:1 (보조문 AA)
+     paper #F4F0E6 on accent #C4422A     → 약 4.8:1  (액센트 버튼 본문 AA)
+     paper on ink #1A1714                → 약 14.6:1 (반전 칩/배지 AAA)
+     accent #C4422A on paper #F4F0E6     → 약 4.0:1  (큰글자/굵은글자 3:1↑ 충족)
+       └ 작은 본문엔 accent 단독 사용 안 함(라벨·아이콘 병행).
+
+   접근성 : 상태는 색만으로 전달 안 함 — 아이콘(SVG)+텍스트 라벨 항상 병행.
+            전역 :focus-visible 링. 4상태(hover/focus/active/disabled) 전부 명시.
+            모션은 액션 응답형 1회 + prefers-reduced-motion 가드. idle 루프 없음.
+   ========================================================================== */
+
+:root{
+  /* ----- 색 토큰 ----- */
+  --paper:        #F4F0E6;   /* 크림 종이 */
+  --paper-2:      #EDE8DA;   /* 한 단계 진한 종이(스테이지/홈) */
+  --paper-3:      #E4DECF;   /* 룰/구획 보더 */
+  --ink:          #1A1714;   /* 잉크(본문) */
+  --ink-2:        #6A6157;   /* 보조 텍스트 */
+  --ink-3:        #8C8478;   /* 흐린 메타 */
+  --accent:       #C4422A;   /* 잉크 레드(1색 액센트) */
+  --accent-deep:  #9E3320;   /* 액센트 hover/active */
+  --accent-wash:  #F2DDD4;   /* 액센트 연한 배경 */
+  --ok:           #2F6B4F;   /* 성공(아이콘+텍스트 병행) */
+  --ok-wash:      #DDEAE0;
+  --warn:         #9E3320;   /* 에러(=accent-deep, 텍스트 병행) */
+  --warn-wash:    #F2DDD4;
+
+  /* ----- 타입 ----- */
+  --serif: "Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,"Times New Roman",serif;
+  --sans:  "Pretendard",-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",system-ui,sans-serif;
+  --mono:  ui-monospace,"SFMono-Regular","Cascadia Mono","Consolas",monospace;
+
+  --fs-mast:    25px;  /* 마스트헤드 SnapContext */
+  --fs-hl:      27px;  /* 섹션 헤드라인 */
+  --fs-deck:    13px;  /* 데크/부제 */
+  --fs-body:    13px;
+  --fs-sm:      12px;
+  --fs-xs:      10.5px;
+  --fs-micro:   9.5px; /* 트래킹된 라벨 */
+
+  /* ----- 스페이싱 ----- */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
+  --s5: 22px; --s6: 30px; --s7: 42px;
+  --pad: 18px;          /* 패널 좌우 거터 */
+  --gutter: 30px;       /* 좌측 라벨 거터 폭 */
+
+  /* ----- 라디우스(편집판형 → 거의 직각) ----- */
+  --r-0: 0px; --r-1: 2px; --r-2: 3px; --r-pill: 999px;
+
+  /* ----- 룰선 ----- */
+  --rule-thin:  1px;
+  --rule-mid:   2px;
+  --rule-bold:  3px;
+
+  /* ----- 그림자(인쇄물 → 종이 들림, 매우 절제) ----- */
+  --sh-1: 0 1px 0 rgba(26,23,20,.05);
+  --sh-2: 0 2px 10px rgba(26,23,20,.10);
+  --sh-lift: 0 4px 18px rgba(26,23,20,.14);
+
+  /* ----- 모션 ----- */
+  --mo-fast: 120ms;
+  --mo-mid:  200ms;
+  --ease: cubic-bezier(.2,.7,.2,1);
+
+  --focus: 0 0 0 2px var(--paper), 0 0 0 4px var(--accent);
+}
+
+/* ===================== RESET ===================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  width:360px;
+  margin:0 auto;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:var(--fs-body);
+  line-height:1.5;
+  letter-spacing:-0.005em;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+/* 미리보기 캔버스: 패널 밖 데스크 톤 */
+.canvas{
+  min-height:100vh;
+  background:
+    repeating-linear-gradient(45deg, #2b2823 0 2px, transparent 2px 22px),
+    #322e29;
+  display:flex; justify-content:center; padding:18px 0;
+}
+.panel{
+  width:360px;
+  background:var(--paper);
+  position:relative;
+  box-shadow:var(--sh-2);
+  /* 종이 가장자리 잉크 룰 */
+  border-left:var(--rule-thin) solid var(--paper-3);
+  border-right:var(--rule-thin) solid var(--paper-3);
+  overflow:hidden;
+}
+
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
+input,textarea,select{font:inherit;color:inherit}
+svg{display:block}
+::selection{background:var(--accent);color:var(--paper)}
+
+/* 전역 focus 링 */
+:focus-visible{outline:none;box-shadow:var(--focus);border-radius:var(--r-2)}
+
+/* 공통 트래킹 라벨 */
+.kicker{
+  font-family:var(--mono);
+  font-size:var(--fs-micro);
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--ink-2);
+}
+
+/* ===================== MASTHEAD ===================== */
+.masthead{
+  padding:var(--s5) var(--pad) var(--s3);
+  border-bottom:var(--rule-bold) solid var(--ink);
+}
+.mast-top{
+  display:flex; align-items:center; justify-content:space-between;
+  font-family:var(--mono); font-size:var(--fs-micro);
+  letter-spacing:.2em; text-transform:uppercase; color:var(--ink-2);
+  margin-bottom:var(--s3);
+}
+.mast-top .edition{color:var(--accent);font-weight:700}
+.mast-title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3)}
+.mast-title{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:var(--fs-mast);
+  line-height:.95;
+  letter-spacing:-0.02em;
+}
+.mast-title .dot{color:var(--accent)}
+.mast-actions{display:flex;gap:var(--s2);padding-bottom:2px}
+.icon-btn{
+  width:30px;height:30px;
+  display:grid;place-items:center;
+  border:var(--rule-thin) solid var(--paper-3);
+  border-radius:var(--r-2);
+  color:var(--ink);
+  background:var(--paper);
+  transition:background var(--mo-fast) var(--ease),
+             border-color var(--mo-fast) var(--ease),
+             transform var(--mo-fast) var(--ease);
+}
+.icon-btn:hover{background:var(--paper-2);border-color:var(--ink-3)}
+.icon-btn:active{transform:translateY(1px)}
+.icon-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* 툴팁 */
+[data-tip]{position:relative}
+[data-tip]:hover::after,[data-tip]:focus-visible::after{
+  content:attr(data-tip);
+  position:absolute; top:calc(100% + 7px); right:0;
+  white-space:nowrap;
+  background:var(--ink); color:var(--paper);
+  font-family:var(--sans); font-size:var(--fs-xs); letter-spacing:0;
+  text-transform:none; font-weight:500;
+  padding:5px 8px; border-radius:var(--r-2);
+  box-shadow:var(--sh-2); z-index:40; pointer-events:none;
+}
+[data-tip]:hover::before,[data-tip]:focus-visible::before{
+  content:""; position:absolute; top:calc(100% + 2px); right:11px;
+  border:5px solid transparent; border-bottom-color:var(--ink); z-index:40;
+}
+
+/* ===================== SECTION CHROME ===================== */
+.section{padding:var(--s6) var(--pad) var(--s2)}
+.section + .section{padding-top:var(--s5)}
+.sec-head{display:grid;grid-template-columns:var(--gutter) 1fr auto;gap:var(--s3);align-items:baseline}
+.sec-no{
+  font-family:var(--serif); font-style:italic; font-weight:700;
+  font-size:var(--fs-deck); color:var(--accent); line-height:1;
+}
+.sec-title{
+  font-family:var(--serif); font-weight:700; font-size:var(--fs-hl);
+  letter-spacing:-0.02em; line-height:1;
+}
+.sec-aside{justify-self:end}
+.sec-rule{
+  height:var(--rule-mid); background:var(--ink);
+  margin:var(--s3) 0 var(--s4);
+}
+.deck{
+  grid-column:2 / -1;
+  color:var(--ink-2); font-size:var(--fs-deck); line-height:1.45;
+  margin-top:var(--s2);
+}
+
+/* ===================== 1. 캡처 모드 ===================== */
+.modes{display:flex;flex-direction:column}
+.mode{
+  display:grid;
+  grid-template-columns:var(--gutter) 1fr auto;
+  gap:var(--s3);
+  align-items:center;
+  padding:var(--s3) 0;
+  text-align:left;
+  border-bottom:var(--rule-thin) solid var(--paper-3);
+  transition:padding-left var(--mo-fast) var(--ease);
+  position:relative;
+}
+.mode::before{
+  content:""; position:absolute; left:0; top:0; bottom:0;
+  width:var(--rule-mid); background:var(--accent);
+  transform:scaleY(0); transform-origin:center;
+  transition:transform var(--mo-mid) var(--ease);
+}
+.mode:hover{padding-left:var(--s3)}
+.mode:hover::before{transform:scaleY(1)}
+.mode:focus-visible{box-shadow:var(--focus);border-radius:var(--r-2);z-index:2}
+.mode:active{background:var(--paper-2)}
+.mode-figure{
+  width:var(--gutter);height:var(--gutter);
+  display:grid;place-items:center;
+  border:var(--rule-thin) solid var(--ink);
+  border-radius:var(--r-2);
+  color:var(--ink);
+  position:relative;
+}
+.mode-figure .drop{
+  position:absolute; top:-9px; left:-7px;
+  font-family:var(--serif); font-style:italic; font-weight:700;
+  font-size:var(--fs-xs); color:var(--accent);
+  background:var(--paper); padding:0 2px; line-height:1;
+}
+.mode-body{min-width:0}
+.mode-label{font-weight:650;font-size:var(--fs-body);letter-spacing:-0.01em}
+.mode-sub{color:var(--ink-2);font-size:var(--fs-xs);margin-top:1px}
+.kbd{
+  font-family:var(--mono); font-size:var(--fs-micro);
+  letter-spacing:.04em; white-space:nowrap;
+  color:var(--ink-2);
+  border:var(--rule-thin) solid var(--paper-3);
+  border-radius:var(--r-2);
+  padding:3px 6px; background:var(--paper);
+  transition:border-color var(--mo-fast) var(--ease),color var(--mo-fast) var(--ease);
+}
+.mode:hover .kbd{border-color:var(--ink-3);color:var(--ink)}
+
+/* primary 프롬프트 액션(에디션 표제 액션) */
+.prompt-action{
+  margin-top:var(--s4);
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:var(--s3);
+  width:100%;
+  background:var(--accent);
+  color:var(--paper);
+  border:var(--rule-mid) solid var(--accent);
+  border-radius:var(--r-2);
+  padding:var(--s3) var(--s4);
+  text-align:left;
+  transition:background var(--mo-fast) var(--ease),
+             transform var(--mo-fast) var(--ease),
+             box-shadow var(--mo-fast) var(--ease);
+}
+.prompt-action .pa-main{display:flex;align-items:center;gap:var(--s3)}
+.prompt-action .pa-title{font-family:var(--serif);font-weight:700;font-size:16px;letter-spacing:-0.01em}
+.prompt-action .kbd{
+  background:rgba(244,240,230,.16);border-color:rgba(244,240,230,.35);color:var(--paper);
+}
+.prompt-action:hover{background:var(--accent-deep);box-shadow:var(--sh-lift)}
+.prompt-action:active{transform:translateY(1px);box-shadow:none}
+.prompt-action:focus-visible{box-shadow:var(--focus)}
+
+/* ===================== 2. 미리보기 ===================== */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.12em;
+  text-transform:uppercase;
+  border:var(--rule-thin) solid var(--ink);
+  border-radius:var(--r-pill);
+  padding:3px 9px 3px 7px;
+  color:var(--ink);
+}
+.badge.ready{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.badge svg{width:11px;height:11px}
+
+.stage{
+  position:relative;
+  border:var(--rule-mid) solid var(--ink);
+  border-radius:var(--r-2);
+  background:
+    repeating-conic-gradient(var(--paper-2) 0 25%, var(--paper) 0 50%)
+    0 0 / 18px 18px;
+  aspect-ratio:16/10;
+  overflow:hidden;
+  margin-top:var(--s2);
+}
+.stage-shot{
+  position:absolute; inset:9px;
+  border:var(--rule-thin) solid var(--ink);
+  background:linear-gradient(160deg,#fbf8f1 0%, #e9e2d3 60%, #ded5c2 100%);
+  border-radius:var(--r-1);
+  box-shadow:var(--sh-2);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.shot-bar{
+  height:18px;display:flex;align-items:center;gap:4px;padding:0 8px;
+  background:var(--paper-2);border-bottom:var(--rule-thin) solid var(--paper-3);
+}
+.shot-bar i{width:6px;height:6px;border-radius:50%;background:var(--ink-3);display:block}
+.shot-bar i:first-child{background:var(--accent)}
+.shot-canvas{flex:1;padding:12px 14px}
+.shot-canvas .ln{height:7px;border-radius:2px;background:var(--paper-3);margin-bottom:7px}
+.shot-canvas .ln.s{width:55%}
+.shot-canvas .ln.m{width:80%}
+.shot-canvas .ln.a{width:38%;background:var(--accent-wash)}
+/* 핀 마커 */
+.pin{
+  position:absolute; width:18px;height:18px;border-radius:var(--r-pill);
+  background:var(--accent);color:var(--paper);
+  display:grid;place-items:center;
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  border:var(--rule-thin) solid var(--paper);
+  box-shadow:var(--sh-2);
+}
+.pin.p1{top:30%;left:28%}
+.pin.p2{top:58%;left:64%}
+.pin.p3{top:72%;left:34%}
+
+.stage-tools{
+  position:absolute; right:9px; bottom:9px;
+  display:flex;gap:6px;
+}
+.stage-tools .icon-btn{background:var(--paper);box-shadow:var(--sh-2)}
+.zoom-hint{
+  margin-top:var(--s2);
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s3);
+}
+.zoom-hint .hint{font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.04em;color:var(--ink-3)}
+
+.ghost-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  border:var(--rule-thin) solid var(--ink);
+  border-radius:var(--r-2);
+  padding:6px 11px;font-size:var(--fs-sm);font-weight:600;
+  background:var(--paper);
+  transition:background var(--mo-fast) var(--ease),transform var(--mo-fast) var(--ease);
+}
+.ghost-btn:hover{background:var(--ink);color:var(--paper)}
+.ghost-btn:hover svg{stroke:var(--paper)}
+.ghost-btn:active{transform:translateY(1px)}
+.ghost-btn:disabled{opacity:.4;cursor:not-allowed}
+.ghost-btn svg{width:13px;height:13px}
+
+/* 핀 메모 블록 */
+.subhead{
+  display:flex;align-items:center;gap:var(--s2);
+  font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-2);
+  margin:var(--s5) 0 var(--s2);
+}
+.subhead::after{content:"";flex:1;height:var(--rule-thin);background:var(--paper-3)}
+.pin-empty{
+  display:flex;align-items:center;gap:var(--s2);
+  color:var(--ink-3);font-size:var(--fs-sm);font-style:italic;
+  font-family:var(--serif);
+  padding:var(--s2) 0;
+}
+.field{
+  width:100%;
+  border:var(--rule-thin) solid var(--paper-3);
+  border-bottom:var(--rule-mid) solid var(--ink-3);
+  border-radius:var(--r-2) var(--r-2) 0 0;
+  background:var(--paper);
+  padding:9px 11px;font-size:var(--fs-sm);
+  transition:border-color var(--mo-fast) var(--ease),background var(--mo-fast) var(--ease);
+}
+.field::placeholder{color:var(--ink-3)}
+.field:hover{background:var(--paper-2)}
+.field:focus-visible{box-shadow:none;outline:none;border-bottom-color:var(--accent);background:var(--paper)}
+textarea.field{resize:vertical;min-height:60px;line-height:1.5}
+
+/* ===================== 3. AI 디버그 팩 ===================== */
+.pullquote{
+  grid-column:2 / -1;
+  font-family:var(--serif); font-style:italic; font-weight:500;
+  font-size:15px; line-height:1.4; color:var(--ink);
+  border-left:var(--rule-bold) solid var(--accent);
+  padding-left:var(--s3);
+  margin-top:var(--s3);
+}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin-top:var(--s4)}
+.fld-wrap{display:flex;flex-direction:column;gap:5px}
+.fld-label{font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.select-wrap{position:relative}
+.select-wrap svg{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:11px;height:11px;pointer-events:none;color:var(--ink-2)}
+select.field{appearance:none;-webkit-appearance:none;padding-right:26px;cursor:pointer}
+
+.actions-stack{display:flex;flex-direction:column;gap:var(--s2);margin-top:var(--s4)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;
+  border-radius:var(--r-2);
+  padding:10px var(--s4);
+  font-size:var(--fs-sm);font-weight:650;letter-spacing:-0.01em;
+  border:var(--rule-mid) solid var(--ink);
+  background:var(--paper);color:var(--ink);
+  transition:background var(--mo-fast) var(--ease),
+             color var(--mo-fast) var(--ease),
+             transform var(--mo-fast) var(--ease),
+             box-shadow var(--mo-fast) var(--ease);
+}
+.btn svg{width:14px;height:14px}
+.btn:hover{background:var(--paper-2)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn--primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn--primary:hover{background:var(--accent-deep);border-color:var(--accent-deep);box-shadow:var(--sh-lift)}
+.btn--primary:active{box-shadow:none}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+
+/* 프로젝트 프로필 */
+.profile{
+  margin-top:var(--s5);
+  border:var(--rule-thin) solid var(--paper-3);
+  border-top:var(--rule-mid) solid var(--ink);
+  border-radius:0 0 var(--r-2) var(--r-2);
+  padding:var(--s4);
+  background:var(--paper-2);
+}
+.profile-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:var(--s3);
+}
+.profile-head .t{font-family:var(--serif);font-weight:700;font-size:15px;letter-spacing:-0.01em}
+.profile-empty{font-style:italic;font-family:var(--serif);color:var(--ink-3);font-size:var(--fs-sm);margin-bottom:var(--s3)}
+.profile-grid{display:flex;flex-direction:column;gap:var(--s2);margin-bottom:var(--s3)}
+
+/* ===================== 4. 공유 ===================== */
+.share-card{
+  border:var(--rule-mid) solid var(--ink);
+  border-radius:var(--r-2);
+  padding:var(--s4);
+  background:var(--paper);
+  margin-top:var(--s2);
+}
+.share-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border-radius:var(--r-2);
+  border:var(--rule-mid) solid var(--ink);background:var(--ink);color:var(--paper);
+  padding:11px var(--s4);font-weight:650;font-size:var(--fs-sm);
+  transition:background var(--mo-fast) var(--ease),transform var(--mo-fast) var(--ease);
+}
+.share-btn svg{width:14px;height:14px}
+.share-btn:hover{background:var(--accent);border-color:var(--accent)}
+.share-btn:active{transform:translateY(1px)}
+.share-btn:focus-visible{box-shadow:var(--focus)}
+
+/* 토글 */
+.toggle-row{
+  display:flex;align-items:flex-start;gap:var(--s3);
+  margin-top:var(--s3);padding-top:var(--s3);
+  border-top:var(--rule-thin) solid var(--paper-3);
+}
+.toggle{
+  --on:0;
+  position:relative;flex:0 0 auto;
+  width:38px;height:22px;border-radius:var(--r-pill);
+  border:var(--rule-thin) solid var(--ink);
+  background:var(--paper-2);
+  transition:background var(--mo-fast) var(--ease);
+}
+.toggle .knob{
+  position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+  background:var(--ink);
+  transition:transform var(--mo-mid) var(--ease),background var(--mo-fast) var(--ease);
+}
+.toggle[aria-pressed="true"]{background:var(--accent);border-color:var(--accent)}
+.toggle[aria-pressed="true"] .knob{transform:translateX(16px);background:var(--paper)}
+.toggle:hover{border-color:var(--accent)}
+.toggle:active .knob{width:19px}
+.toggle:focus-visible{box-shadow:var(--focus)}
+.toggle-text .tt{font-weight:600;font-size:var(--fs-sm)}
+.toggle-text .ts{color:var(--ink-2);font-size:var(--fs-xs);margin-top:1px}
+
+.share-progress{
+  display:none;align-items:center;gap:var(--s2);
+  margin-top:var(--s3);font-family:var(--mono);font-size:var(--fs-xs);
+  letter-spacing:.06em;color:var(--ink-2);
+}
+.share-progress.on{display:flex}
+.share-progress .spin{width:13px;height:13px}
+.share-result{margin-top:var(--s3)}
+.result-label{font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
+.result-link{
+  display:flex;align-items:center;gap:var(--s2);
+  border:var(--rule-thin) solid var(--paper-3);
+  border-left:var(--rule-bold) solid var(--accent);
+  border-radius:var(--r-2);
+  padding:8px 10px;background:var(--paper-2);
+  font-family:var(--mono);font-size:var(--fs-xs);color:var(--ink);
+  word-break:break-all;
+}
+.result-link .icon-btn{flex:0 0 auto;width:26px;height:26px}
+
+/* ===================== 5. 캡처 기록 ===================== */
+.hist-list{display:flex;flex-direction:column;margin-top:var(--s2)}
+.hist-row{
+  display:grid;grid-template-columns:auto 1fr auto;gap:var(--s3);align-items:center;
+  padding:var(--s3) 0;
+  border-bottom:var(--rule-thin) solid var(--paper-3);
+  position:relative;
+}
+.hist-row:first-child{border-top:var(--rule-thin) solid var(--paper-3)}
+.hist-thumb{
+  width:46px;height:34px;flex:0 0 auto;
+  border:var(--rule-thin) solid var(--ink);border-radius:var(--r-1);
+  background:
+    repeating-conic-gradient(var(--paper-2) 0 25%, var(--paper) 0 50%) 0 0 / 8px 8px;
+  position:relative;overflow:hidden;
+}
+.hist-thumb::after{
+  content:"";position:absolute;inset:4px;border-radius:1px;
+  background:linear-gradient(150deg,#fbf8f1,#ddd5c2);
+}
+.hist-body{min-width:0}
+.hist-title{
+  font-family:var(--serif);font-weight:600;font-size:var(--fs-sm);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.01em;
+}
+.hist-meta{font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.04em;color:var(--ink-2);margin-top:2px}
+.hist-meta .typ{color:var(--accent);font-weight:700}
+.hist-del{
+  width:28px;height:28px;flex:0 0 auto;
+  display:grid;place-items:center;border-radius:var(--r-2);
+  border:var(--rule-thin) solid transparent;color:var(--ink-3);
+  transition:color var(--mo-fast) var(--ease),border-color var(--mo-fast) var(--ease),background var(--mo-fast) var(--ease);
+}
+.hist-row:hover .hist-del{color:var(--ink-2)}
+.hist-del:hover{color:var(--warn);border-color:var(--warn-wash);background:var(--warn-wash)}
+.hist-del:active{transform:translateY(1px)}
+
+.hist-head-aside{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:var(--fs-xs);font-weight:600;color:var(--ink-2);
+  border:var(--rule-thin) solid var(--paper-3);border-radius:var(--r-2);
+  padding:4px 9px;background:var(--paper);
+  transition:color var(--mo-fast) var(--ease),border-color var(--mo-fast) var(--ease);
+}
+.hist-head-aside svg{width:12px;height:12px}
+.hist-head-aside:hover{color:var(--warn);border-color:var(--warn)}
+.hist-head-aside:active{transform:translateY(1px)}
+
+/* ===================== COLOPHON(푸터) ===================== */
+.colophon{
+  margin-top:var(--s6);
+  border-top:var(--rule-bold) solid var(--ink);
+  padding:var(--s4) var(--pad) var(--s6);
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);
+}
+.colophon .c-mark{font-family:var(--serif);font-style:italic;font-weight:700;letter-spacing:0;text-transform:none;color:var(--ink-2);font-size:var(--fs-xs)}
+
+/* ===================== TOAST ===================== */
+.toast-dock{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+  width:330px;display:flex;flex-direction:column;gap:var(--s2);z-index:60;
+}
+.toast{
+  display:flex;align-items:center;gap:var(--s3);
+  background:var(--ink);color:var(--paper);
+  border-radius:var(--r-2);
+  border-left:var(--rule-bold) solid var(--ok);
+  padding:11px var(--s4);box-shadow:var(--sh-lift);
+  font-size:var(--fs-sm);font-weight:550;
+  transform:translateY(14px);opacity:0;
+  animation:toast-in var(--mo-mid) var(--ease) forwards;
+}
+.toast.err{border-left-color:var(--accent)}
+.toast .t-ico{flex:0 0 auto;display:grid;place-items:center;width:20px;height:20px;border-radius:var(--r-pill)}
+.toast.ok .t-ico{background:var(--ok)}
+.toast.err .t-ico{background:var(--accent)}
+.toast .t-ico svg{width:12px;height:12px}
+@keyframes toast-in{to{transform:translateY(0);opacity:1}}
+
+/* ===================== DIALOG ===================== */
+.scrim{
+  position:fixed;inset:0;background:rgba(26,23,20,.55);
+  display:flex;align-items:center;justify-content:center;z-index:70;padding:18px;
+}
+.dialog{
+  width:312px;background:var(--paper);
+  border:var(--rule-mid) solid var(--ink);border-radius:var(--r-2);
+  box-shadow:var(--sh-lift);overflow:hidden;
+  animation:dlg-in var(--mo-mid) var(--ease);
+}
+@keyframes dlg-in{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.dlg-bar{height:var(--rule-bold);background:var(--accent)}
+.dlg-body{padding:var(--s5) var(--s5) var(--s4)}
+.dlg-no{font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:var(--s2)}
+.dlg-title{font-family:var(--serif);font-weight:700;font-size:19px;letter-spacing:-0.01em;line-height:1.15}
+.dlg-text{color:var(--ink-2);font-size:var(--fs-sm);margin-top:var(--s2);line-height:1.5}
+.dlg-actions{display:flex;gap:var(--s2);padding:0 var(--s5) var(--s5)}
+.dlg-actions .btn{margin:0}
+
+/* ===================== MOTION GUARD ===================== */
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:0.001ms !important;scroll-behavior:auto !important}
+}
+</style>
+</head>
+<body>
+<div class="canvas">
+<main class="panel" role="region" aria-label="SnapContext 사이드패널">
+
+  <!-- ========== MASTHEAD ========== -->
+  <header class="masthead">
+    <div class="mast-top">
+      <span>The Capture Review</span>
+      <span class="edition">EDITION v0.1.3</span>
+    </div>
+    <div class="mast-title-row">
+      <h1 class="mast-title">Snap<span class="dot">·</span>Context</h1>
+      <div class="mast-actions">
+        <button class="icon-btn" data-tip="설정 / 도움말: 단축키" aria-label="설정 및 도움말">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== 1. 캡처 모드 ========== -->
+  <section class="section" aria-labelledby="sec-1">
+    <div class="sec-head">
+      <span class="sec-no">No.01</span>
+      <h2 class="sec-title" id="sec-1">캡처 모드</h2>
+    </div>
+    <div class="sec-rule"></div>
+
+    <div class="modes">
+      <button class="mode">
+        <span class="mode-figure">
+          <span class="drop">a</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 16l5-5 4 4 3-3 6 6"/></svg>
+        </span>
+        <span class="mode-body">
+          <span class="mode-label">화면 캡처</span>
+          <span class="mode-sub">현재 보이는 화면</span>
+        </span>
+        <span class="kbd">Alt+Shift+V</span>
+      </button>
+
+      <button class="mode">
+        <span class="mode-figure">
+          <span class="drop">b</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3H3v4M19 3h2v4M5 21H3v-4M19 21h2v-4"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
+        </span>
+        <span class="mode-body">
+          <span class="mode-label">요소 캡처</span>
+          <span class="mode-sub">페이지 요소 선택</span>
+        </span>
+        <span class="kbd">Alt+Shift+E</span>
+      </button>
+
+      <button class="mode">
+        <span class="mode-figure">
+          <span class="drop">c</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 9h16M4 13h11M4 17h7"/></svg>
+        </span>
+        <span class="mode-body">
+          <span class="mode-label">문서 캡처</span>
+          <span class="mode-sub">본문 영역 자동 감지</span>
+        </span>
+        <span class="kbd">Alt+Shift+M</span>
+      </button>
+
+      <button class="mode">
+        <span class="mode-figure">
+          <span class="drop">d</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h4"/><path d="M16 20l-4 3-4-3"/></svg>
+        </span>
+        <span class="mode-body">
+          <span class="mode-label">전체 캡처</span>
+          <span class="mode-sub">스크롤 전체 페이지</span>
+        </span>
+        <span class="kbd">Alt+Shift+G</span>
+      </button>
+    </div>
+
+    <button class="prompt-action" id="promptAction">
+      <span class="pa-main">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M3 5h4M6 17v4M4 19h4"/><path d="M13 4l2.5 6.5L22 13l-6.5 2.5L13 22l-2.5-6.5L4 13l6.5-2.5z"/></svg>
+        <span class="pa-title">프롬프트</span>
+      </span>
+      <span class="kbd">Alt+Shift+P</span>
+    </button>
+  </section>
+
+  <!-- ========== 2. 미리보기 ========== -->
+  <section class="section" aria-labelledby="sec-2">
+    <div class="sec-head">
+      <span class="sec-no">No.02</span>
+      <h2 class="sec-title" id="sec-2">캡처 미리보기</h2>
+      <span class="sec-aside">
+        <span class="badge ready">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 7"/></svg>
+          준비됨
+        </span>
+      </span>
+      <p class="deck"><span class="kicker">캡처됨</span> — 현재 보이는 화면을 캡처한 에디션입니다.</p>
+    </div>
+    <div class="sec-rule"></div>
+
+    <div class="stage" aria-label="캡처 미리보기 이미지">
+      <div class="stage-shot" aria-hidden="true">
+        <div class="shot-bar"><i></i><i></i><i></i></div>
+        <div class="shot-canvas">
+          <div class="ln m"></div>
+          <div class="ln s"></div>
+          <div class="ln a"></div>
+          <div class="ln m"></div>
+          <div class="ln s"></div>
+        </div>
+      </div>
+      <span class="pin p1">1</span>
+      <span class="pin p2">2</span>
+      <span class="pin p3">3</span>
+      <div class="stage-tools">
+        <button class="icon-btn" data-tip="원본 이미지 확대" aria-label="확대">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="zoom-hint">
+      <button class="ghost-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        크게 보기
+      </button>
+      <span class="hint">Ctrl+휠: 확대/축소</span>
+    </div>
+
+    <div class="subhead">핀 메모</div>
+    <div class="pin-empty">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 4 3v2H6v-2l4-3z"/><path d="M12 15v5"/></svg>
+      이미지를 클릭하여 핀을 추가하세요
+    </div>
+    <input class="field" type="text" placeholder="메모 입력…" aria-label="핀 메모 입력" />
+  </section>
+
+  <!-- ========== 3. AI 디버그 팩 ========== -->
+  <section class="section" aria-labelledby="sec-3">
+    <div class="sec-head">
+      <span class="sec-no">No.03</span>
+      <h2 class="sec-title" id="sec-3">AI 디버그 팩</h2>
+      <blockquote class="pullquote">AI용 디버그 프롬프트, JSON 팩 또는 주석이 포함된 PNG를 복사하세요.</blockquote>
+    </div>
+    <div class="sec-rule"></div>
+
+    <div class="row2">
+      <div class="fld-wrap">
+        <label class="fld-label" for="ctxPack">컨텍스트 팩</label>
+        <div class="select-wrap">
+          <select class="field" id="ctxPack">
+            <option>버그 리포트</option>
+            <option>디자인 시스템</option>
+          </select>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div class="fld-wrap">
+        <label class="fld-label" for="tpl">프롬프트 템플릿</label>
+        <div class="select-wrap">
+          <select class="field" id="tpl">
+            <option>버그 리포트</option>
+            <option>디자인 시스템</option>
+          </select>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="fld-wrap" style="margin-top:var(--s3)">
+      <label class="fld-label" for="intent">인텐트</label>
+      <textarea class="field" id="intent" placeholder="증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)"></textarea>
+    </div>
+
+    <div class="actions-stack">
+      <button class="btn btn--primary" id="copyPrompt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+        AI 프롬프트 복사
+      </button>
+      <div class="btn-row">
+        <button class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v4M16 4v4M4 8h16M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8"/></svg>
+          JSON 복사
+        </button>
+        <button class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/><path d="M14 13h2M14 16h2"/></svg>
+          프롬프트 + JSON
+        </button>
+      </div>
+    </div>
+
+    <div class="profile">
+      <div class="profile-head">
+        <span class="t">프로젝트 프로필</span>
+        <span class="kicker">PROFILE</span>
+      </div>
+      <p class="profile-empty">아직 프로젝트 프로필이 없습니다.</p>
+      <div class="profile-grid">
+        <input class="field" type="text" placeholder="프로젝트 이름" aria-label="프로젝트 이름" />
+        <input class="field" type="text" placeholder="URL 패턴, 예: localhost:5173" aria-label="URL 패턴" />
+        <input class="field" type="text" placeholder="스택, 쉼표로 구분" aria-label="스택" />
+        <input class="field" type="text" placeholder="AI 선호 설정" aria-label="AI 선호 설정" />
+      </div>
+      <button class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h12l2 2v14H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>
+        프로필 저장
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== 4. 공유 ========== -->
+  <section class="section" aria-labelledby="sec-4">
+    <div class="sec-head">
+      <span class="sec-no">No.04</span>
+      <h2 class="sec-title" id="sec-4">공유</h2>
+    </div>
+    <div class="sec-rule"></div>
+
+    <div class="share-card">
+      <button class="share-btn" id="shareBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+        공유 링크 생성 (공개·7일)
+      </button>
+
+      <div class="toggle-row">
+        <button class="toggle" id="ctxToggle" role="switch" aria-pressed="false" aria-label="컨텍스트 포함">
+          <span class="knob"></span>
+        </button>
+        <span class="toggle-text">
+          <span class="tt">컨텍스트 포함</span>
+          <span class="ts">소스 주소·핀 메모</span>
+        </span>
+      </div>
+
+      <div class="share-progress" id="shareProg">
+        <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"/></svg>
+        업로드 중…
+      </div>
+
+      <div class="share-result">
+        <div class="result-label">공유 링크</div>
+        <div class="result-link">
+          <span style="flex:1">snapctx.app/s/9f3a-edition-0146</span>
+          <button class="icon-btn" data-tip="링크 복사" aria-label="링크 복사">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="1.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 5. 캡처 기록 ========== -->
+  <section class="section" aria-labelledby="sec-5">
+    <div class="sec-head">
+      <span class="sec-no">No.05</span>
+      <h2 class="sec-title" id="sec-5">캡처 기록</h2>
+      <span class="sec-aside">
+        <button class="hist-head-aside" id="clearAll">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+          모두 삭제
+        </button>
+      </span>
+    </div>
+    <div class="sec-rule"></div>
+
+    <div class="hist-list">
+      <div class="hist-row">
+        <span class="hist-thumb"></span>
+        <span class="hist-body">
+          <span class="hist-title">예시 페이지 제목 — 길면 말줄임</span>
+          <span class="hist-meta">06.04 14:32 · <span class="typ">영역</span> · 핀 3</span>
+        </span>
+        <button class="hist-del" data-tip="캡처 삭제" aria-label="캡처 삭제">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+        </button>
+      </div>
+
+      <div class="hist-row">
+        <span class="hist-thumb"></span>
+        <span class="hist-body">
+          <span class="hist-title">대시보드 결제 오류 화면</span>
+          <span class="hist-meta">06.04 11:08 · <span class="typ">요소</span> · 핀 1</span>
+        </span>
+        <button class="hist-del" data-tip="캡처 삭제" aria-label="캡처 삭제">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+        </button>
+      </div>
+
+      <div class="hist-row">
+        <span class="hist-thumb"></span>
+        <span class="hist-body">
+          <span class="hist-title">랜딩 페이지 전체 스크롤</span>
+          <span class="hist-meta">06.03 19:51 · <span class="typ">전체</span> · 핀 0</span>
+        </span>
+        <button class="hist-del" data-tip="캡처 삭제" aria-label="캡처 삭제">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== COLOPHON ========== -->
+  <footer class="colophon">
+    <span>Printed in the browser</span>
+    <span class="c-mark">SnapContext · v0.1.3</span>
+  </footer>
+
+</main>
+</div>
+
+<!-- ========== TOAST DOCK (시연용) ========== -->
+<div class="toast-dock" id="toastDock" aria-live="polite"></div>
+
+<!-- ========== DIALOG TEMPLATE (숨김, JS로 토글) ========== -->
+<script>
+(function(){
+  var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- 토스트 (액션 응답형, 자동 소멸) ---- */
+  function toast(kind, msg){
+    var dock = document.getElementById('toastDock');
+    var el = document.createElement('div');
+    el.className = 'toast ' + (kind === 'err' ? 'err' : 'ok');
+    var ico = kind === 'err'
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="#F4F0E6" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="#F4F0E6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 7"/></svg>';
+    el.innerHTML = '<span class="t-ico">'+ico+'</span><span>'+msg+'</span>';
+    dock.appendChild(el);
+    var life = rm ? 1800 : 2600;
+    setTimeout(function(){
+      if(!rm){ el.style.transition='opacity 200ms, transform 200ms'; el.style.opacity='0'; el.style.transform='translateY(8px)'; }
+      setTimeout(function(){ el.remove(); }, rm ? 0 : 220);
+    }, life);
+  }
+
+  /* ---- AI 프롬프트 복사 → success 토스트 ---- */
+  document.getElementById('copyPrompt').addEventListener('click', function(){
+    toast('ok', 'AI 프롬프트를 복사했습니다.');
+  });
+
+  /* ---- 컨텍스트 토글 ---- */
+  var tog = document.getElementById('ctxToggle');
+  tog.addEventListener('click', function(){
+    var on = tog.getAttribute('aria-pressed') === 'true';
+    tog.setAttribute('aria-pressed', String(!on));
+  });
+
+  /* ---- 공유: 진행상태 1회 표시 후 결과(데모) ---- */
+  document.getElementById('shareBtn').addEventListener('click', function(){
+    var prog = document.getElementById('shareProg');
+    prog.classList.add('on');
+    setTimeout(function(){
+      prog.classList.remove('on');
+      toast('ok', '공유 링크를 생성했습니다.');
+    }, rm ? 200 : 1100);
+  });
+
+  /* ---- 모두 삭제 → 확인 다이얼로그 ---- */
+  document.getElementById('clearAll').addEventListener('click', function(){
+    openDialog();
+  });
+
+  function openDialog(){
+    var scrim = document.createElement('div');
+    scrim.className = 'scrim';
+    scrim.innerHTML =
+      '<div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dlgT">' +
+        '<div class="dlg-bar"></div>' +
+        '<div class="dlg-body">' +
+          '<div class="dlg-no">No.05 · 캡처 기록</div>' +
+          '<div class="dlg-title" id="dlgT">캡처 기록 모두 삭제</div>' +
+          '<div class="dlg-text">저장된 모든 캡처가 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</div>' +
+        '</div>' +
+        '<div class="dlg-actions">' +
+          '<button class="btn" data-act="cancel">취소</button>' +
+          '<button class="btn btn--primary" data-act="go">계속</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(scrim);
+    var go = scrim.querySelector('[data-act="go"]');
+    go.focus();
+    scrim.addEventListener('click', function(e){
+      if(e.target === scrim || e.target.closest('[data-act]')){
+        var act = e.target.closest('[data-act]');
+        if(act && act.dataset.act === 'go'){ toast('err', '삭제할 항목을 선택하지 못했습니다.'); }
+        scrim.remove();
+      }
+    });
+    document.addEventListener('keydown', function esc(e){
+      if(e.key === 'Escape'){ scrim.remove(); document.removeEventListener('keydown', esc); }
+    });
+  }
+
+  /* ---- 프롬프트 액션(헤더) → 토스트 ---- */
+  document.getElementById('promptAction').addEventListener('click', function(){
+    toast('ok', '프롬프트 에디션을 준비했습니다.');
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "Chrome Web Store logo Chrome Web Store" [ref=e7] [cursor=pointer]:
+          - /url: ./
+          - img "Chrome Web Store logo" [ref=e8]
+          - generic [ref=e9]: Chrome Web Store
+        - search "Sitewide" [ref=e10]:
+          - generic [ref=e13]:
+            - generic:
+              - img
+            - combobox "Search Chrome Web Store" [ref=e15]
+        - generic [ref=e16]:
+          - button "More options menu" [ref=e20] [cursor=pointer]:
+            - img [ref=e23]
+          - generic [ref=e30]:
+            - button "Google apps" [ref=e34] [cursor=pointer]:
+              - img [ref=e35]
+            - link "Sign in" [ref=e38] [cursor=pointer]:
+              - /url: https://accounts.google.com/ServiceLogin?passive=1209600&osid=1&continue=https://chromewebstore.google.com/detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl?hl%3Den%26gl%3DUS&followup=https://chromewebstore.google.com/detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl?hl%3Den%26gl%3DUS&hl=en&ec=GAZApQM
+      - tablist [ref=e41]:
+        - generic [ref=e44]:
+          - tab "Discover" [ref=e45] [cursor=pointer]:
+            - generic:
+              - generic: Discover
+          - tab "Extensions" [ref=e46] [cursor=pointer]:
+            - generic:
+              - generic: Extensions
+          - tab "Themes" [ref=e47] [cursor=pointer]:
+            - generic:
+              - generic: Themes
+  - main [ref=e51]:
+    - generic [ref=e52]:
+      - generic [ref=e55]:
+        - generic [ref=e56]:
+          - img "Item logo image for GoFullPage - Full Page Screen Capture" [ref=e57]
+          - heading "GoFullPage - Full Page Screen Capture" [level=1] [ref=e58]
+        - generic [ref=e59]:
+          - generic [ref=e60]:
+            - generic [ref=e63] [cursor=pointer]:
+              - img [ref=e66]
+              - link "The publisher has a good record with no history of violations. Learn more." [ref=e69]:
+                - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+            - link "Full Page LLC" [ref=e70] [cursor=pointer]:
+              - /url: ./publisher/full-page-llc/u67df6addf0e0e65cc17152a973e0131f
+          - generic [ref=e71]:
+            - generic [ref=e74] [cursor=pointer]:
+              - img [ref=e77]
+              - link "Follows recommended practices for Chrome extensions. Learn more." [ref=e80]:
+                - /url: https://support.google.com/chrome_webstore/?hl=en&p=cws_badges
+            - generic [ref=e81]: Featured
+          - generic [ref=e82]:
+            - generic [ref=e83]:
+              - generic [ref=e84]: "4.9"
+              - img [ref=e85]
+              - generic [ref=e87]:
+                - text: (
+                - link "84K ratings" [ref=e88] [cursor=pointer]:
+                  - /url: ./detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl/reviews
+                  - paragraph [ref=e89]: 84K ratings
+                - text: )
+            - button "Ratings are updated daily and may not reflect the most recent reviews." [ref=e91] [cursor=pointer]:
+              - img [ref=e94]
+          - button "Share" [ref=e100] [cursor=pointer]:
+            - img [ref=e103]
+            - generic [ref=e105]: Share
+        - generic [ref=e106]:
+          - link "Extension" [ref=e107] [cursor=pointer]:
+            - /url: ./category/extensions
+          - link "Developer Tools" [ref=e108] [cursor=pointer]:
+            - /url: ./category/extensions/productivity/developer
+          - text: 11,000,000 users
+        - generic [ref=e111]:
+          - button "Add to Chrome" [disabled]:
+            - generic: Add to Chrome
+      - generic [ref=e112]:
+        - region "Media carousel" [ref=e113]:
+          - button "Previous slide" [ref=e115] [cursor=pointer]:
+            - img [ref=e118]
+          - generic [ref=e122]:
+            - button "Item media 2 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e124] [cursor=pointer]:
+              - img "Item media 2 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e125]
+            - button "Item media 3 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e127] [cursor=pointer]:
+              - img "Item media 3 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e128]
+            - button "Item media 1 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e130] [cursor=pointer]:
+              - img "Item media 1 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e131]
+            - button "Item media 2 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e133] [cursor=pointer]:
+              - img "Item media 2 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e134]
+            - button "Item media 3 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e136] [cursor=pointer]:
+              - img "Item media 3 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e137]
+            - button "Item media 1 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e139] [cursor=pointer]:
+              - img "Item media 1 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e140]
+            - button "Item media 2 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e142] [cursor=pointer]:
+              - img "Item media 2 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e143]
+          - button "Next slide" [ref=e145] [cursor=pointer]:
+            - img [ref=e148]
+        - generic [ref=e151]:
+          - button "Preview slide 1 for GoFullPage - Full Page Screen Capture" [ref=e152] [cursor=pointer]:
+            - img "Item media 1 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e154]
+          - button "Preview slide 2 for GoFullPage - Full Page Screen Capture" [ref=e156] [cursor=pointer]:
+            - img "Item media 2 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e158]
+          - button "Preview slide 3 for GoFullPage - Full Page Screen Capture" [ref=e160] [cursor=pointer]:
+            - img "Item media 3 (screenshot) for GoFullPage - Full Page Screen Capture" [ref=e162]
+      - generic [ref=e164]:
+        - heading "Overview" [level=2] [ref=e166]:
+          - generic [ref=e167]: Overview
+        - generic [ref=e169]:
+          - paragraph [ref=e170]: Capture a screenshot of your current page in entirety and reliably—without requesting any extra permissions!
+          - paragraph [ref=e171]: "The simplest way to take a full page screenshot of your current browser window. Click on the extension icon (or press Alt+Shift+P), watch the extension capture each part of the page, and be transported to a new tab of your screenshot where you can download it as an image or PDF or even just drag it to your desktop. *No bloat, no ads, no unnecessary permissions, just a simple way to turn a full web page into an image.* The advanced screen capture technology handles complex pages—including inner scrollable elements as well as embedded iframes—unlike any other extension. If you encounter an issue, please report it via the customer support flag icon on the capture page, so we can improve the extension for you and everyone else who uses it. In order to screenshot the entire page it must scroll to each visible part, so please be patient as it quickly assembles all the pieces. For the rare scenario where your page is too large for Chrome to store in one image, it will let you know and split it up into images in separate tabs. Export your result to PNG, JPEG, or various PDF paper sizes—all configurable from the extension’s options. *NEW:* crop, annotate, and add your favorite emojis to any screenshot with the new premium editor! This extension is run by an independent developer. View the original open source project on github: https://github.com/mrcoles/full-page-screen-capture-chrome-extension Change Log: 8.6 — 2026-01-14 — scrollbar fixes and capture improvements for LLM chat UIs 8.5 — 2025-03-19 — limit \"save as\" on auto-download and multi-download to deal with Chrome issue 8.4 — 2025-02-04 — fix issue with unexpected smooth scroll and visible scrollbars 8.3 — 2024-06-10 — fix keyboard shortcut 8.2 — 2024-05-30 — frame capture fixes for Chrome Manifest V3 8.1 — 2024-05-29 — additional Chrome Manifest V3 updates 8.0 — 2024-05-21 — support for Chrome Manifest V3 7.12 — 2023-07-13 — fix link from gofullpage.com + editor sidebar overflow 7.11 — 2023-07-06 — fix demo video render issue 7.10 — 2023-06-19 — bugfix for tab closing issue found in Chromium 114 7.9 — 2023-04-28 — fix issue when recapturing a page without reloading 7.8 — 2023-03-31 — editor theme defaults for timestamps + capture improvements involving Google search and ChatGPT’s chat interface + smooth scroll fix 7.7 — 2022-05-26 — improved datestamp + editor v2 7.6 — 2021-07-14 — fix issue with capture animation 7.5 — 2021-05-20 — bugfixes including quota issue with Chrome Canary, added auto-scroll when cropping in editor 7.4 — 2021-03-18 — various bugfixes including issue with PDF landscape export 7.3 — 2021-03-17 — fixed date localization issue + PDF export issues with transparent backgrounds and URLs on full image 7.2 — 2021-02-20 — improvements for other Chromium browsers 7.1 — 2020-09-14 — fixed scrolling issue affecting Twitch + added URL and date option to PDF & editor exports for premium users 7.0 — 2020-07-20 — Updated project name from “Full Page Screen Capture” to “GoFullPage” (same team, new name) 6.6 — 2020-07-15 — PDF export supports landscape layout + smart page splitting to prevent text lines from getting cut in half 6.5 — 2019-11-26 — welcome info page for new installs, fixed backwards compatibility bug 6.4 — 2019-11-15 — fixed issue where zoomed in pages sometimes resulted in blank sections in screenshots 6.3 — 2019-11-08 — various bugfixes including faster image copy and better backwards compatibility 6.2 — 2019-10-28 — native copy to clipboard support & additional controls via keyboard shortcuts and right-click dialog 6.1 — 2019-10-11 — editor improvements: easier selecting of elements and emoji rendering fix 6.0 — 2019-10-10 — introducing the new screenshot editor: crop, annotate, and add emojis to your screenshots! 5.7 — 2019-09-15 — bugfix for issue with imgur.com 5.6 — 2019-09-13 — initial bugfix for blank screenshots caused by Chrome 77 when capturing long pages 5.5 — 2019-09-04 — fixed issues that were affecting Behance and BBC News websites 5.4 — 2019-09-03 — add \"Save as\" to options page and user-reported bugfixes 5.3 — 2019-08-02 — minor bugfixes 5.2 — 2019-07-22 — various bugfixes, including issue with PDFs getting truncated on export 5.1 — 2019-04-22 — visual refresh, bugfixes from user-reported issues including fix for Chrome regression with iframe permissions 4.9 — 2018-09-15 — various bugfixes from user-reported issues, including Salesforce lightning dashboards 4.8 — 2018-08-14 — extra handling for Chrome 68 bug with downloads related to allow incognito setting (stay tuned for updates to handle issues with downloading in Chrome Beta & Canary >= v69) 4.7 — 2018-08-08 — bugfixes for some parallax sites and other edge cases 4.6 — 2018-07-23 — fixed regression with a number of pages that stopped scrolling, improvements for fixed background images 4.5 — 2018-07-18 — bugfixes, zoomed in white lines fix 4.4 — 2018-07-16 — new support for fixed header jump, new permissions controls, downloads fix, parallax improvements 4.3 — 2018-06-29 — bugfix for sporadic iframe error 4.2 — 2018-06-14 — bugfixes from user reports 4.1 — 2018-06-12 — bugfixes, zoomed out white lines fix 4.0 — 2018-06-10 — new support for iframes and framesets, Chrome 67 compatability updates 3.17 — 2018-05-30 — improvements to scrolling issue and handling of animations 3.16 — 2018-05-21 — fix for user-reported scrolling issue 3.15 — 2018-05-08 — additional improvements to fixed elements, better capture of feeds 3.14 — 2018-05-02 — improvement to export to PDF filenames 3.13 — 2018-05-01 — fix save as recent download location issue, improvement to fixed elements 3.12 — 2018-04-27 — added export to PDF option, plus bugfixes and performance improvements 3.11 — 2018-04-09 — improvements to captured screen, support for fixed backgrounds 3.10 — 2018-03-30 — bugfixes for various pages, cleaner Options page 3.9 — 2018-03-24 — fix issue saving options, improvements to scrollbar handling 3.8 — 2018-03-22 — add ability to specify download directory, bugfixes 3.7 — 2018-03-20 — download as PNG or JPG via options page, bugfixes for user reported issues 3.6 — 2018-03-16 — bugfixes for various pages including adwords, improved download functionality 3.5 — 2018-03-14 — bugfixes from user reports, stability improvements to capture page 3.4 — 2018-03-09 — improvements with scrollbars and fixed position elements via user reports 3.3 — 2018-03-07 — timestamps in filenames, batch download/delete feature, auto-download option 3.2 — 2018-03-05 — improvements to scrollbars and fixed position elements via user reports 3.1 — 2018-03-03 — updates to customer support feature 3.0 — 2018-02-27 — new advanced scrolling algorithm for difficult pages like Gmail and more! 2.12 — 2018-02-23 — bugfixes for svgs and user-reported pages 2.11 — 2018-02-21 — bugfixes for several user-reported pages 2.10 — 2018-02-20 — advanced support for fixed position elements 2.9 — 2018-02-13 — bugfix for some body scroll issues, natural size for zoom in on high pixel ratio displays 2.8 — 2018-02-08 — improved messaging for restricted URLs 2.7 — 2018-02-06 — bug fix for Chrome version 60 and below 2.6 — 2018-02-05 — style updates, bug fixes 2.4 — 2018-02-02 — fix for quota errors that can prevent capturing an image 2.3 — 2018-01-31 — new customer support feature for better service! 2.2 — 2016-09-01 — support for ctrl+s (or cmd+s on Mac) to save the screenshot 2.1 — 2016-08-22 — fixed capture zoom in/out issues, add an expand button to capture header 2.0 — 2016-08-19 — updated result tab for screenshots with click to download and ability to view/delete your screenshots 1.0.1 — 2016-05-14 — fix incognito mode \"File not found\" bug and better tab handling 1.0.0 — 2016-05-09 — this is a major release: introduces keyboard shortcut, splitting of images for pages that are too long, better handling of zoomed/emulator pages, more subtle gray icon, SVG support, and stability fixes (thank you @bluememory14, @BSierakowski, @denilsonsa, and all submitters of bug reports) 0.0.15 — 2015-04-05 — add timestamp to images so they are unique paths (via @HetIsNiels) and popup display fix 0.0.14 — 2015-02-14 — more “retina” fixes 0.0.13 — 2015-01-02 — remove scale feature to hopefully fix bugs experienced on “retina” displays 0.0.12 — 2014-08-24 — change permissions to more restrictive “activeTab” 0.0.11 — 2014-04-19 — backwards compatible permissions update 0.0.10 — 2014-04-17 — fixed permissions issue that prevents screen capture in Chrome 34 0.0.9 — 2013-12-08 — fixed bugs when the image is pieced together on retina screens 0.0.8 — 2013-11-17 — improved calculation of page width and height on non-standard pages 0.0.7 — 2013-10-10 — 10x speed improvement in capture time and restore to original scroll positions after capture (via @terrycojones) 0.0.6 — 2013-01-26 — Fixed scenario when captured image can load as a broken icon (caused by loading image before it has been written to the file system) 0.0.5 — 2013–01–21 — Fixed small bug in 0.0.4 0.0.4 — 2013–01–21 — Replaced deprecated BlobBuilder with Blob (via @gleitz) 0.0.3 — 2012-11-25 — Removed need to reload pages that were open before the extension is installed 0.0.2 — 2012-11-21 — Better messaging for pages that can't be screen captured (e.g., content scripts cannot run on the chrome webstore), and the generated image now incorporates the URL into its name 0.0.1 — 2012-11-06 — Initial release"
+      - generic [ref=e174]:
+        - heading "4.9 out of 5 4.9 out of 5 stars 84K ratings• Learn more about results and reviews." [level=2] [ref=e176]:
+          - generic [ref=e177]:
+            - text: 4.9 out of 5
+            - img "4.9 out of 5 stars" [ref=e178]:
+              - generic [ref=e179]:
+                - generic [ref=e180]:
+                  - img [ref=e181]
+                  - img [ref=e184]
+                  - img [ref=e187]
+                  - img [ref=e190]
+                  - img [ref=e193]
+                - generic [ref=e196]:
+                  - img [ref=e197]
+                  - img [ref=e199]
+                  - img [ref=e201]
+                  - img [ref=e203]
+                  - img [ref=e205]
+          - text: 84K ratings•
+          - paragraph [ref=e207]:
+            - link "Learn more about results and reviews." [ref=e208] [cursor=pointer]:
+              - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results
+        - generic [ref=e210] [cursor=pointer]:
+          - generic [ref=e211]: See all reviews
+          - link "See all reviews" [ref=e212]:
+            - /url: ./detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl/reviews
+      - generic [ref=e213]:
+        - heading "Details" [level=2] [ref=e215]
+        - list [ref=e217]:
+          - listitem [ref=e218]:
+            - generic [ref=e219]: Version
+            - generic [ref=e220]: "8.6"
+          - listitem [ref=e221]:
+            - generic [ref=e222]: Updated
+            - generic [ref=e223]: January 21, 2026
+          - listitem [ref=e224]:
+            - link "Flag concern" [ref=e226] [cursor=pointer]:
+              - /url: ./detail/fdpohaocaechififmbbbbbknoalclacl/report
+          - listitem [ref=e227]:
+            - generic [ref=e228]: Size
+            - generic [ref=e229]: 1.7MiB
+          - listitem [ref=e230]:
+            - generic [ref=e231]: Languages
+            - generic [ref=e233]:
+              - text: 5 languages
+              - button "Show more languages" [ref=e235] [cursor=pointer]:
+                - img [ref=e238]
+          - listitem [ref=e241]:
+            - generic [ref=e242]: Developer
+            - generic [ref=e244]:
+              - generic [ref=e245]:
+                - text: Full Page LLC
+                - text: "217 W 18th St #522 New York, NY 10113 US"
+              - link "Website" [ref=e246] [cursor=pointer]:
+                - /url: https://gofullpage.com
+                - img [ref=e247]
+                - text: Website
+              - group [ref=e249]:
+                - generic "Email" [ref=e250]:
+                  - img [ref=e251]
+                  - text: Email
+                  - img [ref=e253]
+              - group [ref=e255]:
+                - generic "Phone" [ref=e256]:
+                  - img [ref=e257]
+                  - text: Phone
+                  - img [ref=e259]
+          - listitem [ref=e261]:
+            - generic [ref=e262]: Trader
+            - generic [ref=e263]: This developer has identified itself as a trader per the definition from the European Union and committed to only offer products or services that comply with EU laws.
+          - listitem [ref=e264]:
+            - generic [ref=e265]:
+              - text: D-U-N-S
+              - button "Learn more about results and reviews" [ref=e267] [cursor=pointer]:
+                - img [ref=e270]
+            - generic [ref=e273]: "112406701"
+      - generic [ref=e274]:
+        - heading "Privacy" [level=2] [ref=e276]
+        - generic [ref=e278]:
+          - generic [ref=e279]:
+            - img [ref=e280]
+            - generic [ref=e283]:
+              - text: The developer has disclosed that it will not collect or use your data. To learn more, see the developer’s
+              - link "privacy policy" [ref=e284] [cursor=pointer]:
+                - /url: https://gofullpage.com/privacy
+              - text: .
+          - generic [ref=e285]:
+            - heading "This developer declares that your data is" [level=2] [ref=e286]
+            - list [ref=e287]:
+              - listitem [ref=e288]:
+                - text: Not being sold to third parties, outside of the
+                - link "approved use cases" [ref=e289] [cursor=pointer]:
+                  - /url: https://developer.chrome.com/docs/webstore/program-policies/limited-use/
+              - listitem [ref=e290]: Not being used or transferred for purposes that are unrelated to the item's core functionality
+              - listitem [ref=e291]: Not being used or transferred to determine creditworthiness or for lending purposes
+      - generic [ref=e292]:
+        - heading "Support" [level=2] [ref=e294]
+        - paragraph [ref=e295]:
+          - text: For help with questions, suggestions, or problems, visit the developer's
+          - link "support site" [ref=e296] [cursor=pointer]:
+            - /url: https://screencapture.mrcoles.com/
+      - generic [ref=e297]:
+        - heading "Related" [level=2] [ref=e298]
+        - region "Related items carousel" [ref=e301]:
+          - button "Previous slide" [ref=e303] [cursor=pointer]:
+            - img [ref=e306]
+          - region "Related item slides" [ref=e310]:
+            - generic [ref=e311]:
+              - generic [ref=e313]:
+                - link "Take Webpage Screenshots Entirely - FireShot" [ref=e314] [cursor=pointer]:
+                  - /url: ./detail/take-webpage-screenshots/mcbpblocgmgfnpjjppndjkmgjaogfceg
+                - generic [ref=e315]:
+                  - heading "Take Webpage Screenshots Entirely - FireShot" [level=3] [ref=e316]
+                  - generic [ref=e317]:
+                    - img "Average rating 4.8 out of 5 stars." [ref=e318]:
+                      - generic [ref=e319]: "4.8"
+                      - img [ref=e320]
+                    - generic [ref=e323] [cursor=pointer]:
+                      - img [ref=e326]
+                      - link "Learn more about results and reviews \"Take Webpage Screenshots Entirely - FireShot\"." [ref=e328]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e329]: Take FULL webpage screenshots. Capture, edit and save them to PDF/JPEG/GIF/PNG, upload, print, send to OneNote, clipboard or email.
+              - generic [ref=e331]:
+                - link "Screenshot Tool - Screen Capture & Editor" [ref=e332] [cursor=pointer]:
+                  - /url: ./detail/screenshot-tool-screen-ca/edlifbnjlicfpckhgjhflgkeeibhhcii
+                - generic [ref=e333]:
+                  - heading "Screenshot Tool - Screen Capture & Editor" [level=3] [ref=e334]
+                  - generic [ref=e335]:
+                    - img "Average rating 4.7 out of 5 stars." [ref=e336]:
+                      - generic [ref=e337]: "4.7"
+                      - img [ref=e338]
+                    - generic [ref=e341] [cursor=pointer]:
+                      - img [ref=e344]
+                      - link "Learn more about results and reviews \"Screenshot Tool - Screen Capture & Editor\"." [ref=e346]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e347]: Innovative screenshot tool lets users screen capture and edit screenshot. Full page screen capture.
+              - generic [ref=e349]:
+                - link "Webpage Screenshot - Entire page screenshot!" [ref=e350] [cursor=pointer]:
+                  - /url: ./detail/webpage-screenshot-entire/akgpcdalpfphjmfifkmfbpdmgdmeeaeo
+                - generic [ref=e351]:
+                  - heading "Webpage Screenshot - Entire page screenshot!" [level=3] [ref=e352]
+                  - generic [ref=e353]:
+                    - img "Average rating 4.7 out of 5 stars." [ref=e354]:
+                      - generic [ref=e355]: "4.7"
+                      - img [ref=e356]
+                    - generic [ref=e359] [cursor=pointer]:
+                      - img [ref=e362]
+                      - link "Learn more about results and reviews \"Webpage Screenshot - Entire page screenshot!\"." [ref=e364]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e365]: Since 2015 The most popular tool for your day to day. Whole page screenshot, sharing and much more.
+              - generic [ref=e367]:
+                - link "Screenshot Capture" [ref=e368] [cursor=pointer]:
+                  - /url: ./detail/screenshot-capture/giabbpobpebjfegnpcclkocepcgockkc
+                - generic [ref=e369]:
+                  - heading "Screenshot Capture" [level=3] [ref=e370]
+                  - generic [ref=e371]:
+                    - img "Average rating 4.1 out of 5 stars." [ref=e372]:
+                      - generic [ref=e373]: "4.1"
+                      - img [ref=e374]
+                    - generic [ref=e377] [cursor=pointer]:
+                      - img [ref=e380]
+                      - link "Learn more about results and reviews \"Screenshot Capture\"." [ref=e382]:
+                        - /url: https://support.google.com/chrome_webstore/answer/12225786?p=cws_reviews_results&hl=en
+                  - paragraph [ref=e383]: Capture viewport, crop & save to file, copy to clipboard as binary or data URL
+          - button "Next slide" [ref=e385] [cursor=pointer]:
+            - img [ref=e388]
+  - contentinfo [ref=e391]:
+    - list [ref=e392]:
+      - listitem [ref=e393]:
+        - link "About Chrome Web Store" [ref=e394] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore/answer/1047776?hl=en
+        - text: •
+      - listitem [ref=e395]:
+        - link "Developer Dashboard" [ref=e396] [cursor=pointer]:
+          - /url: https://chrome.google.com/webstore/devconsole/
+        - text: •
+      - listitem [ref=e397]:
+        - link "Privacy Policy" [ref=e398] [cursor=pointer]:
+          - /url: https://myaccount.google.com/privacypolicy?hl=en
+        - text: •
+      - listitem [ref=e399]:
+        - link "Terms of Service" [ref=e400] [cursor=pointer]:
+          - /url: https://ssl.gstatic.com/chrome/webstore/intl/en/gallery_tos.html
+        - text: •
+      - listitem [ref=e401]:
+        - link "Help" [ref=e402] [cursor=pointer]:
+          - /url: https://support.google.com/chrome_webstore?hl=en

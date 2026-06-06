@@ -1,0 +1,1475 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>SnapContext — 창의 컨셉 12종</title>
+<style>
+
+  *{box-sizing:border-box}
+  body{margin:0;background:#0a0a0c;color:#e6e3d8;font-family:system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;padding:0 0 80px}
+  .top{position:sticky;top:0;z-index:9;background:#060608;border-bottom:1px solid #23231d;padding:14px 22px}
+  .top h1{margin:0 0 4px;font-size:16px}
+  .top p{margin:0;font-size:12px;color:#8b8b80;line-height:1.5}
+  .gal{display:flex;flex-wrap:wrap;gap:22px;padding:24px 22px;align-items:flex-start}
+  .board{width:336px}
+  .board > .cap{display:flex;align-items:baseline;gap:8px;margin:0 0 8px}
+  .board > .cap b{font-size:14px} .board > .cap span{font-size:11px;color:#8b8b80}
+  .board.keep > .cap b::after{content:' · 킵';color:#cdf03a}
+  svg{display:block}
+
+  /* ===== 구조(테마 무관) ===== */
+  .theme{--appbg:#0b0b0c;--card:#0e0e10;--card2:#08080a;--tx:#e6e3d8;--mut:#7d7a6e;--acc:#4fd6e0;--on:#04222a;--bd:#23231d;--bd2:#3a3a30;--r:6px;--bw:1px;--fhead:inherit;--shadow:none;--blur:0px}
+  .theme{background:var(--appbg);border:1px solid var(--bd2);border-radius:var(--r);padding:14px;display:grid;gap:12px;color:var(--tx);font-size:14px;line-height:1.45}
+  .theme .head{display:flex;align-items:baseline;justify-content:space-between;border-bottom:var(--bw) solid var(--bd);padding-bottom:10px}
+  .theme .head h1{margin:0;font-size:17px;font-weight:650;font-family:var(--fhead)}
+  .theme .ver{font-size:11px;color:var(--mut)}
+  .theme .card{position:relative;background:var(--card);border:var(--bw) solid var(--bd);border-radius:var(--r);padding:12px;display:grid;gap:10px;box-shadow:var(--shadow);backdrop-filter:blur(var(--blur))}
+  .theme .eyebrow{font-size:10px;letter-spacing:.14em;color:var(--mut);display:flex;align-items:center;gap:6px}
+  .theme .eyebrow::before{content:'';width:10px;height:1px;background:var(--acc)}
+  .theme .title{margin:0;font-size:14px;font-weight:650;font-family:var(--fhead)}
+  .theme .tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .theme .tbtn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 8px;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:var(--card2);color:var(--tx);font:inherit;font-size:13px;font-weight:550;cursor:pointer}
+  .theme .tbtn svg{color:var(--acc)} .theme .tbtn:hover{border-color:var(--acc)}
+  .theme .tbtn.pri{background:var(--acc);color:var(--on);border-color:var(--acc);font-weight:650} .theme .tbtn.pri svg{color:var(--on)}
+  .theme .field{width:100%;background:var(--card2);border:var(--bw) solid var(--bd2);border-radius:var(--r);color:var(--tx);font:inherit;font-size:13px;padding:8px 10px}
+  .theme .field::placeholder{color:var(--mut)}
+  .theme .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .theme .btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:var(--card2);color:var(--tx);font:inherit;font-size:13px;cursor:pointer}
+  .theme .btn svg{color:var(--acc)} .theme .btn.pri{background:var(--acc);color:var(--on);border-color:var(--acc);font-weight:650} .theme .btn.pri svg{color:var(--on)}
+  .theme .chip{font-size:10px;color:var(--acc);border:var(--bw) solid var(--bd2);border-radius:var(--r);padding:2px 7px;justify-self:start}
+  .theme .row{display:grid;grid-template-columns:46px 1fr auto;gap:10px;align-items:center;padding:8px;border:var(--bw) solid var(--bd);border-radius:var(--r);background:var(--card2)}
+  .theme .thumb{width:46px;aspect-ratio:4/3;border:var(--bw) solid var(--bd2);background:rgba(128,128,128,.14);border-radius:calc(var(--r) - 1px)}
+  .theme .row .body{min-width:0;display:grid;gap:2px}
+  .theme .row .body b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .theme .meta{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .theme .icobtn{width:28px;height:28px;display:grid;place-items:center;border:var(--bw) solid var(--bd2);border-radius:var(--r);background:transparent;color:var(--mut);cursor:pointer}
+  .theme .toast{display:flex;align-items:center;gap:8px;padding:9px 11px;border:var(--bw) solid var(--bd2);border-left:2px solid var(--acc);border-radius:var(--r);background:var(--card);font-size:13px}
+  .theme .tk{font-size:9px;letter-spacing:.1em;color:var(--mut)}
+  .mono .eyebrow,.mono .meta,.mono .ver,.mono .tk,.mono .chip{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+  
+.board .hook{font-size:11px;color:#6f6f66;margin:7px 0 0;line-height:1.45;border-left:2px solid #2a2a22;padding-left:8px}
+/* ===== 창의 테마 12 ===== */
+/* x1 인광 오실로스코프 */
+.x1{
+  --appbg:
+    repeating-linear-gradient(180deg, rgba(255,255,255,.022) 0 2px, rgba(0,0,0,.05) 2px 3px),
+    linear-gradient(150deg, #2b2e2c 0%, #1d201e 38%, rgba(21,23,22,0) 38%),
+    linear-gradient(180deg, #242725, #161815);
+  --card:#0a1410;
+  --card2:#06100c;
+  --tx:#d9e6dc;
+  --mut:#6f8a78;
+  --acc:#54f08a;
+  --on:#031108;
+  --bd:#1c2c24;
+  --bd2:#2e4438;
+  --r:5px;
+  --bw:1px;
+  --fhead:ui-monospace,Menlo,Consolas,monospace;
+  --shadow:0 1px 0 rgba(255,255,255,.04), 0 10px 22px rgba(0,0,0,.5);
+  --blur:0px;
+  border:1px solid #3c4640;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06), inset 0 0 0 1px rgba(0,0,0,.4), 0 14px 30px rgba(0,0,0,.55);
+}
+.x1 .eyebrow,.x1 .meta,.x1 .ver,.x1 .tk,.x1 .chip{font-family:ui-monospace,Menlo,Consolas,monospace}
+.x1 .ver{letter-spacing:.06em;color:#8aa894}
+
+/* (1) 카드 = CRT 인광 스크린: 스캔라인 + 상단 글로우 */
+.x1 .card{
+  background:
+    repeating-linear-gradient(0deg, rgba(84,240,138,.05) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgba(84,240,138,.045), rgba(84,240,138,0) 60%),
+    radial-gradient(120% 80% at 50% -10%, rgba(84,240,138,.10), transparent 55%),
+    var(--card);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.5), inset 0 0 22px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.03);
+}
+/* (2) 코너 캘리브레이션 틱 */
+.x1 .card::before{
+  content:'';position:absolute;top:5px;left:5px;width:9px;height:9px;
+  border-left:1px solid rgba(84,240,138,.45);border-top:1px solid rgba(84,240,138,.45);
+}
+/* (3) eyebrow = 인광 트레이스 발광 */
+.x1 .eyebrow{color:#86f0ab;text-shadow:0 0 6px rgba(84,240,138,.35)}
+.x1 .eyebrow::before{width:14px;height:2px;background:var(--acc);box-shadow:0 0 8px var(--acc),0 0 3px var(--acc)}
+/* (4) 강조버튼 = 발광 ON 표시등 */
+.x1 .tbtn.pri,.x1 .btn.pri{
+  background:linear-gradient(180deg,#62f596,#3fcf76);
+  box-shadow:0 0 16px rgba(84,240,138,.5),inset 0 1px 0 rgba(255,255,255,.45);
+}
+.x1 .chip{color:#86f0ab;border-color:#2e4438}
+/* (5) 입력면/썸네일 = 형광 그래티큘(눈금) 스크린 */
+.x1 .field,.x1 .thumb{
+  background:
+    linear-gradient(rgba(84,240,138,.10) 1px,transparent 1px) 0 0/100% 11px,
+    linear-gradient(90deg,rgba(84,240,138,.10) 1px,transparent 1px) 0 0/11px 100%,
+    var(--card2);
+  box-shadow:inset 0 0 14px rgba(0,0,0,.6),inset 0 0 0 1px rgba(84,240,138,.06)
+}
+.x1 .toast{border-left-color:var(--acc);box-shadow:-3px 0 10px -4px rgba(84,240,138,.5)}
+
+/* x2 朱印 — 스미잉크 & 한코 */
+.x2{
+  /* 먹빛 화선지 톤: 차가운 회색 대신 따뜻한 누른빛 차콜 */
+  --appbg:linear-gradient(180deg,#1c1a17 0%,#17150f 100%);
+  --card:#211e19;
+  --card2:#191712;          /* 가라앉은 면 — 화선지 음영 */
+  --tx:#e9e3d4;             /* 누른 크림(생지) */
+  --mut:#9a9384;            /* 보조: 바랜 먹회색 */
+  --acc:#c2452f;            /* 朱印 — 주인 버밀리언(단 한 점의 색) */
+  --on:#fbf6ea;            /* 도장 위 생지색 글자 */
+  --bd:#322d24;            /* 헤어라인 — 종이 접힘선 */
+  --bd2:#4a4234;           /* 강한 보더 */
+  --r:2px;                 /* 무인양품식 거의 직각, 미세 라운드만 */
+  --bw:1px;
+  --fhead:"Hiragino Mincho ProN","Yu Mincho",Georgia,serif; /* 라벨/제목 한 톤만 명조 */
+  --shadow:0 1px 0 rgba(0,0,0,.35), 0 8px 24px -16px rgba(0,0,0,.9);
+  --blur:0;
+
+  /* (1) 화선지 결: 따뜻한 가로 섬유결 + 미세 종이 그레인 — 본문 가독성 해치지 않게 극저대비 */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,250,238,.014) 0 1px, transparent 1px 3px),
+    radial-gradient(circle at 18% 8%, rgba(194,69,47,.05), transparent 42%),
+    var(--appbg);
+}
+
+/* (2) eyebrow 틱을 '날인 점' 두 칸으로 — 도장 자국 같은 사각 마크 */
+.x2 .eyebrow{
+  font-family:var(--fhead);
+  letter-spacing:.22em;
+  color:var(--mut);
+}
+.x2 .eyebrow::before{
+  width:9px;height:9px;background:transparent;
+  border:1.5px solid var(--acc);
+  box-shadow:inset 0 0 0 2px #211e19, 2px 2px 0 -1px rgba(194,69,47,.45);
+  border-radius:1px;opacity:.9;
+}
+
+/* (3) 제목은 명조 한 톤으로 절제된 일본 문구 라벨 느낌 (한글은 시스템 폰트로 폴백되어 안전) */
+.x2 .head h1{ font-family:var(--fhead); font-weight:600; letter-spacing:.01em; }
+.x2 .ver{ font-family:var(--fhead); font-style:italic; opacity:.85; }
+.x2 .title{ font-family:var(--fhead); font-weight:600; }
+
+/* (4) 朱印: 강조는 '면 채움'이 아니라 '날인'. pri 버튼을 종이 위 찍힌 도장처럼 — 잉크 번짐 테두리 + 미세 회전감 */
+.x2 .tbtn.pri, .x2 .btn.pri{
+  background:
+    radial-gradient(120% 140% at 50% 0%, rgba(255,255,255,.10), transparent 55%),
+    linear-gradient(180deg,#cd4c35,#b23c28);
+  border-color:#8f2f1f;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,240,228,.22),
+    inset 0 0 14px rgba(120,20,10,.45),  /* 도장 잉크 농담 */
+    0 1px 0 rgba(0,0,0,.4);
+  text-shadow:0 1px 0 rgba(90,15,8,.5);
+}
+.x2 .tbtn.pri:hover, .x2 .btn.pri:hover{ filter:brightness(1.06); }
+
+/* (5) 우상단 코너: 날인용 등록 표식(レジマーク) — 무인양품 패키지의 모서리 디테일 */
+.x2 .head{ position:relative; }
+.x2 .head::after{
+  content:"印";
+  position:absolute; top:-2px; right:0;
+  width:20px;height:20px;
+  display:grid;place-items:center;
+  font-family:var(--fhead);font-size:11px;line-height:1;
+  color:var(--acc);
+  border:1.4px solid var(--acc);border-radius:2px;
+  transform:rotate(-4deg);
+  opacity:.78;
+}
+
+/* 디테일 보강: 칩/토스트 틱 — 주인 잉크 한 줄, 면이 아닌 선으로 */
+.x2 .chip{ color:var(--acc); border-color:var(--bd2); font-family:var(--fhead); letter-spacing:.08em; }
+.x2 .toast{ border-left:2px solid var(--acc); }
+.x2 .tk{ font-family:var(--fhead); letter-spacing:.18em; color:var(--mut); }
+.x2 .meta{ letter-spacing:.02em; }
+
+/* 입력면은 더 가라앉은 생지 그림자로 — 종이에 눌러쓴 칸 */
+.x2 .field{ background:var(--card2); box-shadow:inset 0 1px 2px rgba(0,0,0,.3); }
+.x2 .field:focus-visible{ outline:none; border-color:var(--acc); }
+
+/* 보조 버튼/아이콘 버튼 hover 시에만 주인색이 스며들게 (평소엔 무채) */
+.x2 .tbtn svg, .x2 .btn svg{ color:var(--mut); }
+.x2 .tbtn.pri svg, .x2 .btn.pri svg{ color:var(--on); }
+.x2 .tbtn:hover, .x2 .btn:hover, .x2 .icobtn:hover{ border-color:var(--acc); }
+.x2 .tbtn:hover svg, .x2 .btn:hover svg, .x2 .icobtn:hover{ color:var(--acc); }
+
+/* 썸네일: 화선지 결 살짝 */
+.x2 .thumb{ background:#15130e; border-color:var(--bd2); }
+
+/* x3 앰버 콕핏 HUD */
+.x3{
+  /* ===== HUD 콕핏 변수 ===== */
+  --appbg:
+    radial-gradient(120% 80% at 50% -10%, rgba(255,176,32,.10), transparent 55%),
+    radial-gradient(90% 60% at 50% 120%, rgba(46,209,224,.07), transparent 60%),
+    linear-gradient(180deg, #05080c 0%, #070b11 60%, #060a0f 100%);
+  --card: rgba(11,18,26,.78);
+  --card2: rgba(6,11,17,.92);
+  --tx: #dfeef2;
+  --mut: #6f93a0;
+  --acc: #ffb020;            /* 앰버 경보 */
+  --on: #1a0f00;
+  --bd: rgba(46,209,224,.18); /* 시안 헤어라인 */
+  --bd2: rgba(46,209,224,.42);
+  --r: 3px;
+  --bw: 1px;
+  --fhead: "DIN Alternate", "Bahnschrift", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --shadow: 0 0 0 1px rgba(46,209,224,.05), 0 18px 40px -22px rgba(0,0,0,.9), inset 0 1px 0 rgba(46,209,224,.06);
+  --blur: 6px;
+
+  position:relative;
+  background-attachment:fixed;
+}
+
+/* 제목/버전/라벨/숫자만 HUD 폰트 — 한글 본문은 시스템 폰트 유지 */
+.x3 .head h1,.x3 .ver,.x3 .eyebrow,.x3 .meta,.x3 .chip,.x3 .tk,.x3 .kbd{
+  font-family:var(--fhead);
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  font-feature-settings:"tnum" 1;
+}
+.x3 .head h1{
+  letter-spacing:.05em;
+  color:var(--tx);
+  text-shadow:0 0 14px rgba(255,176,32,.28);
+}
+.x3 .ver{
+  color:var(--acc);
+  border:1px solid rgba(255,176,32,.4);
+  border-radius:2px;
+  padding:1px 6px;
+  background:rgba(255,176,32,.06);
+}
+.x3 .head{ border-bottom:1px solid var(--bd2); }
+
+/* eyebrow 틱 = 조준 마커(>>) 느낌, 색을 액센트로 끌어올림 */
+.x3 .eyebrow{ color:var(--acc); opacity:.9; }
+.x3 .eyebrow::before{
+  width:14px;height:2px;
+  background:var(--acc);
+  box-shadow:6px 0 0 -.5px var(--acc), 11px 0 0 -1px var(--acc);
+  opacity:1;
+}
+
+.x3 .title{ color:var(--tx); }
+
+/* 카드 = 락온된 계기 셀: 코너 브래킷 + 가라앉은 면 */
+.x3 .card{
+  box-shadow:var(--shadow);
+  background-image:linear-gradient(180deg, rgba(46,209,224,.04), transparent 40%);
+}
+
+.x3 .field,.x3 .row,.x3 .thumb,.x3 .toast{ background-color:var(--card2); }
+.x3 .field:focus{
+  outline:none;
+  border-color:var(--acc);
+  box-shadow:0 0 0 1px rgba(255,176,32,.35), 0 0 14px -2px rgba(255,176,32,.4);
+}
+
+/* 일반 버튼 = 시안 계기 키, hover 시 앰버 점등 */
+.x3 .tbtn,.x3 .btn{
+  background:linear-gradient(180deg, rgba(46,209,224,.07), rgba(6,11,17,.6));
+  color:var(--tx);
+  border-color:var(--bd2);
+  transition:border-color .12s, box-shadow .12s, color .12s;
+}
+.x3 .tbtn:hover,.x3 .btn:hover{
+  border-color:var(--acc);
+  color:#fff;
+  box-shadow:0 0 0 1px rgba(255,176,32,.25), inset 0 0 18px -8px rgba(255,176,32,.55);
+}
+.x3 .tbtn svg,.x3 .btn svg{ color:var(--acc); filter:drop-shadow(0 0 4px rgba(255,176,32,.5)); }
+
+/* pri 버튼 = 점등된 경보 액션(앰버 그라데이션 + 글로우) */
+.x3 .tbtn.pri,.x3 .btn.pri{
+  background:linear-gradient(180deg, #ffc24a 0%, #ff9e10 100%);
+  color:var(--on);
+  border-color:#ffd27a;
+  box-shadow:0 0 18px -4px rgba(255,176,32,.7), inset 0 1px 0 rgba(255,255,255,.4);
+  text-shadow:none;
+}
+.x3 .tbtn.pri svg,.x3 .btn.pri svg{ color:var(--on); filter:none; }
+
+.x3 .chip{ color:var(--acc); border-color:rgba(255,176,32,.45); background:rgba(255,176,32,.06); }
+.x3 .kbd{ color:#bfe6ee; border-color:var(--bd2); background:rgba(46,209,224,.08); }
+.x3 .icobtn:hover{ color:var(--acc); border-color:var(--acc); box-shadow:0 0 10px -2px rgba(255,176,32,.5); }
+.x3 .meta{ color:var(--mut); }
+.x3 .toast{ border-left:2px solid var(--acc); box-shadow:0 0 16px -6px rgba(255,176,32,.5); }
+.x3 .toast.err{ border-left-color:#ff4d62; box-shadow:0 0 16px -6px rgba(255,77,98,.5); }
+.x3 .tk{ color:var(--acc); opacity:.7; }
+
+/* ===== 추가 타겟 규칙 (≤5) ===== */
+
+/* 1) 항법 그리드 + 스캔라인 캐노피 오버레이 */
+.x3::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(46,209,224,.05) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(46,209,224,.05) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 4px);
+  mask-image:radial-gradient(130% 90% at 50% 0%, #000 55%, transparent 100%);
+}
+
+/* 2) 조준 레티클 — 우측 상단에 떠 있는 스캐너 표식 */
+.x3::after{
+  content:"";position:absolute;top:13px;right:14px;width:18px;height:18px;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(var(--acc),var(--acc)) 50% 0/2px 5px no-repeat,
+    linear-gradient(var(--acc),var(--acc)) 50% 100%/2px 5px no-repeat,
+    linear-gradient(var(--acc),var(--acc)) 0 50%/5px 2px no-repeat,
+    linear-gradient(var(--acc),var(--acc)) 100% 50%/5px 2px no-repeat;
+  border:1px solid rgba(255,176,32,.55);border-radius:50%;
+  box-shadow:0 0 10px -1px rgba(255,176,32,.6);opacity:.85;
+}
+
+/* 3) 콘텐츠를 오버레이 위로 */
+.x3 .head,.x3 .card,.x3 .toast{ position:relative; z-index:2; }
+
+/* 4) 모든 카드에 코너 브래킷(좌상) — 락온 마커 */
+.x3 .card::before{
+  content:"";position:absolute;top:-1px;left:-1px;width:11px;height:11px;z-index:3;
+  border:1px solid var(--acc);border-right:0;border-bottom:0;opacity:.7;
+}
+/* 5) 카드 코너 브래킷(우하) — 대각 마커로 표적 닫기 */
+.x3 .card::after{
+  content:"";position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;z-index:3;
+  border:1px solid var(--acc);border-left:0;border-top:0;opacity:.7;
+}
+
+/* x4 야간 해도(海圖) */
+.x4{
+  /* ── 팔레트: 야간 잉크 위 세피아 양피 ── */
+  --appbg:
+    radial-gradient(1200px 600px at -10% -20%, #1a2433 0%, transparent 55%),
+    radial-gradient(900px 700px at 120% 120%, #20242a 0%, transparent 50%),
+    linear-gradient(160deg, #0d1219 0%, #11161d 60%, #0e1117 100%);
+  --card:#141a22;
+  --card2:#0e131a;
+  --tx:#e8e0cd;          /* 빛바랜 양피지 잉크 본문 */
+  --mut:#9aa08c;         /* 흐린 등고선 라벨 */
+  --acc:#d8a24a;         /* 황동 나침반·잉크 강조 */
+  --on:#1a1305;          /* 황동 위 진한 잉크 */
+  --bd:#2a3140;          /* 좌표 헤어라인 */
+  --bd2:#3c4456;         /* 강한 제도선 */
+  --r:5px;
+  --bw:1px;
+  --fhead:'Iowan Old Style','Palatino Linotype',Georgia,serif;
+  --shadow:0 1px 0 rgba(216,162,74,.08), 0 14px 34px rgba(0,0,0,.5);
+  --blur:0px;
+
+  /* ── 좌표 격자 + 양피지 결을 컨테이너 전체에 ── */
+  position:relative;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(216,162,74,.045) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(90deg, rgba(216,162,74,.045) 0 1px, transparent 1px 34px),
+    var(--appbg);
+}
+
+/* 1. 우상단 나침반 장미(컴퍼스 로즈) — inline svg data-uri */
+.x4 .head{position:relative;overflow:visible}
+.x4 .head::after{
+  content:"";position:absolute;top:-6px;right:-2px;width:52px;height:52px;
+  opacity:.5;pointer-events:none;
+  background:no-repeat center/contain url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g fill="none" stroke="%23d8a24a" stroke-width="1.4"><circle cx="50" cy="50" r="30"/><circle cx="50" cy="50" r="20"/></g><path d="M50 6 L57 50 L50 94 L43 50 Z M6 50 L50 43 L94 50 L50 57 Z" fill="%23d8a24a" fill-opacity="0.55"/><path d="M22 22 L50 47 L78 78 M78 22 L53 50 L22 78" stroke="%23d8a24a" stroke-width="1" opacity="0.4"/></svg>');
+}
+
+/* 2. eyebrow 액센트 틱을 좌표 눈금처럼: 짧은 잉크 대시 + N/S 느낌 */
+.x4 .eyebrow{font-family:var(--fhead);font-style:italic;letter-spacing:.04em}
+.x4 .eyebrow::before{
+  height:0;width:14px;
+  border-top:1px solid var(--acc);
+  box-shadow:0 -4px 0 -3px var(--acc), 0 4px 0 -3px var(--acc);
+}
+
+/* 3. 카드를 양피지 패치처럼 — 등고선 음각 + 우하단 좌표 코너 */
+.x4 .card{
+  background-image:
+    repeating-radial-gradient(circle at 85% 115%, transparent 0 13px, rgba(216,162,74,.05) 13px 14px),
+    linear-gradient(180deg, rgba(255,255,255,.015), transparent 40%);
+  background-color:var(--card);
+}
+.x4 .card::after{
+  content:"";position:absolute;top:7px;right:8px;width:9px;height:9px;
+  border-top:1px solid var(--bd2);border-right:1px solid var(--bd2);opacity:.7;
+}
+
+/* 4. 강조 버튼/프라이머리: 닳은 황동 잉크 도장 느낌의 그라데이션 */
+.x4 .tbtn.pri,.x4 .btn.pri{
+  background-image:linear-gradient(180deg,#e6b766,#cf9636 70%,#b9842c);
+  border-color:#e6b766;
+  color:var(--on);text-shadow:0 1px 0 rgba(255,255,255,.25);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 2px 6px rgba(0,0,0,.4);
+}
+
+/* 5. 칩·키캡·메타·버전을 좌표 라벨처럼 고정폭(영문·숫자만) */
+.x4 .ver,.x4 .meta,.x4 .kbd,.x4 .chip,.x4 .tk{
+  font-family:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  letter-spacing:.02em;
+}
+.x4 .chip{background:rgba(216,162,74,.08)}
+}
+
+/* x5 OP-패널 */
+.x5{
+  /* ── TE OP-1 팔레트: 따뜻한 차콜 바디 + 시그니처 오렌지 ── */
+  --appbg:#16140f;
+  --card:#26241d;
+  --card2:#100f0b;
+  --tx:#ece7da;
+  --mut:#9a9182;
+  --acc:#ff5b1f;            /* OP-1 오렌지 */
+  --on:#140b04;            /* 오렌지 키캡 위 텍스트 */
+  --bd:#3a362b;
+  --bd2:#4d4738;
+  --r:7px;                 /* 둥근 사각 몰딩 */
+  --bw:1.5px;              /* 두툼한 플라스틱 보더 */
+  --fhead:'DIN Alternate','Bahnschrift','Arial Narrow',system-ui,sans-serif;
+  --shadow:0 1px 0 rgba(255,255,255,.04), 0 6px 16px rgba(0,0,0,.45);
+  --blur:0;
+
+  /* ── 바디 텍스처: 미세 스크린프린트 도트 스페클 ── */
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.022) 0.5px, transparent 0.5px),
+    linear-gradient(180deg,#1a1812 0%, #16140f 60%, #121009 100%);
+  background-size:9px 9px, 100% 100%;
+  background-attachment:fixed;
+}
+
+/* 헤더: 기기 상단 실크 라벨 느낌, 오렌지 베이스라인 */
+.x5 .head h1{
+  font-family:var(--fhead);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  font-weight:700;
+}
+.x5 .head{ border-bottom:var(--bw) solid var(--bd2); }
+.x5 .ver{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  letter-spacing:.04em;
+  color:var(--on);
+  background:var(--acc);
+  padding:1px 7px;
+  border-radius:99px;
+  font-weight:700;
+  font-size:10px;
+}
+
+/* 카드: 몰딩된 모듈 블록 */
+.x5 .card{
+  background:linear-gradient(180deg, var(--card) 0%, #211f18 100%);
+  border:var(--bw) solid var(--bd);
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+/* eyebrow 틱 → 오렌지 LED 인디케이터(글로우) */
+.x5 .eyebrow{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:9.5px;
+  color:var(--mut);
+}
+.x5 .eyebrow::before{
+  width:7px; height:7px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #ffb38a, var(--acc) 60%);
+  box-shadow:0 0 6px rgba(255,91,31,.85), 0 0 1px rgba(255,91,31,1);
+}
+.x5 .title{ font-family:var(--fhead); letter-spacing:.02em; font-weight:700; }
+
+/* 보조 버튼: 어두운 키캡(눌림 가능한 평면) */
+.x5 .tbtn,.x5 .btn{
+  background:linear-gradient(180deg,#2c2920 0%, #211f18 100%);
+  border:var(--bw) solid var(--bd2);
+  box-shadow:0 2px 0 #0c0b08, inset 0 1px 0 rgba(255,255,255,.05);
+  font-weight:600;
+  transition:transform .06s ease, box-shadow .06s ease, border-color .12s ease;
+}
+.x5 .tbtn:hover,.x5 .btn:hover{ border-color:var(--acc); color:#fff; }
+.x5 .tbtn:active,.x5 .btn:active{ transform:translateY(2px); box-shadow:0 0 0 #0c0b08, inset 0 2px 4px rgba(0,0,0,.5); }
+.x5 .tbtn svg,.x5 .btn svg{ color:var(--acc); }
+
+/* 강조(.pri) 버튼 → 오렌지 키캡, 하드 섀도로 누름 깊이 */
+.x5 .tbtn.pri,.x5 .btn.pri{
+  background:linear-gradient(180deg,#ff7642 0%, var(--acc) 55%, #e64a12 100%);
+  color:var(--on);
+  border-color:#c93f10;
+  box-shadow:0 3px 0 #a8330c, 0 5px 12px rgba(255,91,31,.28), inset 0 1px 0 rgba(255,255,255,.35);
+  font-weight:700;
+}
+.x5 .tbtn.pri svg,.x5 .btn.pri svg{ color:var(--on); }
+.x5 .tbtn.pri:active,.x5 .btn.pri:active{ transform:translateY(3px); box-shadow:0 0 0 #a8330c, inset 0 2px 5px rgba(120,40,0,.55); }
+
+/* 인풋/textarea: 가라앉은 머신드 패널 */
+.x5 .field{
+  background:var(--card2);
+  border:var(--bw) solid var(--bd2);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.5);
+}
+.x5 .field:focus{ outline:none; border-color:var(--acc); box-shadow:inset 0 2px 4px rgba(0,0,0,.5), 0 0 0 2px rgba(255,91,31,.25); }
+
+/* chip / tk: 몰딩 라벨 플레이트 (모노) */
+.x5 .chip,.x5 .tk{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+.x5 .chip{ color:var(--acc); border-color:var(--bd2); background:var(--card2); border-radius:99px; }
+
+/* 핀 번호: TE 카운터 디스플레이 */
+.x5 .pin{
+  background:var(--acc); color:var(--on);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-weight:700;
+  box-shadow:0 2px 0 #a8330c, inset 0 1px 0 rgba(255,255,255,.3);
+}
+
+/* 히스토리 행 + 썸네일: 도트 스크린 텍스처 슬롯 */
+.x5 .row{ background:var(--card2); border:var(--bw) solid var(--bd); }
+.x5 .thumb{
+  border:var(--bw) solid var(--bd2);
+  background-color:#1c1a14;
+  background-image:radial-gradient(circle, rgba(255,91,31,.28) 1px, transparent 1.4px);
+  background-size:6px 6px;
+}
+.x5 .icobtn{ border:var(--bw) solid var(--bd2); background:transparent; }
+.x5 .icobtn:hover{ border-color:var(--acc); color:var(--acc); }
+
+/* 토스트: 좌측 오렌지 인디케이터 바 */
+.x5 .toast{
+  background:var(--card);
+  border:var(--bw) solid var(--bd2);
+  border-left:4px solid var(--acc);
+  box-shadow:var(--shadow);
+}
+.x5 .toast.err{ border-left-color:#e94560; }
+
+/* 단축키 kbd: 키캡 미니어처 */
+.x5 .kbd{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:#2c2920;
+  border:var(--bw) solid var(--bd2);
+  box-shadow:0 1px 0 #0c0b08, inset 0 1px 0 rgba(255,255,255,.05);
+  color:var(--tx);
+}
+
+/* ── 추가 타겟 규칙(≤5): TE 시그니처 디테일 ── */
+
+/* 1) 컨테이너 상단 오렌지 인덱스 스트라이프(기기 페이스플레이트 라인) */
+.x5 .head::after{
+  content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+  background:repeating-linear-gradient(90deg, var(--acc) 0 14px, transparent 14px 22px);
+  opacity:.55;
+}
+.x5 .head{ position:relative; }
+
+/* 2) 첫 카드 우상단 TE식 인덱스 도트 트리오 */
+.x5 .card:first-of-type::after{
+  content:""; position:absolute; top:10px; right:12px; width:18px; height:4px;
+  background:radial-gradient(circle, var(--mut) 1.4px, transparent 1.6px);
+  background-size:7px 4px; opacity:.6;
+}
+
+/* 3) tools 그리드 라벨 번호(키캡 우상단 미니 인덱스) */
+.x5 .tools{ counter-reset:k; }
+.x5 .tbtn{ position:relative; counter-increment:k; }
+.x5 .tbtn::after{
+  content:counter(k); position:absolute; top:4px; right:6px;
+  font-family:ui-monospace,monospace; font-size:8px; line-height:1;
+  color:var(--mut); opacity:.7;
+}
+.x5 .tbtn.pri::after{ color:var(--on); opacity:.55; }
+
+/* 4) empty 상태: 가라앉은 도트 스크린 디스플레이 */
+.x5 .empty{
+  background:var(--card2);
+  border:var(--bw) dashed var(--bd2);
+  border-radius:var(--r);
+  background-image:radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1.2px);
+  background-size:8px 8px;
+}
+.x5 .empty svg{ color:var(--acc); opacity:.7; }
+
+/* 5) pair 강조 버튼 hover 시 오렌지 키 글로우 강화 */
+.x5 .btn.pri:hover,.x5 .tbtn.pri:hover{
+  border-color:#ff7642; color:var(--on);
+  box-shadow:0 3px 0 #a8330c, 0 6px 18px rgba(255,91,31,.45), inset 0 1px 0 rgba(255,255,255,.4);
+}
+
+/* x6 감열 영수증 */
+.x6{
+  /* 살짝 따뜻한 종이톤 다크 — 감열지 회백색 잉크 */
+  --appbg:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 80% at 50% 0%, #20211d 0%, #17181400 60%),
+    #131410;
+  --card:#1b1c17;
+  --card2:#141510;
+  --tx:#e9e8dd;
+  --mut:#8f9082;
+  --acc:#e7e6da;       /* 잉크색 = 종이 위 모노크롬 톤 */
+  --on:#15160f;
+  --bd:rgba(231,230,218,.20);
+  --bd2:rgba(231,230,218,.55);
+  --r:4px;             /* 영수증은 거의 직각 */
+  --bw:1px;
+  --fhead:"Courier New", ui-monospace, monospace; /* 라벨/제목만 모노 — 한글 본문은 inherit 유지 */
+  --shadow:0 1px 0 rgba(0,0,0,.5), 0 6px 18px rgba(0,0,0,.35);
+  --blur:0px;
+
+  letter-spacing:.01em;
+}
+
+/* 헤더 = 영수증 상단 점선 머리. h1만 모노+자간 (한글 깨짐 방지로 본문엔 미적용) */
+.x6 .head{ position:relative; padding-bottom:10px; }
+.x6 .head h1{
+  font-family:var(--fhead);
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--tx);
+}
+.x6 .ver{
+  font-family:var(--fhead);
+  letter-spacing:.08em;
+  color:var(--mut);
+  border:1px dashed var(--bd2);
+  border-radius:2px;
+  padding:1px 6px;
+}
+.x6 .head::after{
+  content:"";
+  position:absolute; left:0; right:0; bottom:0; height:0;
+  border-bottom:2px dotted var(--bd2);
+}
+
+/* 카드 = 영수증 슬립. 절취선 테두리 + 종이 결 도트 질감 */
+.x6 .card{
+  position:relative;
+  background:
+    radial-gradient(rgba(0,0,0,.18) .5px, transparent .6px) 0 0/4px 4px,
+    var(--card);
+  border:1px dashed var(--bd2);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+}
+/* 슬립 좌우의 프린터 핀피드 천공 느낌 (코너 장식) */
+.x6 .card::before{
+  content:"";
+  position:absolute; top:6px; bottom:6px; left:3px; width:3px;
+  background:radial-gradient(circle, var(--card2) 1.4px, transparent 1.6px) 0 0/3px 9px;
+  opacity:.7;
+  pointer-events:none;
+}
+
+/* eyebrow = 도트 라벨. 액센트 틱을 ::before 로 두니 그대로 도트 강조 */
+.x6 .eyebrow{
+  font-family:var(--fhead);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--mut);
+}
+.x6 .eyebrow::before{
+  background:var(--acc) !important;
+  box-shadow:2px 0 0 var(--acc), 4px 0 0 var(--acc); /* 도트매트릭스 점 3개 */
+  border-radius:0 !important;
+}
+.x6 .title{ color:var(--tx); font-weight:700; }
+
+/* 버튼 = 잉크 도장. 모노 라벨, 직각, 눌리는 질감 */
+.x6 .tbtn,.x6 .btn{
+  font-family:var(--fhead);
+  letter-spacing:.06em;
+  background:var(--card2);
+  color:var(--tx);
+  border:1px dashed var(--bd);
+  border-radius:2px;
+}
+.x6 .tbtn.pri,.x6 .btn.pri{
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,.10) 0 2px, transparent 2px 4px),
+    var(--acc);
+  color:var(--on);
+  border:1px solid var(--bd2);
+  font-weight:700;
+}
+
+/* 입력 = 종이에 손으로 적는 칸 — 점선 밑줄 강조 */
+.x6 .field{
+  background:var(--card2);
+  color:var(--tx);
+  border:1px dashed var(--bd);
+  border-radius:2px;
+}
+.x6 .field:focus{
+  outline:none;
+  border-color:var(--bd2);
+  border-style:solid;
+}
+
+/* 칩 = 작은 검수 스탬프 */
+.x6 .chip{
+  font-family:var(--fhead);
+  letter-spacing:.05em;
+  background:var(--card2);
+  color:var(--mut);
+  border:1px dotted var(--bd2);
+  border-radius:2px;
+}
+
+/* row = 영수증 품목 줄. 위쪽 점선 구분선으로 항목 끊기 */
+.x6 .row{
+  position:relative;
+  border-top:1px dotted var(--bd);
+}
+.x6 .thumb{ border:1px solid var(--bd); border-radius:2px; }
+.x6 .row .meta{ font-family:var(--fhead); letter-spacing:.03em; color:var(--mut); }
+.x6 .icobtn{
+  background:transparent;
+  color:var(--mut);
+  border:1px dashed var(--bd);
+  border-radius:2px;
+}
+
+/* 토스트 = 출력 완료 알림 슬립. 톱니 절취선 바닥 */
+.x6 .toast{
+  background:var(--card);
+  color:var(--tx);
+  border:1px dashed var(--bd2);
+  border-radius:2px;
+  box-shadow:var(--shadow);
+}
+.x6 .toast .tk{ color:var(--acc); font-family:var(--fhead); }
+
+
+/* x7 밤샘 와이어프레임 */
+.x7{
+  /* 다크 제도판: 청록빛 먹지 위 마커 잉크 */
+  --appbg:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 26px),
+    radial-gradient(120% 90% at 12% 0%, #1c2630 0%, #141b22 48%, #0f151b 100%);
+  --card:#19222b;
+  --card2:#141c24;
+  --tx:#eaf0f3;
+  --mut:#92a3ad;
+  --acc:#ffd75e;            /* 형광 마커 옐로 */
+  --on:#1a130a;
+  --bd:#3a4a55;             /* 연필 헤어라인 */
+  --bd2:#aebbc2;            /* 마커 잉크 보더 */
+  --r:11px;
+  --bw:1.5px;
+  --fhead:"Comic Sans MS","Segoe Print",ui-rounded,system-ui,sans-serif; /* 라벨/제목용 손글씨 톤(한글은 시스템 폴백) */
+  --shadow:none;
+  --blur:0px;
+
+  position:relative;
+  background:var(--appbg);
+  color:var(--tx);
+  letter-spacing:.1px;
+}
+
+/* (규칙1) 카드 = 마커로 친 박스: 흔들리는 보더 + 코너에 두 번 그은 겹침 자국 */
+.x7 .card{
+  position:relative;
+  background:var(--card);
+  border:var(--bw) solid var(--bd2);
+  border-radius:var(--r) calc(var(--r) + 6px) var(--r) calc(var(--r) + 4px); /* 좌우 라디우스 비대칭 → 손맛 */
+  box-shadow:2px 2px 0 0 rgba(174,187,194,.22); /* 한 번 더 그은 듯한 오프셋 라인 */
+}
+.x7 .card::before{   /* 좌상단 코너에 비뚤게 겹친 두 번째 잉크 자국 */
+  content:"";
+  position:absolute; inset:-3px auto auto -3px;
+  width:18px; height:18px;
+  border-top:var(--bw) solid var(--bd2);
+  border-left:var(--bw) solid var(--bd2);
+  border-radius:var(--r) 0 0 0;
+  transform:rotate(-2deg);
+  opacity:.5;
+  pointer-events:none;
+}
+
+/* (규칙2) 헤더: 제목 밑줄을 손으로 쓱 그은 마커 라인 + 버전은 메모지 태그 */
+.x7 .head h1{
+  font-family:var(--fhead);
+  color:var(--tx);
+  display:inline-block;
+  padding-bottom:2px;
+  background:linear-gradient(var(--acc),var(--acc)) left bottom / 100% 3px no-repeat;
+  border-radius:1px;
+}
+.x7 .ver{
+  font-family:var(--fhead);
+  color:var(--on);
+  background:var(--acc);
+  border:var(--bw) solid var(--bd2);
+  border-radius:9px 4px 9px 5px;
+  padding:1px 8px;
+  transform:rotate(1.5deg);
+  box-shadow:1.5px 1.5px 0 0 rgba(0,0,0,.25);
+}
+
+/* eyebrow: ::before 틱을 화살표 주석처럼, 라벨은 살짝 기울임 */
+.x7 .eyebrow{
+  font-family:var(--fhead);
+  color:var(--mut);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  transform:rotate(-.6deg);
+  transform-origin:left center;
+}
+.x7 .eyebrow::before{
+  background:var(--acc);
+  width:14px; height:3px;
+  border-radius:2px;
+  transform:skewX(-22deg);   /* 손으로 그은 사선 틱 */
+  box-shadow:3px 0 0 -1px var(--acc); /* 두 번 톡톡 친 느낌 */
+}
+
+.x7 .title{ font-family:var(--fhead); color:var(--tx); }
+
+/* 도구 버튼: 와이어프레임 placeholder 박스 톤(점선 헤어라인) */
+.x7 .tbtn{
+  background:var(--card2);
+  color:var(--tx);
+  border:var(--bw) dashed var(--bd);
+  border-radius:9px 11px 8px 12px;
+  box-shadow:1.5px 1.5px 0 0 rgba(0,0,0,.28);
+  transition:transform .06s ease, box-shadow .06s ease;
+}
+.x7 .tbtn:hover{ transform:translate(-1px,-1px) rotate(-.4deg); box-shadow:3px 3px 0 0 rgba(0,0,0,.32); }
+.x7 .tbtn:active{ transform:translate(1px,1px); box-shadow:0 0 0 0 rgba(0,0,0,.3); }
+.x7 .tbtn.pri{
+  background:var(--acc);
+  color:var(--on);
+  border:var(--bw) solid var(--bd2);
+  border-style:solid;
+  box-shadow:2px 2px 0 0 rgba(0,0,0,.3);
+}
+
+/* 인풋: 손으로 그은 밑줄 필드 — 채워질 곳을 비워둔 와이어프레임 */
+.x7 .field{
+  background:var(--card2);
+  color:var(--tx);
+  border:var(--bw) solid transparent;
+  border-bottom:var(--bw) dashed var(--bd2);
+  border-radius:8px 8px 2px 2px;
+}
+.x7 .field::placeholder{ color:var(--mut); font-style:italic; }
+.x7 .field:focus{
+  outline:none;
+  border-color:var(--acc);
+  border-bottom-style:solid;
+  box-shadow:1.5px 1.5px 0 0 rgba(255,215,94,.25);
+}
+
+/* pair 버튼: 손으로 박스 친 액션, pri는 형광 마커 채움 */
+.x7 .btn{
+  background:var(--card2);
+  color:var(--tx);
+  border:var(--bw) solid var(--bd2);
+  border-radius:10px 7px 11px 8px;
+  box-shadow:2px 2px 0 0 rgba(0,0,0,.3);
+  transition:transform .06s ease, box-shadow .06s ease;
+}
+.x7 .btn:hover{ transform:translate(-1px,-1px); box-shadow:3px 3px 0 0 rgba(0,0,0,.34); }
+.x7 .btn:active{ transform:translate(1px,1px); box-shadow:0 0 0 0 rgba(0,0,0,.3); }
+.x7 .btn.pri{ background:var(--acc); color:var(--on); }
+
+/* chip: 동그라미 친 주석 */
+.x7 .chip{
+  background:transparent;
+  color:var(--mut);
+  border:var(--bw) solid var(--bd);
+  border-radius:999px 999px 980px 999px;
+  transform:rotate(-.8deg);
+}
+
+/* row: 클립으로 끼운 스케치 카드 — 썸네일은 빈 placeholder 대각선 */
+.x7 .row{
+  background:var(--card2);
+  border:var(--bw) dashed var(--bd);
+  border-radius:10px 12px 9px 11px;
+}
+.x7 .thumb{
+  background:
+    linear-gradient(45deg, transparent calc(50% - 1px), var(--bd) calc(50% - 1px), var(--bd) calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(-45deg, transparent calc(50% - 1px), var(--bd) calc(50% - 1px), var(--bd) calc(50% + 1px), transparent calc(50% + 1px)),
+    var(--card);
+  border:var(--bw) solid var(--bd2);
+  border-radius:8px 6px 9px 7px;
+}
+.x7 .row .body b{ font-family:var(--fhead); color:var(--tx); }
+.x7 .meta{ color:var(--mut); }
+.x7 .icobtn{
+  background:transparent;
+  color:var(--mut);
+  border:var(--bw) solid var(--bd);
+  border-radius:8px 5px 9px 6px;
+}
+.x7 .icobtn:hover{ color:var(--acc); border-color:var(--acc); transform:rotate(-3deg); }
+
+/* toast: 포스트잇 메모지 톤 */
+.x7 .toast,.x7 .tk{
+  font-family:var(--fhead);
+  background:var(--card);
+  color:var(--tx);
+  border:var(--bw) solid var(--bd2);
+  border-radius:10px 4px 10px 4px;
+  box-shadow:3px 3px 0 0 rgba(0,0,0,.35);
+  transform:rotate(-1deg);
+}
+.x7 .toast::before,.x7 .tk::before{ content:"✎ "; color:var(--acc); }
+
+/* x8 딥블루 기요셰 — 오트 오롤로지 */
+.x8{
+  /* === 팔레트: 딥블루 다이얼 + 샴페인 골드 === */
+  --acc:#cda349;            /* 샴페인 골드 (인덱스/핸드) */
+  --on:#16213a;             /* 골드 위 텍스트 = 다이얼 네이비 */
+  --tx:#eef1f6;             /* 다이얼 라크메 화이트 */
+  --mut:#8ea0c4;            /* 강철 블루그레이 보조 */
+  --card:#16223f;           /* 다이얼 면 */
+  --card2:#0f1830;          /* 서브다이얼(가라앉은 면) */
+  --bd:#2a3a63;             /* 헤어라인 */
+  --bd2:#cda349;            /* 강한 보더 = 골드 챕터링 */
+  --r:8px;
+  --bw:1px;
+  --fhead:'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --shadow:0 10px 30px rgba(4,10,26,.55), 0 1px 0 rgba(205,163,73,.18) inset;
+  --blur:0px;
+
+  /* === 컨테이너 배경: 딥블루 + 소레이(태양광 브러싱) 그라데이션 === */
+  --appbg:
+    radial-gradient(120% 90% at 50% -14%, rgba(205,163,73,.10), transparent 46%),
+    radial-gradient(140% 120% at 50% 8%, #1c2c52 0%, #142banull, #14224a 38%, #0c1530 78%, #070d20 100%);
+
+  color:var(--tx);
+}
+
+/* 헤더: 세리프 워드마크 + 골드 헤어라인 챕터링 */
+.x8 .head{
+  position:relative;
+  padding-bottom:10px;
+  border-bottom:var(--bw) solid var(--bd);
+}
+.x8 .head::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--acc) 22%,#f3deac 50%,var(--acc) 78%,transparent);
+  opacity:.7;
+}
+.x8 .head h1{
+  font-family:var(--fhead);
+  font-weight:600;
+  letter-spacing:.01em;
+  background:linear-gradient(180deg,#ffffff, #d9e2f3 60%, #aebbd8);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 1px 0 rgba(0,0,0,.25);
+}
+.x8 .ver{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:10px;letter-spacing:.14em;
+  color:var(--acc);
+  border:1px solid rgba(205,163,73,.4);
+  border-radius:999px;
+  padding:2px 8px;
+  background:rgba(205,163,73,.08);
+}
+
+/* === 카드 = 다이얼: 기요셰(엔진턴) 텍스처를 배경에 직조 === */
+.x8 .card{
+  position:relative;
+  background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.022) 0 2px, transparent 2px 5px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.018) 0 2px, transparent 2px 5px),
+    radial-gradient(120% 130% at 50% -10%, rgba(205,163,73,.06), transparent 55%),
+    linear-gradient(180deg, var(--card) 0%, var(--card2) 100%);
+  border:var(--bw) solid var(--bd);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+}
+
+/* eyebrow = 다이얼 인덱스 라벨, ::before 틱 = 골드 어플라이드 인덱스 */
+.x8 .eyebrow{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--mut);
+}
+.x8 .eyebrow::before{
+  background:linear-gradient(90deg,#f3deac,var(--acc));
+  box-shadow:0 0 6px rgba(205,163,73,.55);
+  height:2px;border-radius:1px;
+}
+.x8 .title{
+  font-family:var(--fhead);
+  font-weight:600;
+  font-size:15px;
+  letter-spacing:.005em;
+  color:var(--tx);
+}
+
+/* 입력 필드 = 새틴 서브다이얼 */
+.x8 .field{
+  background:linear-gradient(180deg, var(--card2), #0b1228);
+  border:var(--bw) solid var(--bd);
+  border-radius:calc(var(--r) - 3px);
+  color:var(--tx);
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 -1px 6px rgba(0,0,0,.25) inset;
+}
+.x8 .field::placeholder{color:var(--mut)}
+.x8 .field:focus,.x8 .field:focus-visible{
+  outline:none;
+  border-color:var(--acc);
+  box-shadow:0 0 0 1px rgba(205,163,73,.45), 0 0 10px rgba(205,163,73,.18);
+}
+
+/* === 보조 버튼 = 강철 가공 베젤 === */
+.x8 .tbtn,.x8 .btn{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), transparent 38%),
+    linear-gradient(180deg, var(--card), var(--card2));
+  border:var(--bw) solid var(--bd);
+  border-radius:calc(var(--r) - 2px);
+  color:var(--tx);
+  transition:border-color .14s ease, box-shadow .14s ease, transform .06s ease;
+}
+.x8 .tbtn svg,.x8 .btn svg{color:var(--acc)}
+.x8 .tbtn:hover,.x8 .btn:hover{
+  border-color:var(--acc);
+  box-shadow:0 0 0 1px rgba(205,163,73,.28), 0 6px 16px rgba(4,10,26,.4);
+}
+.x8 .tbtn:active,.x8 .btn:active{transform:translateY(1px)}
+
+/* === pri = 어플라이드 골드 인덱스(빛 받는 골드 바) === */
+.x8 .tbtn.pri,.x8 .btn.pri{
+  color:var(--on);
+  border:1px solid #e9d39a;
+  background:
+    linear-gradient(180deg, #f6e6b8 0%, #e1c074 30%, #cda349 60%, #a9803a 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.55) inset,
+    0 -2px 6px rgba(120,80,20,.4) inset,
+    0 8px 20px rgba(120,80,20,.28);
+  font-weight:700;
+  text-shadow:0 1px 0 rgba(255,255,255,.25);
+}
+.x8 .tbtn.pri svg,.x8 .btn.pri svg{color:var(--on)}
+.x8 .tbtn.pri:hover,.x8 .btn.pri:hover{
+  filter:brightness(1.05) saturate(1.05);
+  border-color:#fff0cf;
+}
+
+/* chip = 골드 미닛 마커 */
+.x8 .chip{
+  color:var(--acc);
+  border:1px solid rgba(205,163,73,.45);
+  border-radius:999px;
+  background:rgba(205,163,73,.08);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:10px;letter-spacing:.06em;
+}
+
+/* row = 데이트 윈도우, thumb = 서브다이얼 */
+.x8 .row{
+  background:linear-gradient(180deg, var(--card), var(--card2));
+  border:var(--bw) solid var(--bd);
+  border-radius:calc(var(--r) - 2px);
+}
+.x8 .thumb{
+  border:1px solid var(--bd2);
+  background:
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.05) 0 1px, transparent 1px 3px),
+    radial-gradient(circle at 50% 40%, #1a2a4e, #0c1530);
+  border-radius:calc(var(--r) - 4px);
+}
+.x8 .row .body b{color:var(--tx)}
+.x8 .meta{
+  color:var(--mut);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  letter-spacing:.02em;
+}
+.x8 .icobtn{
+  border:1px solid var(--bd);
+  border-radius:calc(var(--r) - 4px);
+  color:var(--mut);
+  background:rgba(255,255,255,.02);
+}
+.x8 .icobtn:hover{border-color:var(--acc);color:var(--acc)}
+
+/* === toast = 크라운 신호 표시줄, tk = 각인 라벨 === */
+.x8 .toast{
+  background:linear-gradient(180deg, var(--card), var(--card2));
+  border:var(--bw) solid var(--bd);
+  border-left:3px solid var(--acc);
+  border-radius:calc(var(--r) - 2px);
+  box-shadow:var(--shadow);
+}
+.x8 .tk{
+  color:var(--acc);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:9px;letter-spacing:.16em;font-weight:700;
+}
+
+/* x9 로스코 색면 — 번지는 빛의 방 */
+.x9{
+  /* 거대한 수직 색면: 마룬 → 잉걸불 띠 → 잉크. 가운데 따뜻한 띠가 떠오르듯 */
+  --appbg:
+    radial-gradient(120% 60% at 50% 18%, rgba(122,38,32,.55), transparent 62%),
+    radial-gradient(140% 55% at 50% 84%, rgba(16,10,14,.85), transparent 60%),
+    linear-gradient(176deg, #2a0f10 0%, #3a1413 30%, #531c14 47%, #2e1216 63%, #140a0e 100%);
+  --card: rgba(58,22,22,.42);
+  --card2: rgba(20,11,14,.55);
+  --tx:#f3e7df;
+  --mut:#c79a8f;
+  --acc:#ffb37a;          /* 잉걸불 글로우 오렌지 */
+  --on:#2a0f0a;
+  --bd: rgba(255,179,122,.16);
+  --bd2: rgba(255,179,122,.3);
+  --r:14px;
+  --bw:1px;
+  --fhead:'Times New Roman', Georgia, var(--fhead);
+  --shadow: 0 18px 50px -22px rgba(0,0,0,.75);
+  --blur:14px;
+  color:var(--tx);
+}
+
+/* 1) 색면 위에 떠오르는 부드러운 빛 무리 — 패널 전체에 페인터리 헤이즈 */
+.x9::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(80% 38% at 28% 30%, rgba(255,150,96,.16), transparent 70%),
+    radial-gradient(70% 34% at 78% 66%, rgba(150,70,120,.14), transparent 72%);
+  mix-blend-mode:screen;filter:blur(6px);
+}
+
+/* 2) 카드 = '떠 있는 색의 베일': 깃털 보더 대신 안쪽으로 스민 빛, 위/아래 색 그라데 */
+.x9 .card{
+  position:relative;z-index:1;
+  background:
+    linear-gradient(180deg, rgba(255,170,120,.07), rgba(20,11,14,.18) 60%, rgba(40,16,18,.28)),
+    var(--card);
+  border:var(--bw) solid var(--bd);
+  box-shadow:
+    inset 0 1px 0 rgba(255,210,180,.12),
+    inset 0 0 40px -12px rgba(255,150,96,.28),
+    var(--shadow);
+  backdrop-filter: blur(var(--blur)) saturate(1.15);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(1.15);
+}
+
+/* 3) eyebrow ::before 액센트 틱 = 날카로운 선 대신 '번진 붓 자국' */
+.x9 .eyebrow{color:var(--mut);letter-spacing:.16em;text-transform:uppercase;font-size:9.5px}
+.x9 .eyebrow::before{
+  width:18px;height:7px;background:transparent;
+  background-image:radial-gradient(closed-side, var(--acc), transparent);
+  background:radial-gradient(60% 120% at 0% 50%, var(--acc), rgba(255,179,122,0) 90%);
+  border-radius:6px;filter:blur(1px);opacity:.95;
+}
+
+/* 4) pri 버튼 = 스스로 빛나는 작은 색면 (그라데 + 글로우 번짐) */
+.x9 .tbtn.pri, .x9 .btn.pri{
+  background:linear-gradient(165deg, #ffc78e 0%, #ff9d5e 52%, #e9743f 100%);
+  color:var(--on);border-color:transparent;font-weight:650;
+  box-shadow:0 0 0 1px rgba(255,200,150,.35), 0 10px 26px -10px rgba(233,116,63,.7),
+             inset 0 1px 0 rgba(255,255,255,.4);
+}
+.x9 .tbtn, .x9 .btn{
+  background:var(--card2);border-color:var(--bd2);color:var(--tx);
+  box-shadow:inset 0 0 22px -14px rgba(255,150,96,.5);
+}
+.x9 .tbtn:hover, .x9 .btn:hover, .x9 .icobtn:hover{
+  border-color:var(--acc);box-shadow:inset 0 0 24px -8px rgba(255,150,96,.6);color:var(--acc)
+}
+.x9 .tbtn svg, .x9 .btn svg{color:var(--acc)}
+.x9 .tbtn.pri svg, .x9 .btn.pri svg{color:var(--on)}
+
+/* 헤더: 제목은 세리프(--fhead)로 정서적, 한글 본문은 그대로 산세리프 유지 */
+.x9 .head{border-bottom-color:var(--bd)}
+.x9 .head h1{font-family:var(--fhead);font-weight:600;letter-spacing:.01em;
+  text-shadow:0 0 24px rgba(255,160,110,.35)}
+.x9 .ver{color:var(--mut)}
+.x9 .title{font-weight:600}
+
+/* 인풋/필드: 가라앉은 색면 */
+.x9 .field{background:var(--card2);border-color:var(--bd2);color:var(--tx)}
+.x9 .field::placeholder{color:var(--mut)}
+.x9 .field:focus{outline:none;border-color:var(--acc);
+  box-shadow:0 0 0 3px rgba(255,179,122,.15)}
+
+/* chip / row / thumb / icobtn */
+.x9 .chip{color:var(--acc);border-color:var(--bd2);background:rgba(255,179,122,.07)}
+.x9 .row{background:var(--card2);border-color:var(--bd);
+  box-shadow:inset 0 0 30px -16px rgba(255,150,96,.4)}
+.x9 .thumb{background:linear-gradient(150deg,#6e2a22,#2a1014);border-color:var(--bd2)}
+.x9 .meta{color:var(--mut)}
+.x9 .icobtn{background:transparent;border-color:var(--bd2);color:var(--mut)}
+.x9 .pin{background:linear-gradient(160deg,#ffc78e,#ff9d5e);color:var(--on);
+  box-shadow:0 6px 16px -8px rgba(233,116,63,.8)}
+.x9 .kbd{background:var(--card2);border-color:var(--bd2);color:var(--tx)}
+.x9 .empty, .x9 .dl dt{color:var(--mut)}
+
+/* toast = 좌측 빛띠가 번지는 색면 */
+.x9 .toast{
+  background:linear-gradient(90deg, rgba(255,150,96,.14), var(--card) 40%);
+  border:var(--bw) solid var(--bd);border-left:3px solid var(--acc);
+  box-shadow:var(--shadow), inset 18px 0 24px -22px rgba(255,150,96,.9);
+  backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur))
+}
+.x9 .toast.err{border-left-color:#ff6b6b;
+  background:linear-gradient(90deg, rgba(255,107,107,.16), var(--card) 40%)}
+.x9 .tk{color:var(--mut);letter-spacing:.14em}
+
+/* x10 잉크 패널 (먹과 한 점) */
+.x10{
+  --appbg:#0b0b0c;
+  --card:#101012;
+  --card2:#0a0a0b;
+  --tx:#f2efe6;
+  --mut:#8d897e;
+  --acc:#ff3a30;
+  --on:#0a0606;
+  --bd:#2a2a26;
+  --bd2:#f2efe6;
+  --r:2px;
+  --bw:1.5px;
+  --fhead:'Arial Black','Helvetica Neue',Arial,sans-serif;
+  --shadow:3px 3px 0 #000;
+  --blur:0px;
+}
+
+/* 지면: 미세한 그레인 + 모서리로 갈수록 어두워지는 비네트(먹 번짐) */
+.x10{
+  background:
+    radial-gradient(120% 90% at 50% -10%, #16161a 0%, transparent 55%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.014) 0 1px, transparent 1px 3px),
+    var(--appbg);
+}
+
+/* 헤드: 제목을 큰 잉크 레터링처럼 — 굵게·약간 압축, 버전은 검열박스 스탬프 */
+.x10 .head h1{
+  font-weight:900;
+  letter-spacing:-.02em;
+  text-shadow:2px 2px 0 #000;
+}
+.x10 .head{ border-bottom-color:var(--bd2); }
+.x10 .ver{
+  color:var(--on);
+  background:var(--acc);
+  font-weight:800;
+  font-size:10px;
+  letter-spacing:.06em;
+  padding:1px 6px;
+  border-radius:1px;
+  transform:rotate(-3deg);
+  align-self:center;
+}
+
+/* 카드 = 만화 칸(코마): 굵은 잉크 테두리 + 하드 그림자 + 좌상단 코너 잉크틱 */
+.x10 .card{
+  border-color:var(--bd2);
+  box-shadow:var(--shadow);
+}
+.x10 .card::before{
+  content:"";
+  position:absolute;
+  top:-1px;left:-1px;
+  width:13px;height:13px;
+  border-top:3px solid var(--acc);
+  border-left:3px solid var(--acc);
+  pointer-events:none;
+}
+
+/* eyebrow = 말풍선 라벨: 액센트 틱을 두껍게, 라벨은 대문자 잉크 */
+.x10 .eyebrow{
+  color:var(--tx);
+  font-weight:800;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.x10 .eyebrow::before{
+  width:14px;height:3px;
+  background:var(--acc);
+}
+.x10 .title{ font-weight:900; letter-spacing:-.01em; }
+
+/* 보조면(가라앉은 면)에 하프톤 망점 — tbtn / field / row / thumb */
+.x10 .tbtn,
+.x10 .btn,
+.x10 .field,
+.x10 .row{
+  background-color:var(--card2);
+  background-image:radial-gradient(rgba(255,255,255,.10) .8px, transparent 1.1px);
+  background-size:6px 6px;
+}
+.x10 .tbtn{ border-color:var(--bd2); font-weight:700; }
+.x10 .tbtn:hover,
+.x10 .btn:hover{ border-color:var(--acc); color:var(--acc); }
+.x10 .tbtn:hover svg,
+.x10 .btn:hover svg{ color:var(--acc); }
+
+/* 강조 버튼 = 클라이맥스 컷: 잉크로 꽉 채우고 스피드라인을 깐다 */
+.x10 .tbtn.pri,
+.x10 .btn.pri{
+  border-color:var(--acc);
+  background-color:var(--acc);
+  background-image:repeating-linear-gradient(-45deg, rgba(0,0,0,.16) 0 2px, transparent 2px 7px);
+  box-shadow:2px 2px 0 #000;
+  font-weight:900;
+}
+.x10 .tbtn.pri:hover,
+.x10 .btn.pri:hover{ color:var(--on); }
+.x10 .tbtn.pri:hover svg,
+.x10 .btn.pri:hover svg{ color:var(--on); }
+
+.x10 .field{ border-color:var(--bd2); }
+.x10 .field::placeholder{ color:var(--mut); }
+
+/* 썸네일 = 빈 코마: 사선 스피드라인 채움 */
+.x10 .thumb{
+  border-color:var(--bd2);
+  background-color:var(--card2);
+  background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.10) 0 1px, transparent 1px 5px);
+}
+.x10 .row{ border-color:var(--bd2); }
+.x10 .row .body b{ font-weight:800; }
+
+.x10 .icobtn{ border-color:var(--bd2); }
+.x10 .icobtn:hover{ border-color:var(--acc); color:var(--acc); }
+
+/* chip = 효과음 스탬프: 잉크 채움 + 기울임 */
+.x10 .chip{
+  color:var(--on);
+  background:var(--acc);
+  border-color:var(--acc);
+  font-weight:800;
+  letter-spacing:.04em;
+}
+
+/* toast = 사각 말풍선: 두꺼운 잉크 좌변 + 하드 그림자 */
+.x10 .toast{
+  border-color:var(--bd2);
+  border-left:4px solid var(--acc);
+  box-shadow:2px 2px 0 #000;
+}
+.x10 .tk{
+  color:var(--on);
+  background:var(--tx);
+  font-weight:800;
+  letter-spacing:.12em;
+  padding:1px 5px;
+  border-radius:1px;
+}
+}
+
+/* x11 언더스토리 (Understory) */
+.x11{
+  --appbg:
+    radial-gradient(120% 80% at 50% -10%, #14271c 0%, #0d1b14 38%, #091410 100%);
+  --card:#10211a;
+  --card2:#0b1813;
+  --tx:#e8efe2;
+  --mut:#8ba391;
+  --acc:#7fb069;
+  --on:#0a1a0e;
+  --bd:#21392d;
+  --bd2:#345040;
+  --r:14px;
+  --bw:1px;
+  --fhead:'Georgia','Times New Roman',serif;
+  --shadow:0 6px 22px -10px rgba(0,0,0,.7), inset 0 1px 0 rgba(180,220,170,.04);
+  --blur:0px;
+}
+/* (1) 잎맥/이끼 미세 텍스처 — 카드 우상단에서 번지는 유기적 결 */
+.x11 .card{
+  background:
+    radial-gradient(140% 120% at 100% 0%, rgba(127,176,105,.07), transparent 55%),
+    var(--card);
+}
+/* (2) eyebrow 틱을 45도 기운 '새싹 잎' 한 장으로 */
+.x11 .eyebrow::before{
+  width:7px;height:7px;border-radius:50% 50% 50% 0;
+  transform:rotate(45deg);background:var(--acc);
+}
+/* (3) 강조 버튼 — 깊은 잎새 그라데이션 + 윗면 미세 광택 */
+.x11 .tbtn.pri,.x11 .btn.pri{
+  background:linear-gradient(165deg,#9ac47e 0%,#7fb069 52%,#5f9650 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 3px 10px -4px rgba(95,150,80,.55);
+}
+/* (4) 입력·기록 행(가라앉은 면)에 흙빛 안쪽 그림자 — 패인 토양 느낌 */
+.x11 .field,.x11 .row{
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.35);
+}
+/* (5) 헤더 하단 헤어라인을 이끼빛 좌우 페이드 그라데이션으로 */
+.x11 .head{
+  border-bottom-color:transparent;
+  background-image:linear-gradient(90deg, transparent, rgba(127,176,105,.45) 30%, rgba(127,176,105,.18) 70%, transparent);
+  background-size:100% var(--bw);background-position:0 100%;background-repeat:no-repeat;
+}
+
+/* x12 리퀴드 크롬 아쿠아 */
+.x12{
+  --appbg:linear-gradient(155deg,#0a1430 0%,#0d1f44 32%,#091a38 60%,#06122a 100%);
+  --card:#0f2148;
+  --card2:#0a1834;
+  --tx:#eaf3ff;
+  --mut:#7fa6d8;
+  --acc:#8fe3ff;
+  --on:#04203a;
+  --bd:rgba(143,227,255,.18);
+  --bd2:rgba(143,227,255,.34);
+  --r:11px;
+  --bw:1px;
+  --fhead:'Bahnschrift','DIN Alternate','Segoe UI',system-ui,sans-serif;
+  --shadow:0 6px 22px rgba(2,10,30,.55), inset 0 1px 0 rgba(255,255,255,.12);
+  --blur:0px;
+}
+/* 1) 앱 배경: 크롬 아쿠아 광택 + 보라 리플렉션 + 미세 스캔라인 */
+.x12{
+  background-image:
+    radial-gradient(120% 60% at 50% -8%, rgba(170,235,255,.20), transparent 60%),
+    radial-gradient(90% 50% at 90% 110%, rgba(120,90,255,.18), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px),
+    linear-gradient(155deg,#0a1430 0%,#0d1f44 32%,#091a38 60%,#06122a 100%);
+  border-color:rgba(143,227,255,.45);
+}
+/* 2) 카드/토스트: 액체 크롬 면 — 상단 하이라이트→하단 음영 글라스 */
+.x12 .card,.x12 .toast{
+  background-image:linear-gradient(180deg, rgba(255,255,255,.10) 0%, rgba(143,227,255,.05) 22%, rgba(10,24,52,0) 55%, rgba(2,8,24,.35) 100%);
+}
+/* 3) 강조 버튼: 아쿠아 크롬 알약(하이라이트→코어→림) + 글로우 */
+.x12 .tbtn.pri,.x12 .btn.pri{
+  background-image:linear-gradient(180deg,#eafcff 0%,#9fe9ff 30%,#3fb4ee 60%,#1f7fd0 100%);
+  border-color:rgba(220,250,255,.7);
+  box-shadow:0 3px 12px rgba(40,150,230,.5), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -3px 6px rgba(10,60,120,.5);
+  color:#042036;text-shadow:0 1px 0 rgba(255,255,255,.45);
+}
+/* 4) eyebrow 틱을 금속 광택 막대로 + 라벨/숫자 미래 레트로 자간, h1 크롬 텍스트 */
+.x12 .eyebrow::before{width:14px;height:3px;border-radius:2px;background:linear-gradient(90deg,#eafcff,#3fb4ee);box-shadow:0 0 6px rgba(143,227,255,.8)}
+.x12 .eyebrow,.x12 .ver,.x12 .tk,.x12 .chip,.x12 .meta{font-family:'Bahnschrift','DIN Alternate','Segoe UI',sans-serif;letter-spacing:.16em}
+.x12 .head h1{font-family:var(--fhead);letter-spacing:.04em;background:linear-gradient(180deg,#ffffff,#9fe9ff 60%,#4aa9e6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 1px 8px rgba(143,227,255,.35)}
+/* 5) 입력/썸네일/일반버튼 오목한 글라스 인셋 + 칩 아쿠아 광택 */
+.x12 .field,.x12 .tbtn,.x12 .btn,.x12 .row,.x12 .thumb,.x12 .icobtn{box-shadow:inset 0 1px 0 rgba(255,255,255,.10), inset 0 -1px 3px rgba(2,8,24,.4)}
+.x12 .chip{background:linear-gradient(180deg,rgba(143,227,255,.22),rgba(143,227,255,.06));border-color:rgba(143,227,255,.5);color:#dff6ff}
+</style></head><body><div class="top"><h1>SnapContext — 창의 컨셉 12종 (이종 도메인 발상)</h1><p>흔한 다크앱 말고 다른 영역에서 끌어온 컨셉들. 끌리는 번호(들) 알려줘 — 예: "x3", "x1·x8 섞어", "x2인데 다크 더 진하게". 고르면 그 톤 전용 커스텀 랩으로 디테일.</p></div><div class="gal" id="gal"></div><template id="slice">
+    <header class="head"><h1>SnapContext</h1><span class="ver">v0.1.3</span></header>
+    <div class="toast"><span class="tk">INFO</span>캡처를 불러왔습니다.</div>
+    <div class="card">
+      <div class="eyebrow">캡처 모드</div>
+      <div class="tools">
+        <button class="tbtn pri"><span data-ic="monitor" data-sz="16"></span>화면 캡처</button>
+        <button class="tbtn"><span data-ic="file" data-sz="16"></span>문서 캡처</button>
+        <button class="tbtn"><span data-ic="scan" data-sz="16"></span>요소 캡처</button>
+        <button class="tbtn"><span data-ic="maximize" data-sz="16"></span>전체 캡처</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">AI 디버그 팩</div>
+      <h2 class="title">컨텍스트 팩</h2>
+      <textarea class="field" rows="2" placeholder="증상이나 AI에게 요청할 내용을 적어주세요"></textarea>
+      <div class="pair">
+        <button class="btn pri"><span data-ic="sparkles" data-sz="15"></span>프롬프트 복사</button>
+        <button class="btn"><span data-ic="braces" data-sz="15"></span>JSON 복사</button>
+      </div>
+      <span class="chip">최근 팩 · 2</span>
+    </div>
+    <div class="card">
+      <div class="eyebrow">캡처 기록</div>
+      <div class="row"><div class="thumb"></div><div class="body"><b>예시 페이지 제목 — 길면 말줄임</b><span class="meta">06.04 14:32 · 영역 · 핀 3</span></div><button class="icobtn"><span data-ic="x" data-sz="14"></span></button></div>
+    </div>
+  </template><script>var IC={monitor:'M3 4h18v12H3zM8 20h8M12 16v4',file:'M6 2h8l4 4v16H6zM14 2v4h4',scan:'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',maximize:'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',sparkles:'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',braces:'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2',x:'M18 6 6 18M6 6l12 12'};var VIBES=[{"scope":"x1","name":"인광 오실로스코프","concept":"브러시드 알루미늄 베젤 속에 인광 그린 트레이스가 살아있는 CRT 오실로스코프 계측 패널 — 각 카드는 형광 그래티큘(눈금) 스크린, 라벨은 각인된 계측 글꼴.","hook":"\"카드 = 화면이 아니라 CRT 스크린이다\" — 배경을 채우는 대신 카드 안쪽에 스캔라인·그래티큘 격자·상단 인광 글로우를 깔아 모든 면을 실제 계측 디스플레이처럼 발광시킨다."},{"scope":"x2","name":"朱印 — 스미잉크 & 한코","concept":"먹(墨)으로 물들인 따뜻한 차콜 화선지 위에, 단 한 점의 주인색(朱印 vermilion)만 도장처럼 찍어 여백으로 말하게 한 무인양품식 다크 테마.","hook":"강조색을 '버튼 채움'이 아니라 '문서에 찍힌 도장'으로 다룬다 — 액센트는 면이 아니라 한 번의 날인(捺印)으로만 등장한다."},{"scope":"x3","name":"앰버 콕핏 HUD","concept":"사이드패널을 우주선 콕핏 캐노피처럼 다뤄, 시안 항법 그리드 위에 앰버 경보등과 코너 브래킷·조준 레티클이 떠 있는 HUD 계기판으로 번역했다.","hook":"카드를 \"패널\"이 아니라 \"표적 락온된 계기 셀\"로 보면, eyebrow 틱은 라벨이 아니라 스캐너가 잡은 항목의 조준 마커가 된다."},{"scope":"x4","name":"야간 해도(海圖)","concept":"오래된 항해 지도를 어두운 잉크색 양피지로 뒤집어, 등고선·좌표 격자·나침반 코너 장식이 은은히 배어나는 제도(製圖) 사이드패널.","hook":"\"지도는 종이가 아니라 잉크다\" — 밝은 세피아 종이를 버리고, 깊은 청람 잉크 위에 등고선과 좌표를 음각처럼 새겨 다크 톤에서도 카토그래피 감각을 살렸다."},{"scope":"x5","name":"OP-패널","concept":"Teenage Engineering OP-1을 사이드패널에 이식한 — 따뜻한 차콜 바디에 시그니처 오렌지 키캡, 둥근 사각 몰딩과 누름 깊이감의 촉각형 신스 인터페이스.","hook":"버튼을 평면이 아니라 \"눌리는 키캡\"으로 본다 — 강조 버튼 아래 하드 섀도로 물리적 누름 깊이를 만들고, eyebrow 틱은 작은 오렌지 LED 인디케이터로 바꾼다."},{"scope":"x6","name":"감열 영수증","concept":"열전사 영수증 프린터에서 막 출력된 모노크롬 종이 슬립처럼, 점선 절취선과 도트 라벨·종이 질감을 입힌 사이드패널 테마.","hook":"UI 카드를 \"한 장씩 끊어 나오는 영수증 슬립\"으로 보고, 경계를 선 대신 톱니 절취선(dashed)으로 끊어 종이의 물성을 그대로 번역했다."},{"scope":"x7","name":"밤샘 와이어프레임","concept":"제도판 위에 마커로 쓱쓱 그린 다크 와이어프레임 — 잉크 보더가 살짝 비뚤고 코너엔 손이 두 번 지나간 듯 겹친 자국이 남는 미완성 스케치 톤.","hook":"완성된 UI인 척하지 않는다 — '아직 손그림 단계'를 그대로 미감으로 박제: 보더는 흔들리고, 버튼엔 두 번 그은 자국, 라벨은 손이 미세하게 기울었다."},{"scope":"x8","name":"딥블루 기요셰 — 오트 오롤로지","concept":"딥블루 다이얼 위에 기요셰(엔진턴) 텍스처를 깔고 골드 인덱스·미닛트랙·소레이 브러싱으로 정밀 기계식 시계의 다이얼을 사이드패널로 옮긴 럭셔리 호롤로지 테마.","hook":"카드를 \"다이얼\"로, eyebrow 틱을 \"골드 인덱스\"로, pri 버튼을 빛을 받는 \"어플라이드 골드 인덱스\"로 — UI 요소 하나하나를 시계 부품으로 번역했다."},{"scope":"x9","name":"로스코 색면 — 번지는 빛의 방","concept":"깊은 마룬에서 잉걸불, 잉크로 가라앉는 거대한 수직 색면 위에 카드를 \"떠 있는 색의 베일\"처럼 얹어, 경계가 번지고 안에서 빛이 새어 나오는 로스코식 정서 패널.","hook":"보더를 선이 아니라 '번지는 빛'으로 재정의 — 하드 라인 대신 안쪽으로 스민 글로우와 깃털처럼 풀어진 색면이 경계를 만든다."},{"scope":"x10","name":"잉크 패널 (먹과 한 점)","concept":"먹빛 흑백 지면 위에 하프톤 점·스피드라인·코너 잉크틱으로 만화 한 컷을 짜고, 강조는 오직 주간 소년만화 같은 한 점의 버밀리언 레드로만 터뜨린 다크 망가 패널 테마.","hook":"UI 요소를 '버튼'이 아니라 '칸(코마)'으로 본다 — 카드는 만화 패널, 보조면은 하프톤 망점, 강조 버튼은 잉크로 꽉 채운 한 컷의 클라이맥스."},{"scope":"x11","name":"언더스토리 (Understory)","concept":"깊은 숲 바닥에서 캐노피 사이로 새어드는 빛을 받는 듯한 딥 포레스트 다크 테마 — 이끼 그린 액센트, 흙빛 가라앉은 면, 크게 둥근 유기적 라운드로 차분한 바이오필릭 감각을 사이드패널에 옮긴다.","hook":"강조 틱(eyebrow ::before)을 직선 막대가 아니라 45도로 기운 '새싹 잎' 한 장으로 바꿔, 라벨마다 작은 잎이 돋는 식물의 디테일을 코드 한 줄로 심었다."},{"scope":"x12","name":"리퀴드 크롬 아쿠아","concept":"심해 네이비 위로 흐르는 금속 광택과 아쿠아 블루 글로우로 Y2K 미래 레트로 감성을 사이드패널 다크 톤에 녹인 리퀴드 크롬 테마.","hook":"버튼을 '색 채운 사각형'이 아니라 위에서 빛을 받는 액체 금속 알약으로 보면, 같은 마크업이 아쿠아 크롬 UI로 둔갑한다."}];var gal=document.getElementById('gal'),tpl=document.getElementById('slice');VIBES.forEach(function(v){var b=document.createElement('div');b.className='board';var cap=document.createElement('div');cap.className='cap';cap.innerHTML='<b>'+v.scope.toUpperCase()+'. '+v.name+'</b>';var th=document.createElement('div');th.className='theme '+v.scope;th.appendChild(tpl.content.cloneNode(true));var hook=document.createElement('p');hook.className='hook';hook.textContent=v.concept||'';b.appendChild(cap);b.appendChild(th);b.appendChild(hook);gal.appendChild(b);});document.querySelectorAll('[data-ic]').forEach(function(el){var n=el.getAttribute('data-ic'),s=el.getAttribute('data-sz')||'18';el.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+(IC[n]||IC.file)+'"/></svg>';});</script></body></html>

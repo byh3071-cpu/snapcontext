@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SnapContext UI 옵션 — 정렬 & 톤 비교</title>
+<style>
+  :root{
+    --bg:#0f1320; --surface:#13203c; --sunken:rgba(3,12,28,.45);
+    --bd:rgba(255,255,255,.08); --bd2:rgba(255,255,255,.14);
+    --tx:#ececf0; --mut:#9aa3b2; --acc:#e94560; --acc2:#d63450;
+    --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+    --sans:system-ui,-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0a0d16;color:var(--tx);font-family:var(--sans);padding:0 0 80px}
+  .top{position:sticky;top:0;z-index:9;background:#06080f;border-bottom:1px solid var(--bd);padding:14px 20px}
+  .top h1{margin:0 0 4px;font-size:16px}
+  .top p{margin:0;font-size:12px;color:var(--mut);line-height:1.5}
+  .sec{padding:24px 20px 0}
+  .sec > h2{font-size:13px;letter-spacing:.04em;color:var(--acc);margin:0 0 4px;text-transform:uppercase}
+  .sec > .hint{font-size:12px;color:var(--mut);margin:0 0 16px}
+  .row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+  .board{width:320px}
+  .board > .tag{display:flex;align-items:baseline;gap:8px;margin:0 0 8px}
+  .board > .tag b{font-size:14px}
+  .board > .tag span{font-size:11px;color:var(--mut)}
+  .panel{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:14px}
+  svg{display:block}
+  /* ============ 공통 캡처 그리드 ============ */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+  /* ===== 정렬 A: 세로 카드 중앙 ===== */
+  .A .btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    padding:14px 10px;border:1px solid var(--bd);border-radius:10px;background:var(--sunken);color:var(--tx);
+    cursor:pointer;font:inherit}
+  .A .btn .glyph{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.05)}
+  .A .btn strong{font-size:13px;font-weight:600}
+  .A .btn.pri{background:var(--acc);border-color:var(--acc2)}
+  .A .btn.pri .glyph{background:rgba(0,0,0,.18)} .A .btn.pri svg{color:#fff}
+  .A .btn svg{color:var(--acc)}
+
+  /* ===== 정렬 B: 가로 1줄 중앙 ===== */
+  .B .btn{display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 10px;border:1px solid var(--bd);border-radius:10px;background:var(--sunken);color:var(--tx);
+    cursor:pointer;font:inherit}
+  .B .btn strong{font-size:13px;font-weight:600}
+  .B .btn.pri{background:var(--acc);border-color:var(--acc2)} .B .btn.pri svg{color:#fff}
+  .B .btn svg{color:var(--acc)}
+
+  /* ===== 정렬 C: 좌측 2줄 광학정렬 ===== */
+  .C .btn{display:grid;grid-template-columns:30px 1fr;align-items:center;gap:10px;
+    padding:9px 11px;border:1px solid var(--bd);border-radius:10px;background:var(--sunken);color:var(--tx);
+    cursor:pointer;font:inherit;text-align:left}
+  .C .btn .glyph{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.05)}
+  .C .btn .tx{display:grid;gap:1px;min-width:0}
+  .C .btn strong{font-size:13px;font-weight:600;line-height:1.2}
+  .C .btn small{font-size:11px;color:var(--mut);line-height:1.2}
+  .C .btn.pri{background:var(--acc);border-color:var(--acc2)}
+  .C .btn.pri .glyph{background:rgba(0,0,0,.18)} .C .btn.pri small{color:rgba(255,255,255,.85)} .C .btn.pri svg{color:#fff}
+  .C .btn svg{color:var(--acc)}
+
+  /* ============ 톤 보드(미니 사이드패널 슬라이스) ============ */
+  .slice{display:grid;gap:12px}
+  .slice .eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+  .slice .h{font-size:15px;font-weight:650;margin:0}
+  .slice .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .slice .b{padding:9px;border-radius:8px;border:1px solid var(--bd);background:var(--sunken);color:var(--tx);font:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .slice .b.pri{background:var(--acc);border-color:var(--acc2);font-weight:600}
+  .slice .listrow{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--sunken)}
+  .slice .thumb{width:40px;height:30px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid var(--bd);flex-shrink:0}
+  .slice .meta{display:grid;gap:2px;min-width:0}
+  .slice .meta b{font-size:12px;font-weight:600}
+  .slice .meta s{font-size:11px;color:var(--mut);text-decoration:none}
+  .slice .chip{font-size:10px;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--mut)}
+
+  /* tone1 미니멀·타이트 — 라인 정돈, 장식 최소, 작은 radius */
+  .tone1 .panel{border-radius:8px;background:#0e1322}
+  .tone1 .b,.tone1 .listrow,.tone1 .thumb{border-radius:6px}
+  .tone1 .b.pri{background:var(--acc)}
+  .tone1 .slice{gap:10px}
+
+  /* tone2 모던·살짝 화려 — 큰 radius, soft shadow, glow, hover lift */
+  .tone2 .panel{border-radius:16px;background:linear-gradient(180deg,#1a2340,#10162a);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .tone2 .b,.tone2 .listrow{border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.25);transition:transform .15s}
+  .tone2 .b:hover,.tone2 .listrow:hover{transform:translateY(-2px)}
+  .tone2 .b.pri{background:linear-gradient(135deg,#ff5c77,#e94560);box-shadow:0 6px 20px rgba(233,69,96,.35)}
+  .tone2 .thumb{border-radius:10px}
+  .tone2 .eyebrow{color:#ff8aa0}
+
+  /* tone3 독보적 — Hermes/터미널풍: 니어블랙·크림·모노·헤어라인 그리드·각진 모서리·코너틱 */
+  .tone3{--tx:#e8e4d6;--mut:#8f8a78;--acc:#d6f24a;--bg:#0a0a0a;--sunken:#0e0e0c}
+  .tone3 .panel{background:#0a0a0a;border:1px solid #2a2a24;border-radius:2px;position:relative;font-family:var(--mono)}
+  .tone3 .panel::before,.tone3 .panel::after{content:'';position:absolute;width:8px;height:8px;border:1px solid #4a4a3a}
+  .tone3 .panel::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+  .tone3 .panel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+  .tone3 .eyebrow{color:var(--acc);font-family:var(--mono);letter-spacing:.18em}
+  .tone3 .h{font-family:var(--mono);font-weight:600;color:#e8e4d6}
+  .tone3 .b{border-radius:2px;background:transparent;border:1px solid #3a3a30;font-family:var(--mono);color:#e8e4d6;text-transform:uppercase;font-size:11px;letter-spacing:.06em}
+  .tone3 .b.pri{background:var(--acc);color:#0a0a0a;border-color:var(--acc);font-weight:700}
+  .tone3 .listrow{border-radius:2px;background:transparent;border:1px dashed #2e2e26}
+  .tone3 .thumb{border-radius:0;background:#141410;border:1px solid #2e2e26}
+  .tone3 .meta b{font-family:var(--mono)} .tone3 .meta s{font-family:var(--mono)}
+  .tone3 .chip{border-radius:0;background:transparent;border:1px solid #3a3a30;color:var(--acc);font-family:var(--mono)}
+  .tone3 svg{color:var(--acc)}
+</style>
+</head>
+<body>
+  <div class="top">
+    <h1>SnapContext — 정렬 & 톤 비교</h1>
+    <p>아래에서 ① 버튼 정렬(A/B/C) 한 개 ② 전체 톤(1/2/3) 한 개 골라 알려주세요. 다크 브랜드는 유지. 고른 조합을 사이드패널에 구현합니다.</p>
+  </div>
+
+  <div class="sec">
+    <h2>① 캡처 버튼 정렬</h2>
+    <p class="hint">지금 "좌측 아이콘 + 제목/부제 2줄"이 어수선해 보인다는 피드백 반영. 같은 다크 톤에서 레이아웃만 비교.</p>
+    <div class="row">
+      <div class="board A">
+        <div class="tag"><b>A. 세로 카드 (중앙)</b><span>가장 트렌디·컴팩트</span></div>
+        <div class="panel"><div class="grid">
+          <button class="btn pri"><span class="glyph" data-ic="monitor"></span><strong>화면 캡처</strong></button>
+          <button class="btn"><span class="glyph" data-ic="file"></span><strong>문서 캡처</strong></button>
+          <button class="btn"><span class="glyph" data-ic="scan"></span><strong>요소 캡처</strong></button>
+          <button class="btn"><span class="glyph" data-ic="maximize"></span><strong>전체 캡처</strong></button>
+        </div></div>
+      </div>
+      <div class="board B">
+        <div class="tag"><b>B. 가로 1줄 (중앙)</b><span>밀도 높음·심플</span></div>
+        <div class="panel"><div class="grid">
+          <button class="btn pri"><span data-ic="monitor" data-sz="16"></span><strong>화면 캡처</strong></button>
+          <button class="btn"><span data-ic="file" data-sz="16"></span><strong>문서 캡처</strong></button>
+          <button class="btn"><span data-ic="scan" data-sz="16"></span><strong>요소 캡처</strong></button>
+          <button class="btn"><span data-ic="maximize" data-sz="16"></span><strong>전체 캡처</strong></button>
+        </div></div>
+      </div>
+      <div class="board C">
+        <div class="tag"><b>C. 좌측 2줄 (광학정렬)</b><span>정보량 유지</span></div>
+        <div class="panel"><div class="grid" style="grid-template-columns:1fr">
+          <button class="btn pri"><span class="glyph" data-ic="monitor"></span><span class="tx"><strong>화면 캡처</strong><small>현재 보이는 화면</small></span></button>
+          <button class="btn"><span class="glyph" data-ic="file"></span><span class="tx"><strong>문서 캡처</strong><small>본문 영역 자동 감지</small></span></button>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>② 전체 톤</h2>
+    <p class="hint">같은 컴포넌트(섹션 제목·버튼 한 쌍·리스트 행·칩)를 톤별로. 정렬은 비교를 위해 통일.</p>
+    <div class="row">
+      <!-- tone1 -->
+      <div class="board tone1">
+        <div class="tag"><b>톤1. 미니멀·타이트</b><span>Raycast/Linear풍 · 안전</span></div>
+        <div class="panel"><div class="slice">
+          <div class="eyebrow">AI 디버그 팩</div>
+          <h3 class="h">컨텍스트 팩</h3>
+          <div class="pair"><button class="b pri"><span data-ic="sparkles" data-sz="15"></span>프롬프트 복사</button><button class="b"><span data-ic="braces" data-sz="15"></span>JSON</button></div>
+          <div class="listrow"><div class="thumb"></div><div class="meta"><b>예시 페이지 제목</b><s>example.com · 영역 · 핀 3</s></div></div>
+          <span class="chip">최근 팩 2</span>
+        </div></div>
+      </div>
+      <!-- tone2 -->
+      <div class="board tone2">
+        <div class="tag"><b>톤2. 모던·살짝 화려</b><span>요즘 SaaS풍 · lift/glow</span></div>
+        <div class="panel"><div class="slice">
+          <div class="eyebrow">AI 디버그 팩</div>
+          <h3 class="h">컨텍스트 팩</h3>
+          <div class="pair"><button class="b pri"><span data-ic="sparkles" data-sz="15"></span>프롬프트 복사</button><button class="b"><span data-ic="braces" data-sz="15"></span>JSON</button></div>
+          <div class="listrow"><div class="thumb"></div><div class="meta"><b>예시 페이지 제목</b><s>example.com · 영역 · 핀 3</s></div></div>
+          <span class="chip">최근 팩 2</span>
+        </div></div>
+      </div>
+      <!-- tone3 -->
+      <div class="board tone3">
+        <div class="tag"><b>톤3. 독보적 (Hermes풍)</b><span>터미널·모노·헤어라인 · 강렬</span></div>
+        <div class="panel"><div class="slice">
+          <div class="eyebrow">[ AI_DEBUG_PACK ]</div>
+          <h3 class="h">context.pack</h3>
+          <div class="pair"><button class="b pri"><span data-ic="sparkles" data-sz="15"></span>COPY PROMPT</button><button class="b"><span data-ic="braces" data-sz="15"></span>JSON</button></div>
+          <div class="listrow"><div class="thumb"></div><div class="meta"><b>예시 페이지 제목</b><s>example.com · 영역 · 핀 3</s></div></div>
+          <span class="chip">RECENT · 2</span>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  var IC={
+    monitor:'M3 4h18v12H3zM8 20h8M12 16v4',
+    camera:'M4 7h3l2-2h6l2 2h3v12H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+    file:'M6 2h8l4 4v16H6zM14 2v4h4',
+    scan:'M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4M9 12h6',
+    maximize:'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
+    sparkles:'M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z',
+    braces:'M7 4a2 2 0 0 0-2 2v3l-2 3 2 3v3a2 2 0 0 0 2 2M17 4a2 2 0 0 1 2 2v3l2 3-2 3v3a2 2 0 0 1-2 2'
+  };
+  document.querySelectorAll('[data-ic]').forEach(function(el){
+    var n=el.getAttribute('data-ic'),s=el.getAttribute('data-sz')||'18';
+    el.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+(IC[n]||IC.file)+'"/></svg>';
+  });
+</script>
+</body>
+</html>
