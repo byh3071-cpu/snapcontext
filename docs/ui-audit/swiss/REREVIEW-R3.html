@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SnapContext 스위스 패널 — 디자인 재리뷰 R3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --paper:#FAFAF8; --paper-2:#F4F3EF; --sink:#ECEAE4;
+    --ink:#15110F; --ink-2:#2A2622; --muted:#6E6E6E;
+    --hair:#E3E1DB; --hair-2:#D2CFC7;
+    --red:#E5302E; --green:#1F7A4D; --amber:#B06A00;
+    --on-red:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--sink);
+    color:var(--ink);
+    font-family:'Pretendard',sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    padding:32px 16px;
+  }
+  .sheet{
+    max-width:760px;margin:0 auto;background:var(--paper);
+    border:3px solid var(--ink);
+    box-shadow:8px 8px 0 0 var(--ink);
+  }
+  .pad{padding:28px 32px}
+  /* ---- 마스트헤드 ---- */
+  .mast{border-bottom:4px solid var(--ink);padding:24px 32px 18px}
+  .mast .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .mast h1{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacing:-.02em;line-height:1.05;margin-top:6px;text-transform:uppercase}
+  .mast h1 .r{color:var(--red)}
+  .mast .sub{font-size:13.5px;color:var(--muted);margin-top:8px}
+  /* ---- 점수 히어로 ---- */
+  .hero{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:end;border-bottom:2px solid var(--ink);padding:24px 32px 22px}
+  .hero .big{font-family:'Archivo',sans-serif;font-weight:900;font-size:92px;line-height:.86;letter-spacing:-.04em;color:var(--red)}
+  .hero .big small{font-size:30px;color:var(--ink);letter-spacing:-.02em}
+  .hero .right{padding-bottom:8px}
+  .verdict{display:inline-block;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.08em;background:var(--ink);color:var(--paper);padding:5px 12px;text-transform:uppercase}
+  .prog{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:15px;margin-top:12px;color:var(--ink)}
+  .prog .a{color:var(--muted)} .prog .b{color:var(--ink-2)} .prog .c{color:var(--red);font-weight:700} .prog .ar{color:var(--hair-2);padding:0 4px}
+  /* ---- 섹션 ---- */
+  .sec-h{font-family:'Archivo',sans-serif;font-weight:800;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:baseline}
+  .sec-h .n{font-family:'JetBrains Mono',monospace;color:var(--ink)}
+  /* ---- 점수표 ---- */
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--hair)}
+  th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  td.lens{font-weight:600}
+  td.num{font-family:'JetBrains Mono',monospace;text-align:right;width:64px}
+  td.r3{font-weight:800;color:var(--ink)}
+  td.r2{color:var(--muted)} td.pre{color:var(--hair-2)}
+  td.delta{font-family:'JetBrains Mono',monospace;text-align:right;width:64px;font-size:13px}
+  .up{color:var(--green);font-weight:700} .flat{color:var(--muted)}
+  tr.avg td{border-top:2px solid var(--ink);border-bottom:none;font-weight:900;padding-top:12px}
+  tr.avg td.r3{color:var(--red);font-size:18px}
+  /* ---- 처방/판정 박스 ---- */
+  .box{border:2px solid var(--ink);padding:18px 20px;margin-top:4px}
+  .box.go{background:var(--ink);color:var(--paper)}
+  .box.go .tag{color:var(--paper);border-color:var(--paper)}
+  .box .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.1em;border:1.5px solid var(--ink);padding:3px 9px;text-transform:uppercase;margin-bottom:10px}
+  .box .tag.part{color:var(--amber);border-color:var(--amber)}
+  .box p{font-size:14px;line-height:1.6}
+  .box.go p{color:var(--paper)}
+  /* ---- P1 리스트 ---- */
+  ol.p1{list-style:none;counter-reset:p1;margin-top:4px}
+  ol.p1 li{counter-increment:p1;display:grid;grid-template-columns:34px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--hair)}
+  ol.p1 li:last-child{border-bottom:none}
+  ol.p1 li::before{content:counter(p1,decimal-leading-zero);font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:var(--red);line-height:1}
+  ol.p1 .t{font-weight:700;font-size:14px;margin-bottom:3px}
+  ol.p1 .d{font-size:13px;color:var(--muted);line-height:1.55}
+  ol.p1 .chip{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--muted);border:1px solid var(--hair-2);padding:1px 5px;margin-left:6px;text-transform:uppercase;vertical-align:middle}
+  /* ---- 푸터 ---- */
+  .foot{border-top:4px solid var(--ink);padding:16px 32px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .gap{height:36px}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="mast">
+    <div class="eyebrow">SnapContext · Side Panel · Swiss</div>
+    <h1>디자인 재리뷰 <span class="r">R3</span></h1>
+    <div class="sub">리듬 대비 강화(48/28 → 56/24) 반영 렌더 · 5렌즈 적대 비평 · 2026-06-07</div>
+  </div>
+
+  <div class="hero">
+    <div class="big">7.5<small>2</small></div>
+    <div class="right">
+      <span class="verdict">이식 GO · P0 0건</span>
+      <div class="prog"><span class="a">6.3</span><span class="ar">→</span><span class="b">7.4</span><span class="ar">→</span><span class="c">7.52</span> &nbsp;/ 10</div>
+      <div class="prog" style="font-size:12px;color:var(--muted);margin-top:4px">수정전 → R2 → R3 · 5렌즈 전원 7.3+ 균질</div>
+    </div>
+  </div>
+
+  <div class="pad">
+    <div class="sec-h"><span>렌즈별 점수 추이</span><span class="n">5 / 5</span></div>
+    <table>
+      <thead><tr><th>렌즈</th><th class="num">수정전</th><th class="num">R2</th><th class="num">R3</th><th class="delta">Δ R2→R3</th></tr></thead>
+      <tbody>
+        <tr><td class="lens">타이포그래피 &amp; 위계</td><td class="num pre">7.0</td><td class="num r2">7.8</td><td class="num r3">7.9</td><td class="delta up">+0.1</td></tr>
+        <tr><td class="lens">컴포지션 · 그리드 · 여백</td><td class="num pre">6.5</td><td class="num r2">7.2</td><td class="num r3">7.4</td><td class="delta up">+0.2</td></tr>
+        <tr><td class="lens">모티프 · 디테일 마감</td><td class="num pre">6.5</td><td class="num r2">7.5</td><td class="num r3">7.5</td><td class="delta flat">±0.0</td></tr>
+        <tr><td class="lens">스위스 정통성 · 취향</td><td class="num pre">6.0</td><td class="num r2">7.0</td><td class="num r3">7.3</td><td class="delta up">+0.3</td></tr>
+        <tr><td class="lens">색 &amp; 레드 균형</td><td class="num pre">5.5</td><td class="num r2">7.5</td><td class="num r3">7.5</td><td class="delta flat">±0.0</td></tr>
+        <tr class="avg"><td>평균</td><td class="num pre">6.3</td><td class="num r2">7.4</td><td class="num r3">7.52</td><td class="delta up">+0.12</td></tr>
+      </tbody>
+    </table>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>리듬 처방 종결</span><span class="n">P0-4</span></div>
+    <div class="box">
+      <span class="tag part">부분 해소 · 과교정 아님</span>
+      <p>R2의 유일한 구조 결함이던 <b>"등간격 단조 펄스"</b>를 56/24 대비(diff 20→32px)가 닫기 시작. 컴포지션 렌즈 "챕터 그룹핑이 처음으로 시각적 사실이 됨(+0.2)", 스위스 렌즈 "본 챕터 vs 종속 2단 위계 처음 성립(+0.3)" — 양 렌즈 모두 양(+). 단 두 렌즈 공통 잔여: ① 여백만 차등하고 rule 두께·챕터 타이포 위계는 미동기화, ② 56px가 390px엔 다소 과대해 §03·§05 진입부가 "독립 카드"로 경미하게 분절 → 50~52px 권고. 방향은 정통, 미세 조정 여지 남음.</p>
+    </div>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>이식 최종 판정</span><span class="n">GO</span></div>
+    <div class="box go">
+      <span class="tag">소스 이식 진행</span>
+      <p>평균 <b>7.52</b>로 출시 진입선(7.0) 안정 돌파, 5렌즈 전부 7.3+ 균질, <b>P0(블로커) 0건</b> — 모든 흠은 P1/P2(차기 개선). 추이 6.3 → 7.4 → 7.52는 R2 대도약 후 마지막 구조 결함을 닫으며 안정 수렴한 곡선. <b>React 소스 이식</b> 단계로 넘어가 잔여 P1을 닫을 근거 충분.</p>
+    </div>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>이식 후 React에서 닫을 P1</span><span class="n">3</span></div>
+    <ol class="p1">
+      <li>
+        <div>
+          <div class="t">메이저 진입 여백 56 → 50~52px 미세 축소<span class="chip">CSS 토큰 1줄</span></div>
+          <div class="d">390px 폭에서 56px가 과대 → §03·§05가 카드처럼 분절. 한 단계 당겨 연속성 회복하면 트레이드오프 없이 8점대 진입. (컴포지션 P1 · 스위스 P2)</div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <div class="t">핀(■) 모티프 3종 분열 단일화<span class="chip">모티프 P1</span></div>
+          <div class="d">채운 사각 칩 / 번호 칩 / 선형 아웃라인 큐브·다이아가 컨텍스트마다 흔들림. §02 핀 칩만 검정 채움인 규칙으로 통일 → 어휘 단일성 회복, 모티프 8.x 진입 열쇠.</div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <div class="t">디스플레이 제목 전용 line-height(1.15~1.2) 분리<span class="chip">타이포 P1</span></div>
+          <div class="d">한글 디스플레이 굵은 고딕이 본문 행간을 공유 → 2줄 래핑 시 보조텍스트가 제목에 들러붙음. 디스플레이 라인만 별도 행간 토큰으로 분리.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="foot">
+    <span>SnapContext v0.2.0 · Swiss Panel</span>
+    <span>5-Lens Adversarial · R3 · 2026-06-07</span>
+  </div>
+
+</div>
+</body>
+</html>
