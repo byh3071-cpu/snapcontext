@@ -8,17 +8,21 @@ export type SecHead = {
   asideEl: HTMLSpanElement
 }
 
-export function mkSecHead(opts: {
-  num: string
-  eyebrow: string
-  title: string
-  titleId: string
-  titleClass?: string
-  /** 텍스트 aside(eyebrow 톤). asideNode와 배타 */
-  asideText?: string
-  /** 버튼 등 임의 aside 노드 */
-  asideNode?: HTMLElement
-}): SecHead {
+/** aside 구성 — 텍스트(eyebrow 톤)와 임의 노드(버튼 등)는 타입 차원에서 배타 */
+type AsideConfig =
+  | { asideText: string; asideNode?: never }
+  | { asideNode: HTMLElement; asideText?: never }
+  | { asideText?: never; asideNode?: never }
+
+export function mkSecHead(
+  opts: {
+    num: string
+    eyebrow: string
+    title: string
+    titleId: string
+    titleClass?: string
+  } & AsideConfig
+): SecHead {
   const head = document.createElement('div')
   head.className = 'sec-head'
 
