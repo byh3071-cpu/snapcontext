@@ -11,7 +11,7 @@ tags: [changelog]
 ### 익명 공유 기능 정식 마감
 
 - **익명 컨텍스트 공유:** 캡처 이미지를 익명 업로드 → `/s/{id}` HTML 뷰어 공유 링크 생성(클립보드 자동 복사). 원본 이미지는 `/i/{id}` 가 `image/png` 로 직접 반환. 업로드는 PNG 매직 검증 + 10MB 제한.
-- **공유 링크 7일 후 접근 차단:** 업로드 후 7일(`MAX_AGE_MS`) 경과 시 코드 레벨에서 차단 — 만료·없는 키는 `410` + 안내 메시지(`/i` GONE_MSG, `/s` 만료 페이지)로 응답, 빈 화면 없음. (R2 객체 자동삭제 lifecycle 규칙은 v0.3 백로그.)
+- **공유 링크 7일 후 접근 차단:** 업로드 후 7일(`MAX_AGE_MS`) 경과 시 코드 레벨에서 차단 — 만료·없는 키는 `410` + 안내 메시지(`/i` GONE_MSG, `/s` 만료 페이지)로 응답, 빈 화면 없음. (R2 객체는 버킷 lifecycle 규칙 `auto-delete-7d`로 7일 후 실제 자동 삭제 — 2026-06-07 라이브 버킷 `wrangler r2 bucket lifecycle list`로 확인. 초판의 "v0.3 백로그" 표기는 wrangler.jsonc만 보고 쓴 오기재였음.)
 - **보안 — 누출 차단:** 컨텍스트 토글 기본 **OFF** + 최초 1회 공유 동의(취소 시 업로드 차단). 전송 페이로드는 `SharedContext` 화이트리스트만(`debugLogs`·`project` 제외), 토큰/쿠키/localStorage 미사용(`chrome.storage.local` 만). 뷰어는 모든 동적 필드 `escapeHtml()` + URL `sanitizeHttpUrl()` 로 XSS 차단.
 - **변경 — 사이드패널/오버레이 UI 리파인:** 디자인 토큰 시스템 도입(그라데이션 제거), 아이콘 `lucide` 통일, 빈 상태·마이크로카피 보강, 영문 툴팁·하드코딩 정리(i18n).
 
