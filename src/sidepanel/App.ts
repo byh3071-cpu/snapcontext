@@ -22,11 +22,13 @@ import { showConfirm } from './confirm-dialog'
 import { showToast } from './toast'
 
 /* 마스트헤드 정적 마크업 — 디자인 SoT(docs/ui-audit/swiss/snapcontext.html) 1:1.
-   SVG는 mockup 검증본 그대로(브랜드 블록 잉크 마크 + 톱니). */
+   브랜드 글리프는 메인 확장 아이콘(scripts/generate-extension-icons.mjs)과 동일 지오메트리의
+   카메라 마크 — 단, 레드 잠금(global.css R5 P1-1) 준수를 위해 잉크 블록 위 흰 선화 모노톤. */
 const BRAND_SVG =
-  '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">' +
-  '<path d="M5 5h14v14" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="square"/>' +
-  '<path d="M5 12v7h7" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="square"/></svg>'
+  '<svg width="18" height="18" viewBox="0 4 128 128" aria-hidden="true">' +
+  '<path d="M21 42h20l9-13h28l9 13h20c7.2 0 13 5.8 13 13v39c0 7.2-5.8 13-13 13H21c-7.2 0-13-5.8-13-13V55c0-7.2 5.8-13 13-13Z" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>' +
+  '<circle cx="64" cy="75" r="22" fill="none" stroke="#FFFFFF" stroke-width="13"/>' +
+  '<circle cx="64" cy="75" r="8" fill="#FFFFFF"/></svg>'
 
 const GEAR_SVG =
   '<svg class="ic ic-soft" viewBox="0 0 24 24" aria-hidden="true">' +
