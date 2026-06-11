@@ -8,8 +8,9 @@
  * What this can verify automatically:
  *   - Side panel HTML loads without runtime errors
  *   - Initial progressive-disclosure state (pin memo + AI debug pack hidden)
- *   - Korean labels are present (capture buttons, history, shortcuts help)
- *   - 4-button 2x2 capture grid renders
+ *   - Korean labels are present (capture rows, history, settings help panel)
+ *   - 스위스 §01 캡처 리스트: 4 캡처 행 + 프롬프트 primary 행 (5행)
+ *   - 레드 다이어트 잠금: 시그널 레드는 프롬프트 CTA에만, 섹션 번호는 잉크
  *   - Empty preview placeholder text
  *
  * What this cannot verify (needs manual / real-browser flow):
@@ -95,39 +96,46 @@ async function main() {
 
     // ---- Initial state checks ----
 
-    // A: 4 capture buttons present
-    const captureBtnCount = await page.locator('.toolbar-btn').count()
+    // A: 캡처 행 5개 (4 캡처 모드 + 프롬프트 primary)
+    const captureBtnCount = await page.locator('.cap-btn').count()
     record(
-      '4 capture buttons present',
-      captureBtnCount === 4,
+      '5 capture rows present (4 modes + prompt)',
+      captureBtnCount === 5,
       `count=${captureBtnCount}`
     )
 
-    // A: Korean capture button labels
+    // A: Korean capture row labels
     const captureLabels = await page
-      .locator('.toolbar-btn strong')
+      .locator('.cap-btn .cap-label')
       .allTextContents()
-    const expectedLabels = ['화면 캡처', '문서 캡처', '요소 캡처', '전체 캡처']
+    const expectedLabels = ['화면 캡처', '요소 캡처', '문서 캡처', '전체 캡처', '프롬프트']
     const missingLabels = expectedLabels.filter(
       (l) => !captureLabels.some((found) => found.includes(l))
     )
     record(
-      'capture button labels in Korean',
+      'capture row labels in Korean',
       missingLabels.length === 0,
       missingLabels.length ? `missing=${missingLabels.join(',')}` : `${captureLabels.length} labels`
     )
 
-    // A: 2-column grid for the toolbar row
-    const gridCols = await page.evaluate(() => {
-      const row = document.querySelector('.toolbar-row')
-      if (!row) return null
-      return getComputedStyle(row).gridTemplateColumns
+    // A: 레드 다이어트 잠금 — 프롬프트 행만 시그널 레드, 섹션 번호는 잉크
+    const redLock = await page.evaluate(() => {
+      const primary = document.querySelector('.cap-btn.is-primary')
+      const plain = document.querySelector('.cap-btn:not(.is-primary)')
+      const secNum = document.querySelector('.sec-num')
+      if (!primary || !plain || !secNum) return { ok: false, why: 'missing-elements' }
+      const primaryBg = getComputedStyle(primary).backgroundColor
+      const plainBg = getComputedStyle(plain).backgroundColor
+      const numColor = getComputedStyle(secNum).color
+      return {
+        ok:
+          primaryBg === 'rgb(229, 48, 46)' && // --red #E5302E
+          plainBg !== primaryBg &&
+          numColor === 'rgb(21, 17, 15)', // --ink #15110F (레드 아님)
+        why: `primary=${primaryBg} plain=${plainBg} secNum=${numColor}`
+      }
     })
-    record(
-      'capture buttons use 2-column grid',
-      typeof gridCols === 'string' && gridCols.split(' ').length === 2,
-      `grid-template-columns=${gridCols}`
-    )
+    record('red diet lock (prompt CTA only, ink sec-num)', redLock.ok, redLock.why)
 
     // A: Empty preview placeholder text
     const emptyPlaceholder = await page
@@ -180,15 +188,29 @@ async function main() {
     })
     record('history title is "캡처 기록"', historyVisible, '')
 
-    // A: Shortcuts help summary translated
-    const shortcutsSummary = await page
-      .locator('.shortcuts-help summary')
-      .textContent()
+    // A: 설정 기어 → 도움말 패널 토글 (단축키 목록 노출)
+    const settingsBtn = page.locator('[data-role="settings"]')
+    const settingsLabel = await settingsBtn.getAttribute('aria-label')
     record(
-      'shortcuts help summary in Korean',
-      (shortcutsSummary ?? '').includes('단축키'),
-      `summary="${(shortcutsSummary ?? '').trim()}"`
+      'settings gear labeled in Korean',
+      (settingsLabel ?? '').includes('단축키'),
+      `aria-label="${settingsLabel ?? ''}"`
     )
+    await settingsBtn.click()
+    await page.waitForTimeout(150)
+    const helpVisible = await page.evaluate(() => {
+      const help = document.querySelector('.help-panel')
+      if (!help || help.hasAttribute('hidden')) return false
+      return (help.textContent ?? '').includes('Alt+Shift+V')
+    })
+    record('help panel opens with shortcut list', helpVisible, '')
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(100)
+    const helpClosed = await page.evaluate(() => {
+      const help = document.querySelector('.help-panel')
+      return !!help && help.hasAttribute('hidden')
+    })
+    record('help panel closes on Escape', helpClosed, '')
 
     // Project profile feature flag — both nodes should be hidden
     const profileHidden = await page.evaluate(() => {
