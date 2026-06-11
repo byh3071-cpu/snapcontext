@@ -1,4 +1,3 @@
-import { Copy, Download, UploadCloud } from 'lucide'
 import type { PinItem, SharedContext } from '../../types'
 import {
   copyAnnotatedPngToClipboard,
@@ -9,7 +8,8 @@ import { toKoreanErrorMessage } from '../../utils/messaging'
 import { uploadShare } from '../../utils/upload'
 import { getStorageItem, setStorageItem } from '../../storage'
 import { showConfirm } from '../confirm-dialog'
-import { panelLucideIcon } from '../utils/panel-lucide'
+import { swissIcon, type SwissIconName } from '../utils/swiss-icons'
+import { mkSecHead } from '../utils/section'
 
 const CONSENT_KEY = 'snapcontext.uploadConsent'
 const INCLUDE_CONTEXT_KEY = 'snapcontext.shareIncludeContext'
@@ -23,8 +23,15 @@ export type ImageActionsApi = {
   copyPng: () => Promise<void>
 }
 
+/**
+ * 캡처 내보내기 액션 — 두 호스트로 분리 마운트 (디자인 SoT):
+ * - pngHost: §02 미리보기 카드 내 PNG 복사/저장 듀오
+ * - shareHost: §04 공유 섹션 (발행 블록 + 컨텍스트 토글)
+ * 두 호스트 모두 캡처 전 hidden (progressive disclosure).
+ */
 export function mountImageActions(
-  host: HTMLElement,
+  pngHost: HTMLElement,
+  shareHost: HTMLElement,
   deps: {
     hasCapture: () => boolean
     getImage: () => string | null
@@ -33,56 +40,83 @@ export function mountImageActions(
     showToast: (message: string, kind?: 'info' | 'error') => void
   }
 ): ImageActionsApi {
-  host.classList.add('image-actions')
+  /* ---- §02 카드 내 PNG 듀오 ---- */
+  pngHost.classList.add('image-actions')
 
   const row = document.createElement('div')
-  row.className = 'image-actions__row'
+  row.className = 'duo image-actions__row'
 
-  const mkBtn = (
-    label: string,
-    icon: SVGElement,
-    variant: 'primary' | 'default'
-  ): HTMLButtonElement => {
+  const mkBtn = (label: string, icon: SwissIconName): HTMLButtonElement => {
     const btn = document.createElement('button')
     btn.type = 'button'
-    btn.className =
-      variant === 'primary'
-        ? 'context-pack-panel__btn context-pack-panel__btn--primary'
-        : 'context-pack-panel__btn'
+    btn.className = 'btn btn-ghost context-pack-panel__btn'
     const iconWrap = document.createElement('span')
     iconWrap.className = 'context-pack-panel__icon'
     iconWrap.setAttribute('aria-hidden', 'true')
-    iconWrap.appendChild(icon)
+    iconWrap.append(swissIcon(icon))
     const labelSpan = document.createElement('span')
     labelSpan.textContent = label
     btn.append(iconWrap, labelSpan)
     return btn
   }
 
-  const btnCopy = mkBtn('PNG 복사', panelLucideIcon(Copy, 18), 'primary')
-  const btnSave = mkBtn('PNG 저장', panelLucideIcon(Download, 18), 'default')
-  btnCopy.title = 'PNG 복사 (Alt+Shift+P)'
+  const btnCopy = mkBtn('PNG 복사', 'copy')
+  const btnSave = mkBtn('PNG 저장', 'download')
+  btnCopy.title = 'PNG 복사 (단축키: 직접 지정)'
   btnSave.title = 'PNG 저장'
   row.append(btnCopy, btnSave)
+  pngHost.append(row)
 
-  // 공유 링크 버튼 (전체 폭)
+  /* ---- §04 공유 섹션: 발행 블록 ---- */
+  const { head } = mkSecHead({
+    num: '04',
+    eyebrow: '발행',
+    title: '공유',
+    titleId: 'sec-share-title',
+    asideText: '7일'
+  })
+
+  const block = document.createElement('div')
+  block.className = 'publish-block'
+
+  const cap = document.createElement('div')
+  cap.className = 'publish-cap'
+  cap.setAttribute('aria-hidden', 'true')
+  cap.innerHTML =
+    '<span class="pc-num tnum">04</span><span class="pc-txt">PUBLISH · 공개 · 7일 만료</span>'
+
   const shareRow = document.createElement('div')
   shareRow.className = 'image-actions__share-row'
-  const btnShare = mkBtn('공유 링크', panelLucideIcon(UploadCloud, 18), 'default')
+  const btnShare = document.createElement('button')
+  btnShare.type = 'button'
+  btnShare.className = 'btn-publish'
   btnShare.title = '공유 링크 생성 (공개·7일)'
-  const shareLabel = btnShare.querySelector('span:last-child') as HTMLSpanElement
+  const shareIcon = swissIcon('share')
+  const shareLabel = document.createElement('span')
+  shareLabel.textContent = '공유 링크 생성 (공개·7일)'
+  btnShare.append(shareIcon, shareLabel)
   shareRow.append(btnShare)
 
-  // 컨텍스트 포함 토글
+  /* 컨텍스트 포함 토글 — 직각 스위치 */
   const toggleLabel = document.createElement('label')
-  toggleLabel.className = 'image-actions__toggle'
+  toggleLabel.className = 'toggle-row image-actions__toggle'
+  const toggleText = document.createElement('span')
+  toggleText.className = 'toggle-text'
+  toggleText.innerHTML =
+    '<span class="tt-title">컨텍스트 포함</span><span class="tt-sub">소스 주소·핀 메모</span>'
+  const toggleSwitch = document.createElement('span')
+  toggleSwitch.className = 'switch'
   const toggleInput = document.createElement('input')
   toggleInput.type = 'checkbox'
-  const toggleText = document.createElement('span')
-  toggleText.textContent = '컨텍스트 포함 (소스 주소·핀 메모)'
-  toggleLabel.append(toggleInput, toggleText)
+  toggleInput.setAttribute('aria-label', '컨텍스트 포함 (소스 주소·핀 메모)')
+  const track = document.createElement('span')
+  track.className = 'track'
+  track.setAttribute('aria-hidden', 'true')
+  toggleSwitch.append(toggleInput, track)
+  toggleLabel.append(toggleText, toggleSwitch)
 
-  host.append(row, shareRow, toggleLabel)
+  block.append(cap, shareRow, toggleLabel)
+  shareHost.append(head, block)
 
   // 토글 상태 로드 (기본 OFF)
   void (async () => {
@@ -157,7 +191,7 @@ export function mountImageActions(
     } finally {
       sharing = false
       btnShare.disabled = !deps.hasCapture()
-      shareLabel.textContent = '공유 링크'
+      shareLabel.textContent = '공유 링크 생성 (공개·7일)'
     }
   }
 
@@ -173,7 +207,8 @@ export function mountImageActions(
 
   const sync = (): void => {
     const has = deps.hasCapture()
-    host.hidden = !has
+    pngHost.hidden = !has
+    shareHost.hidden = !has
     btnCopy.disabled = !has
     btnSave.disabled = !has
     btnShare.disabled = !has

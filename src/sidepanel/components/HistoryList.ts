@@ -1,11 +1,11 @@
-import { ImageOff, Trash2, X } from 'lucide'
 import {
   clearHistory,
   deleteCapture,
   getHistory,
   type CaptureHistoryItem
 } from '../../storage/history'
-import { panelLucideIcon } from '../utils/panel-lucide'
+import { swissIcon } from '../utils/swiss-icons'
+import { mkSecHead } from '../utils/section'
 
 type HistoryListDeps = {
   onOpen: (item: CaptureHistoryItem) => void
@@ -23,15 +23,14 @@ function captureTypeLabel(type: CaptureHistoryItem['captureType']): string {
   return '화면'
 }
 
+/** 디자인 SoT 기록행 메타 포맷: MM.DD HH:mm (tabular-nums) */
 function formatTime(value: string): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
+  const p = (n: number): string => String(n).padStart(2, '0')
+  return `${p(date.getMonth() + 1)}.${p(date.getDate())} ${p(date.getHours())}:${p(
+    date.getMinutes()
+  )}`
 }
 
 function hostname(url: string): string {
@@ -46,39 +45,36 @@ export function mountHistoryList(
   host: HTMLElement,
   deps: HistoryListDeps
 ): HistoryListApi {
-  host.classList.add('panel-card')
   host.classList.add('capture-history')
 
-  const header = document.createElement('div')
-  header.className = 'capture-history__header'
-
-  const title = document.createElement('h2')
-  title.className = 'capture-history__title'
-  title.textContent = '캡처 기록'
-
+  /* ---- 섹션 헤드: 05 | 기록 / 캡처 기록 | 모두 삭제 ---- */
   const clearBtn = document.createElement('button')
   clearBtn.type = 'button'
-  clearBtn.className = 'capture-history__clear'
+  clearBtn.className = 'danger-link capture-history__clear'
   clearBtn.title = '캡처 기록 모두 삭제'
   clearBtn.setAttribute('aria-label', '캡처 기록 모두 삭제')
-  clearBtn.appendChild(panelLucideIcon(Trash2, 15))
+  clearBtn.append(swissIcon('trashLines'), document.createTextNode('모두 삭제'))
 
-  header.append(title, clearBtn)
+  const { head } = mkSecHead({
+    num: '05',
+    eyebrow: '기록',
+    title: '캡처 기록',
+    titleId: 'sec-hist-title',
+    titleClass: 'capture-history__title',
+    asideNode: clearBtn
+  })
 
   const list = document.createElement('div')
-  list.className = 'capture-history__list'
+  list.className = 'hist-list capture-history__list'
 
-  host.append(header, list)
+  host.append(head, list)
 
   let items: CaptureHistoryItem[] = []
 
   function renderEmpty(): void {
     const empty = document.createElement('div')
-    empty.className = 'capture-history__empty empty-state'
-    const emptyText = document.createElement('p')
-    emptyText.className = 'empty-state__text'
-    emptyText.textContent = '저장된 캡처가 아직 없습니다.'
-    empty.append(panelLucideIcon(ImageOff, 28), emptyText)
+    empty.className = 'capture-history__empty'
+    empty.textContent = '저장된 캡처가 아직 없습니다.'
     list.append(empty)
   }
 
@@ -121,7 +117,7 @@ export function mountHistoryList(
     row.addEventListener('pointerleave', finish)
   }
 
-  function renderItem(item: CaptureHistoryItem): HTMLElement {
+  function renderItem(item: CaptureHistoryItem, index: number): HTMLElement {
     const wrap = document.createElement('div')
     wrap.className = 'capture-history__item-wrap'
 
@@ -140,6 +136,11 @@ export function mountHistoryList(
       suppressNextClick = true
     })
 
+    const idx = document.createElement('span')
+    idx.className = 'hist-idx tnum'
+    idx.setAttribute('aria-hidden', 'true')
+    idx.textContent = String(index + 1).padStart(2, '0')
+
     const thumb = document.createElement('div')
     thumb.className = 'capture-history__thumb'
     if (item.thumbnail) {
@@ -156,30 +157,36 @@ export function mountHistoryList(
     primary.className = 'capture-history__primary'
     primary.textContent = item.title || hostname(item.url)
 
-    const url = document.createElement('div')
-    url.className = 'capture-history__url'
-    url.textContent = item.url
-
     const meta = document.createElement('div')
-    meta.className = 'capture-history__meta'
-    meta.textContent = `${formatTime(item.timestamp)} · ${captureTypeLabel(
-      item.captureType
-    )} · 핀 ${item.pinsCount}`
+    meta.className = 'capture-history__meta tnum'
+    const mkSlash = (): HTMLSpanElement => {
+      const s = document.createElement('span')
+      s.className = 'slash'
+      s.textContent = '/'
+      return s
+    }
+    meta.append(
+      document.createTextNode(formatTime(item.timestamp)),
+      mkSlash(),
+      document.createTextNode(captureTypeLabel(item.captureType)),
+      mkSlash(),
+      document.createTextNode(`핀 ${item.pinsCount}`)
+    )
 
-    body.append(primary, url, meta)
+    body.append(primary, meta)
 
     const deleteBtn = document.createElement('button')
     deleteBtn.type = 'button'
-    deleteBtn.className = 'capture-history__delete'
+    deleteBtn.className = 'row-del capture-history__delete'
     deleteBtn.title = '캡처 삭제'
     deleteBtn.setAttribute('aria-label', '캡처 삭제')
-    deleteBtn.appendChild(panelLucideIcon(X, 15))
+    deleteBtn.append(swissIcon('trash', 'ic-sm'))
     deleteBtn.addEventListener('click', (ev) => {
       ev.stopPropagation()
       void removeItem(item.id)
     })
 
-    row.append(thumb, body)
+    row.append(idx, thumb, body)
     wrap.append(row, deleteBtn)
     return wrap
   }
@@ -193,9 +200,9 @@ export function mountHistoryList(
     }
 
     clearBtn.disabled = false
-    for (const item of items) {
-      list.append(renderItem(item))
-    }
+    items.forEach((item, i) => {
+      list.append(renderItem(item, i))
+    })
   }
 
   async function refresh(): Promise<void> {
