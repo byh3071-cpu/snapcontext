@@ -1,6 +1,5 @@
-import { X } from 'lucide'
 import type { PinItem } from '../../types'
-import { panelLucideIcon } from '../utils/panel-lucide'
+import { swissIcon } from '../utils/swiss-icons'
 
 const PIN_CLASS = 'pin-badge'
 /** Drag threshold in px – clicks shorter than this are treated as pin actions. */
@@ -53,7 +52,7 @@ export function mountImageLightbox(
   closeBtn.type = 'button'
   closeBtn.className = 'image-lightbox__close'
   closeBtn.setAttribute('aria-label', '닫기')
-  closeBtn.appendChild(panelLucideIcon(X, 18))
+  closeBtn.appendChild(swissIcon('x'))
 
   pinContainer.appendChild(img)
   viewport.appendChild(pinContainer)

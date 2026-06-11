@@ -16,9 +16,62 @@ import { mountPinLayer } from './components/PinAnnotation'
 import { mountPinMemoList } from './components/PinMemoList'
 import { mountPreview } from './components/Preview'
 import { mountShortcutsHelp } from './components/ShortcutsHelp'
+import { mkSecHead } from './utils/section'
 import './styles/global.css'
 import { showConfirm } from './confirm-dialog'
 import { showToast } from './toast'
+
+/* 마스트헤드 정적 마크업 — 디자인 SoT(docs/ui-audit/swiss/snapcontext.html) 1:1.
+   브랜드 글리프는 메인 확장 아이콘(scripts/generate-extension-icons.mjs)과 동일 지오메트리의
+   카메라 마크 — 단, 레드 잠금(global.css R5 P1-1) 준수를 위해 잉크 블록 위 흰 선화 모노톤. */
+const BRAND_SVG =
+  '<svg width="18" height="18" viewBox="0 4 128 128" aria-hidden="true">' +
+  '<path d="M21 42h20l9-13h28l9 13h20c7.2 0 13 5.8 13 13v39c0 7.2-5.8 13-13 13H21c-7.2 0-13-5.8-13-13V55c0-7.2 5.8-13 13-13Z" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>' +
+  '<circle cx="64" cy="75" r="22" fill="none" stroke="#FFFFFF" stroke-width="13"/>' +
+  '<circle cx="64" cy="75" r="8" fill="#FFFFFF"/></svg>'
+
+const GEAR_SVG =
+  '<svg class="ic ic-soft" viewBox="0 0 24 24" aria-hidden="true">' +
+  '<circle cx="12" cy="12" r="3"/>' +
+  '<path d="M19.4 13.5a7.8 7.8 0 0 0 0-3l1.7-1.3-1.8-3.1-2 .8a7.7 7.7 0 0 0-2.6-1.5l-.3-2.1H7.6l-.3 2.1a7.7 7.7 0 0 0-2.6 1.5l-2-.8L.9 9.2l1.7 1.3a7.8 7.8 0 0 0 0 3L.9 14.8l1.8 3.1 2-.8a7.7 7.7 0 0 0 2.6 1.5l.3 2.1h4.8l.3-2.1a7.7 7.7 0 0 0 2.6-1.5l2 .8 1.8-3.1-1.7-1.3Z"/></svg>'
+
+function buildMasthead(): { masthead: HTMLElement; settingsBtn: HTMLButtonElement } {
+  const masthead = document.createElement('header')
+  masthead.className = 'masthead'
+  const version = chrome.runtime?.getManifest?.().version ?? ''
+  masthead.innerHTML = `
+    <div class="mast-top">
+      <span class="brand-block" aria-hidden="true">${BRAND_SVG}</span>
+      <div class="wordmark">
+        <h1>SnapContext</h1>
+        <div class="tag">
+          <span class="ver tnum">v${version}</span>
+          <span class="kicker">화면 → 컨텍스트</span>
+        </div>
+      </div>
+      <button class="icon-btn" type="button" data-role="settings"
+        aria-label="설정 / 도움말: 단축키" title="설정 / 도움말: 단축키"
+        aria-expanded="false" aria-controls="help-panel">${GEAR_SVG}</button>
+    </div>
+    <div class="mast-meta" aria-hidden="true">
+      <span class="tnum latin">CHROME · WHALE MV3</span>
+      <span class="slash">/</span>
+      <span class="mm-strong"><span class="tnum latin">4</span> 캡처 모드</span>
+    </div>
+    <div class="mast-hero" aria-hidden="true">
+      <div class="hero-stack">
+        <span class="hero-word disp">SNAP</span>
+        <span class="hero-sub disp">Context</span>
+      </div>
+      <div class="hero-side">
+        <div class="hs-line">캡처<span class="hs-arrow"> → </span>프롬프트</div>
+        <div class="hs-line tnum">5 단축키 · 핀 메모</div>
+      </div>
+    </div>`
+  const settingsBtn = masthead.querySelector<HTMLButtonElement>('[data-role="settings"]')
+  if (!settingsBtn) throw new Error('masthead settings button missing')
+  return { masthead, settingsBtn }
+}
 
 function init(): void {
   const app = document.getElementById('app')
@@ -44,19 +97,28 @@ function init(): void {
   toastRoot.id = 'toast-root'
   toastRoot.className = 'toast-root'
 
-  const shell = document.createElement('div')
-  shell.className = 'app-shell'
+  const panel = document.createElement('div')
+  panel.className = 'panel'
 
-  const header = document.createElement('header')
-  header.className = 'app-header'
-  const title = document.createElement('h1')
-  title.className = 'app-title'
-  title.textContent = 'SnapContext'
-  const sub = document.createElement('p')
-  sub.className = 'app-sub'
-  sub.textContent = 'v0.1.3'
-  header.append(title, sub)
+  const { masthead, settingsBtn } = buildMasthead()
+  mountShortcutsHelp(masthead, settingsBtn)
 
+  const main = document.createElement('main')
+  main.className = 'scroll'
+
+  /* ---- §01 캡처 모드 ---- */
+  const secCap = document.createElement('section')
+  secCap.className = 'sec'
+  secCap.setAttribute('aria-labelledby', 'sec-cap-title')
+  secCap.append(
+    mkSecHead({
+      num: '01',
+      eyebrow: '캡처 모드',
+      title: '화면을 잡아 컨텍스트로',
+      titleId: 'sec-cap-title',
+      asideText: '5 단축키'
+    }).head
+  )
   const toolbarHost = document.createElement('div')
   const selectionBanner = document.createElement('div')
   selectionBanner.className = 'selection-banner'
@@ -64,39 +126,44 @@ function init(): void {
   selectionBanner.innerHTML = `
     <div class="selection-banner__row">
       <p class="selection-banner__text">페이지에서 요소를 클릭하세요. <kbd>Esc</kbd>로 취소할 수 있습니다.</p>
-      <button type="button" class="selection-banner__cancel">취소</button>
+      <button type="button" class="ghost-btn selection-banner__cancel">취소</button>
     </div>
   `
+  secCap.append(toolbarHost, selectionBanner)
 
-  const previewHost = document.createElement('div')
-  const imageActionsHost = document.createElement('div')
+  /* ---- §02 미리보기 (Preview가 sec-head + pv-card 구성) ---- */
+  const secPreview = document.createElement('section')
+  secPreview.className = 'sec sec--minor'
+  secPreview.setAttribute('aria-labelledby', 'sec-pv-title')
+
+  /* ---- §03 컨텍스트 팩 (ContextPackPanel이 sec-head 구성) ---- */
+  const secPack = document.createElement('section')
+  secPack.className = 'sec'
+  secPack.setAttribute('aria-labelledby', 'sec-pack-title')
+
+  /* ---- §04 공유 (ImageActions가 sec-head + 발행 블록 구성) ---- */
+  const secShare = document.createElement('section')
+  secShare.className = 'sec sec--minor'
+  secShare.setAttribute('aria-labelledby', 'sec-share-title')
+
+  /* ---- §05 캡처 기록 (HistoryList가 sec-head 구성) ---- */
+  const secHistory = document.createElement('section')
+  secHistory.className = 'sec'
+  secHistory.setAttribute('aria-labelledby', 'sec-hist-title')
+
   const pinMemoHost = document.createElement('div')
-  const packHost = document.createElement('div')
-  const historyHost = document.createElement('div')
-  const shortcutsHost = document.createElement('div')
 
   // Progressive disclosure: hide pin memo + AI debug pack until first capture.
-  // ImageActions hides itself based on hasCapture(); history stays visible to
-  // let users reload prior packs.
+  // ImageActions hides its hosts based on hasCapture(); history stays visible
+  // to let users reload prior packs.
   pinMemoHost.hidden = true
-  packHost.hidden = true
+  secPack.hidden = true
 
-  shell.append(
-    header,
-    toastRoot,
-    toolbarHost,
-    selectionBanner,
-    previewHost,
-    imageActionsHost,
-    pinMemoHost,
-    packHost,
-    historyHost,
-    shortcutsHost
-  )
+  main.append(secCap, secPreview, secPack, secShare, secHistory)
+  panel.append(masthead, main, toastRoot)
+  app.append(panel)
 
-  app.append(shell)
-
-  const preview = mountPreview(previewHost, {
+  const preview = mountPreview(secPreview, {
     canPin: () => preview.hasImage(),
     getPins: () => pins,
     getActivePinId: () => activePinId,
@@ -125,7 +192,10 @@ function init(): void {
     }
   })
 
-  previewHost.addEventListener('snapcontext:pin-lightbox-open', () => {
+  // 핀 메모 블록은 미리보기 카드 내부 하위 블록 (디자인 SoT §02)
+  preview.cardEl.append(pinMemoHost)
+
+  secPreview.addEventListener('snapcontext:pin-lightbox-open', () => {
     refreshPins()
   })
 
@@ -268,7 +338,7 @@ function init(): void {
     pinHandlers
   )
 
-  const imageActions = mountImageActions(imageActionsHost, {
+  const imageActions = mountImageActions(preview.exportHost, secShare, {
     hasCapture: () => capturedImage !== null,
     getImage: () => capturedImage,
     getPins: () => pins,
@@ -287,7 +357,7 @@ function init(): void {
     showToast
   })
 
-  packRef.api = mountContextPackPanel(packHost, {
+  packRef.api = mountContextPackPanel(secPack, {
     hasCapture: () => capturedImage !== null,
     buildInput: () => {
       if (!captureSnapshot || !capturedImage) return null
@@ -308,7 +378,7 @@ function init(): void {
     showToast
   })
 
-  mountHistoryList(historyHost, {
+  mountHistoryList(secHistory, {
     onOpen: (item) => {
       // Restore capture image to preview.
       const imageData = item.imageBase64 ?? item.thumbnail
@@ -365,7 +435,8 @@ function init(): void {
         dataUrl: imageData,
         captureType: item.captureType,
         imageWidth,
-        imageHeight
+        imageHeight,
+        sourceUrl: item.url
       })
 
       // Restore pins.
@@ -375,7 +446,7 @@ function init(): void {
 
       // Sync panels.
       pinMemoHost.hidden = false
-      packHost.hidden = false
+      secPack.hidden = false
       imageActions.sync()
       if (item.contextPack) {
         packRef.api?.loadPack(item.contextPack)
@@ -387,7 +458,14 @@ function init(): void {
     showToast
   })
 
-  mountShortcutsHelp(shortcutsHost)
+  /* 콜로폰 — 인쇄물 판권 푸터 (§05 하단). copy-png는 suggested key 미등록 → 표기 제외 */
+  const colophon = document.createElement('div')
+  colophon.className = 'colophon'
+  colophon.setAttribute('aria-hidden', 'true')
+  colophon.innerHTML = `
+    <span>SNAPCONTEXT<span class="cx-dot"> · </span>CHROME · WHALE MV3</span>
+    <span class="tnum">V/E/M/G · ALT+SHIFT</span>`
+  secHistory.append(colophon)
 
   const maybeConfirmClearPins = async (): Promise<boolean> => {
     if (pins.length === 0) return true
@@ -410,13 +488,14 @@ function init(): void {
       dataUrl: capturedImage,
       captureType: payload.captureType,
       imageWidth: payload.imageWidth,
-      imageHeight: payload.imageHeight
+      imageHeight: payload.imageHeight,
+      sourceUrl: payload.sourceUrl
     })
     packRef.api?.resetPack()
     packRef.api?.sync()
     imageActions.sync()
     pinMemoHost.hidden = false
-    packHost.hidden = false
+    secPack.hidden = false
     try {
       const contextPack = generateContextPack({
         imageBase64: payload.imageData,
@@ -599,6 +678,11 @@ function init(): void {
       if (res.type !== 'ACK') {
         showToast('예기치 않은 응답입니다.', 'error')
       }
+    },
+    onPrompt: async () => {
+      // §01 프롬프트 행 = §03 'AI 프롬프트 복사'와 동일 동작.
+      // 캡처가 없으면 copyPrompt 내부에서 안내 토스트 처리.
+      await packRef.api?.copyPrompt()
     }
   })
 
