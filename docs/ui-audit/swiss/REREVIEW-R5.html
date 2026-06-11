@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SnapContext 스위스 패널 — 디자인 재리뷰 R5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{--paper:#FAFAF8;--paper-2:#F4F3EF;--sink:#ECEAE4;--ink:#15110F;--ink-2:#2A2622;--muted:#6E6E6E;--hair:#E3E1DB;--hair-2:#D2CFC7;--red:#E5302E;--green:#1F7A4D;--amber:#B06A00;--on-red:#fff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--sink);color:var(--ink);font-family:'Pretendard',sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding:32px 16px}
+  .sheet{max-width:780px;margin:0 auto;background:var(--paper);border:3px solid var(--ink);box-shadow:8px 8px 0 0 var(--ink)}
+  .pad{padding:28px 32px}
+  .mast{border-bottom:4px solid var(--ink);padding:24px 32px 18px}
+  .mast .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .mast h1{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacing:-.02em;line-height:1.05;margin-top:6px;text-transform:uppercase}
+  .mast h1 .r{color:var(--red)}
+  .mast .sub{font-size:13.5px;color:var(--muted);margin-top:8px}
+  .hero{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:end;border-bottom:2px solid var(--ink);padding:24px 32px 22px}
+  .hero .big{font-family:'Archivo',sans-serif;font-weight:900;font-size:92px;line-height:.86;letter-spacing:-.04em;color:var(--red)}
+  .hero .big small{font-size:30px;color:var(--ink);letter-spacing:-.02em}
+  .hero .right{padding-bottom:8px}
+  .verdict{display:inline-block;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.08em;background:var(--ink);color:var(--paper);padding:5px 12px;text-transform:uppercase}
+  .prog{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:14px;margin-top:12px;color:var(--ink)}
+  .prog .x{color:var(--hair-2)} .prog .d{color:var(--red);font-weight:700} .prog .ar{color:var(--hair-2);padding:0 3px}
+  .sec-h{font-family:'Archivo',sans-serif;font-weight:800;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:baseline}
+  .sec-h .n{font-family:'JetBrains Mono',monospace;color:var(--ink)}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--hair)}
+  th{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  td.lens{font-weight:600}
+  td.num{font-family:'JetBrains Mono',monospace;text-align:right;width:46px}
+  td.r5{font-weight:800;color:var(--ink)}
+  td.dim{color:var(--hair-2)} td.r4{color:var(--muted)}
+  td.delta{font-family:'JetBrains Mono',monospace;text-align:right;width:54px;font-size:12.5px}
+  .up{color:var(--green);font-weight:700} .flat{color:var(--muted)}
+  tr.avg td{border-top:2px solid var(--ink);border-bottom:none;font-weight:900;padding-top:12px}
+  tr.avg td.r5{color:var(--red);font-size:18px}
+  .box{border:2px solid var(--ink);padding:18px 20px;margin-top:4px}
+  .box.go{background:var(--ink);color:var(--paper)}
+  .box.go .tag{color:var(--paper);border-color:var(--paper)} .box.go p{color:var(--paper)} .box.go p b{color:#fff}
+  .box.warn{border-color:var(--amber);background:#FFF9F0}
+  .box .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.1em;border:1.5px solid var(--ink);padding:3px 9px;text-transform:uppercase;margin-bottom:10px}
+  .box .tag.amber{color:var(--amber);border-color:var(--amber)}
+  .box p{font-size:13.5px;line-height:1.62}
+  .box p + p{margin-top:8px}
+  .margins{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .mg{flex:1;min-width:90px;border:1.5px solid var(--hair-2);padding:9px 10px}
+  .mg .step{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+  .mg .val{font-family:'Archivo',sans-serif;font-weight:900;font-size:21px;margin-top:2px}
+  .mg.big .val{color:var(--green)} .mg.small .val{color:var(--amber)}
+  ol.p1{list-style:none;counter-reset:p1;margin-top:4px}
+  ol.p1 li{counter-increment:p1;display:grid;grid-template-columns:34px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--hair)}
+  ol.p1 li:last-child{border-bottom:none}
+  ol.p1 li::before{content:counter(p1,decimal-leading-zero);font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:var(--red);line-height:1}
+  ol.p1 .t{font-weight:700;font-size:14px;margin-bottom:3px}
+  ol.p1 .d{font-size:13px;color:var(--muted);line-height:1.55}
+  ol.p1 .chip{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--muted);border:1px solid var(--hair-2);padding:1px 5px;margin-left:6px;text-transform:uppercase;vertical-align:middle}
+  .note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.55;border-left:3px solid var(--hair-2);padding-left:12px}
+  .foot{border-top:4px solid var(--ink);padding:16px 32px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .gap{height:34px}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="mast">
+    <div class="eyebrow">SnapContext · Side Panel · Swiss · v0.2.0</div>
+    <h1>디자인 재리뷰 <span class="r">R5</span></h1>
+    <div class="sub">P1 3종(레드 하단·래핑 제거·비율) + 마스트헤드 폴리시(SNAP 80·hero 1줄·톱니) · 5렌즈 · 2026-06-07</div>
+  </div>
+
+  <div class="hero">
+    <div class="big">7.8<small>0</small></div>
+    <div class="right">
+      <span class="verdict">이식 GO · 수렴 진입</span>
+      <div class="prog"><span class="x">6.3</span><span class="ar">→</span><span class="x">7.4</span><span class="ar">→</span><span class="x">7.52</span><span class="ar">→</span><span class="x">7.66</span><span class="ar">→</span><span class="d">7.80</span> / 10</div>
+      <div class="prog" style="font-size:12px;color:var(--muted);margin-top:4px">5라운드 · 5렌즈 전원 7.7+ · 이번 라운드 회귀 0</div>
+    </div>
+  </div>
+
+  <div class="pad">
+    <div class="sec-h"><span>렌즈별 점수 추이</span><span class="n">5 / 5</span></div>
+    <table>
+      <thead><tr><th>렌즈</th><th class="num">前</th><th class="num">R3</th><th class="num">R4</th><th class="num">R5</th><th class="delta">Δ R4→5</th></tr></thead>
+      <tbody>
+        <tr><td class="lens">타이포그래피 &amp; 위계</td><td class="num dim">7.0</td><td class="num r4">7.9</td><td class="num r4">7.9</td><td class="num r5">8.0</td><td class="delta up">+0.1</td></tr>
+        <tr><td class="lens">컴포지션 · 그리드 · 여백</td><td class="num dim">6.5</td><td class="num r4">7.4</td><td class="num r4">7.6</td><td class="num r5">7.7</td><td class="delta up">+0.1</td></tr>
+        <tr><td class="lens">모티프 · 디테일 마감</td><td class="num dim">6.5</td><td class="num r4">7.5</td><td class="num r4">7.6</td><td class="num r5">7.7</td><td class="delta up">+0.1</td></tr>
+        <tr><td class="lens">스위스 정통성 · 취향</td><td class="num dim">6.0</td><td class="num r4">7.3</td><td class="num r4">7.6</td><td class="num r5">7.7</td><td class="delta up">+0.1</td></tr>
+        <tr><td class="lens">색 &amp; 레드 균형</td><td class="num dim">5.5</td><td class="num r4">7.5</td><td class="num r4">7.6</td><td class="num r5">7.9</td><td class="delta up">+0.3</td></tr>
+        <tr class="avg"><td>평균</td><td class="num dim">6.3</td><td class="num r4">7.52</td><td class="num r4">7.66</td><td class="num r5">7.80</td><td class="delta up">+0.14</td></tr>
+      </tbody>
+    </table>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>레드 하단 재등장 판정</span><span class="n">조건부</span></div>
+    <div class="box">
+      <span class="tag amber">조건부 개선 · +0.3</span>
+      <p>§04 공유 CTA에 레드를 놓아 무게중심이 하단으로 내려와 상하 인장이 잡힘. PUBLISH는 가장 비가역적 종착 액션이라 레드 자격이 가장 강한 자리 → 레드 다이어트 원칙 훼손 아님. §01 프롬프트와 §04 공유는 상/하단으로 멀어 한 뷰포트에 동시에 안 들어오므로 위계 충돌 미발생(실사용 뷰에선 양극이 산다).</p>
+      <p><b>단, 진짜 흠 1개:</b> 리뷰가 "두 레드 채도 불일치"(프롬프트=탁한 코랄 / 공유=순수 시그널)를 지목. <b>실측: 둘 다 동일 토큰 <code>--red #E5302E</code> — 코드상 같은 빨강.</b> 차이는 착시 — 프롬프트 밴드는 흰 아이콘/설명/kbd가 빨강을 잘게 쪼개 탁하게, §04는 솔리드라 순수하게 보임. 이미 단일 토큰이라 코드 수정 불필요.</p>
+    </div>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>수렴 — 멈출 때 가깝다</span><span class="n">Δ</span></div>
+    <div class="box warn">
+      <span class="tag amber">DIMINISHING RETURNS</span>
+      <p>증분 완전 평평(R3 +0.14 · R4 +0.14 · R5 +0.14, 가속 0). 이번 6변경 중 절반(52:22·톱니·SNAP 80)은 "육안 검증 불가 / 체감 0.1 미만"으로 진단. 남은 P1은 더 이상 px 튜닝이 아니라 <b>시스템 규칙 한 줄로 박제할 구조 이슈</b> → React 이식에서 토큰화로 처리가 정석. 프로토타입 추가 px 손질은 수익 없음.</p>
+      <div class="margins">
+        <div class="mg big"><div class="step">R2 대수술</div><div class="val">+1.1</div></div>
+        <div class="mg small"><div class="step">R3</div><div class="val">+0.12</div></div>
+        <div class="mg small"><div class="step">R4</div><div class="val">+0.14</div></div>
+        <div class="mg small"><div class="step">R5</div><div class="val">+0.14</div></div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>이식 최종 판정</span><span class="n">GO</span></div>
+    <div class="box go">
+      <span class="tag">소스 이식 진행</span>
+      <p>평균 <b>7.80</b> · 5렌즈 전원 7.7+ · 회귀 0 · P0 0건. 남은 흠은 전부 P1 이하 폴리시 → 이식 보류 근거 없음. 추이 6.3 → 7.4 → 7.52 → 7.66 → <b>7.80</b>. 남은 P1 3개는 React에서 토큰/규칙으로 닫는 게 정석.</p>
+    </div>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>이식 후 React에서 닫을 P1</span><span class="n">3</span></div>
+    <ol class="p1">
+      <li><div>
+        <div class="t">시그널 레드 토큰 단일화<span class="chip">색+스위스 · 최우선</span></div>
+        <div class="d">프롬프트 밴드 vs §04 공유가 다른 빨강으로 <i>읽힌다</i>(실제론 같은 토큰=착시). React에서 <code>--signal-red</code> 하나로 묶고, 프롬프트 밴드의 흰 오버레이 밀도를 줄여 "탁해 보임"까지 제거 → 두 레드가 같게 보이도록.</div>
+      </div></li>
+      <li><div>
+        <div class="t">드롭섀도/조인 규칙 명시화<span class="chip">모티프</span></div>
+        <div class="d">"레드·주요 액션 = 우하단 하드 섀도, 나머지 = 플랫"을 1줄 규칙으로. 현재 검정 'AI 프롬프트 복사' 버튼은 액션인데 섀도 없어 규칙이 샘 → 컴포넌트 prop(<code>elevated</code>)로 통일.</div>
+      </div></li>
+      <li><div>
+        <div class="t">회색 단계 위계를 크기·자간으로 보강<span class="chip">타이포</span></div>
+        <div class="d">라벨(검정)/설명(회색)이 같은 크기에서 명도만으로 위계. 설명에 미세 크기 축소(~0.9em)+자간으로 lovefrom급 단계 위계.</div>
+      </div></li>
+    </ol>
+    <div class="note">리뷰 권고: 자잘한 px 튜닝은 수익 0. 다음 R6(있다면)은 위 P1 3종을 <b>시스템 규칙/토큰으로 박제</b>한 뒤 수렴 종료가 정직한 코스. 즉 이 P1들은 React 이식과 동시에 처리 = 이식이 곧 다음 스텝.</div>
+  </div>
+
+  <div class="foot">
+    <span>SnapContext v0.2.0 · Swiss Panel</span>
+    <span>5-Lens Adversarial · R5 · 2026-06-07</span>
+  </div>
+
+</div>
+</body>
+</html>

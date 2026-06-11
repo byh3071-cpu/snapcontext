@@ -383,7 +383,7 @@ async function main() {
      * ──────────────────────────────────────────────────────────────── */
     const bothBtn = page
       .locator('.context-pack-panel button.context-pack-panel__btn')
-      .filter({ hasText: '프롬프트 + JSON 복사' })
+      .filter({ hasText: '프롬프트＋JSON' })
       .first()
     await bothBtn.click()
     await wait(300)

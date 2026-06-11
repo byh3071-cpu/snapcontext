@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SnapContext 스위스 패널 — 디자인 재리뷰 R4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --paper:#FAFAF8; --paper-2:#F4F3EF; --sink:#ECEAE4;
+    --ink:#15110F; --ink-2:#2A2622; --muted:#6E6E6E;
+    --hair:#E3E1DB; --hair-2:#D2CFC7;
+    --red:#E5302E; --green:#1F7A4D; --amber:#B06A00;
+    --on-red:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--sink);color:var(--ink);font-family:'Pretendard',sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;padding:32px 16px}
+  .sheet{max-width:760px;margin:0 auto;background:var(--paper);border:3px solid var(--ink);box-shadow:8px 8px 0 0 var(--ink)}
+  .pad{padding:28px 32px}
+  .mast{border-bottom:4px solid var(--ink);padding:24px 32px 18px}
+  .mast .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .mast h1{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;letter-spacing:-.02em;line-height:1.05;margin-top:6px;text-transform:uppercase}
+  .mast h1 .r{color:var(--red)}
+  .mast .sub{font-size:13.5px;color:var(--muted);margin-top:8px}
+  .hero{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:end;border-bottom:2px solid var(--ink);padding:24px 32px 22px}
+  .hero .big{font-family:'Archivo',sans-serif;font-weight:900;font-size:92px;line-height:.86;letter-spacing:-.04em;color:var(--red)}
+  .hero .big small{font-size:30px;color:var(--ink);letter-spacing:-.02em}
+  .hero .right{padding-bottom:8px}
+  .verdict{display:inline-block;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;letter-spacing:.08em;background:var(--ink);color:var(--paper);padding:5px 12px;text-transform:uppercase}
+  .prog{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-size:15px;margin-top:12px;color:var(--ink)}
+  .prog .a{color:var(--hair-2)} .prog .b{color:var(--muted)} .prog .c{color:var(--ink-2)} .prog .d{color:var(--red);font-weight:700} .prog .ar{color:var(--hair-2);padding:0 4px}
+  .sec-h{font-family:'Archivo',sans-serif;font-weight:800;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:baseline}
+  .sec-h .n{font-family:'JetBrains Mono',monospace;color:var(--ink)}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--hair)}
+  th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  td.lens{font-weight:600}
+  td.num{font-family:'JetBrains Mono',monospace;text-align:right;width:58px}
+  td.r4{font-weight:800;color:var(--ink)}
+  td.r3{color:var(--muted)} td.pre{color:var(--hair-2)}
+  td.delta{font-family:'JetBrains Mono',monospace;text-align:right;width:60px;font-size:13px}
+  .up{color:var(--green);font-weight:700} .flat{color:var(--muted)}
+  tr.avg td{border-top:2px solid var(--ink);border-bottom:none;font-weight:900;padding-top:12px}
+  tr.avg td.r4{color:var(--red);font-size:18px}
+  .box{border:2px solid var(--ink);padding:18px 20px;margin-top:4px}
+  .box.go{background:var(--ink);color:var(--paper)}
+  .box.go .tag{color:var(--paper);border-color:var(--paper)}
+  .box.warn{border-color:var(--amber);background:#FFF9F0}
+  .box .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.1em;border:1.5px solid var(--ink);padding:3px 9px;text-transform:uppercase;margin-bottom:10px}
+  .box .tag.amber{color:var(--amber);border-color:var(--amber)}
+  .box p{font-size:14px;line-height:1.6}
+  .box.go p{color:var(--paper)}
+  .box.go p b{color:#fff}
+  /* 수렴 마진 바 */
+  .margins{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .mg{flex:1;min-width:120px;border:1.5px solid var(--hair-2);padding:10px 12px}
+  .mg .step{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .mg .val{font-family:'Archivo',sans-serif;font-weight:900;font-size:24px;margin-top:2px}
+  .mg.big .val{color:var(--green)} .mg.small .val{color:var(--amber)}
+  .mg .note{font-size:11px;color:var(--muted);margin-top:2px}
+  ol.p1{list-style:none;counter-reset:p1;margin-top:4px}
+  ol.p1 li{counter-increment:p1;display:grid;grid-template-columns:34px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--hair)}
+  ol.p1 li:last-child{border-bottom:none}
+  ol.p1 li::before{content:counter(p1,decimal-leading-zero);font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:var(--red);line-height:1}
+  ol.p1 .t{font-weight:700;font-size:14px;margin-bottom:3px}
+  ol.p1 .d{font-size:13px;color:var(--muted);line-height:1.55}
+  ol.p1 .chip{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--muted);border:1px solid var(--hair-2);padding:1px 5px;margin-left:6px;text-transform:uppercase;vertical-align:middle}
+  .foot{border-top:4px solid var(--ink);padding:16px 32px;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .gap{height:36px}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="mast">
+    <div class="eyebrow">SnapContext · Side Panel · Swiss</div>
+    <h1>디자인 재리뷰 <span class="r">R4</span></h1>
+    <div class="sub">메이저 챕터 여백 56 → 52px (연속성 회복) · 5렌즈 적대 비평 · 2026-06-07</div>
+  </div>
+
+  <div class="hero">
+    <div class="big">7.6<small>6</small></div>
+    <div class="right">
+      <span class="verdict">이식 GO · 수렴 진입</span>
+      <div class="prog"><span class="a">6.3</span><span class="ar">→</span><span class="b">7.4</span><span class="ar">→</span><span class="c">7.52</span><span class="ar">→</span><span class="d">7.66</span> &nbsp;/ 10</div>
+      <div class="prog" style="font-size:12px;color:var(--muted);margin-top:4px">수정전 → R2 → R3 → R4 · 5렌즈 전원 7.6+ 균질</div>
+    </div>
+  </div>
+
+  <div class="pad">
+    <div class="sec-h"><span>렌즈별 점수 추이</span><span class="n">5 / 5</span></div>
+    <table>
+      <thead><tr><th>렌즈</th><th class="num">수정전</th><th class="num">R3</th><th class="num">R4</th><th class="delta">Δ R3→R4</th></tr></thead>
+      <tbody>
+        <tr><td class="lens">타이포그래피 &amp; 위계</td><td class="num pre">7.0</td><td class="num r3">7.9</td><td class="num r4">7.9</td><td class="delta flat">±0.0</td></tr>
+        <tr><td class="lens">컴포지션 · 그리드 · 여백</td><td class="num pre">6.5</td><td class="num r3">7.4</td><td class="num r4">7.6</td><td class="delta up">+0.2</td></tr>
+        <tr><td class="lens">모티프 · 디테일 마감</td><td class="num pre">6.5</td><td class="num r3">7.5</td><td class="num r4">7.6</td><td class="delta up">+0.1</td></tr>
+        <tr><td class="lens">스위스 정통성 · 취향</td><td class="num pre">6.0</td><td class="num r3">7.3</td><td class="num r4">7.6</td><td class="delta up">+0.3</td></tr>
+        <tr><td class="lens">색 &amp; 레드 균형</td><td class="num pre">5.5</td><td class="num r3">7.5</td><td class="num r4">7.6</td><td class="delta up">+0.1</td></tr>
+        <tr class="avg"><td>평균</td><td class="num pre">6.3</td><td class="num r3">7.52</td><td class="num r4">7.66</td><td class="delta up">+0.14</td></tr>
+      </tbody>
+    </table>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>52px 연속성 종결</span><span class="n">해소</span></div>
+    <div class="box">
+      <span class="tag amber">기능적 해소 · 부작용 0</span>
+      <p>R3 컴포지션 P1의 본질(56px 과대 → 챕터가 독립 카드로 부유)이 닫힘. 5렌즈가 독립 경로로 같은 회복 확인 — 컴포지션 "부유감 감소(특히 §03)", 모티프 "다음 단락처럼 읽힘", 스위스 "카드 갤러리 → 에디토리얼 스프레드", 색 "레드 클러스터 단일 흐름 안착". 분절을 풀면서 챕터 구분은 유지(거대 넘버 01~05 + 풀폭 굵은 룰이 구분 신호 담당, 타이포 렌즈 "임계 36~40px, 52px 안전구간" 정량 보증). 잔여는 P2급.</p>
+    </div>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>수렴 판정 — 그만 만질 때</span><span class="n">Δ</span></div>
+    <div class="box warn">
+      <span class="tag amber">DIMINISHING RETURNS</span>
+      <p>프로토타입 추가 수정은 실익 체감. 쉬운 점수는 이미 다 뽑았고, 남은 0.14는 React 이식과 <b>동시에</b> 처리하는 게 정석. 다음 레버는 여백이 아니라 컴포넌트 스타일링(레드 재배치·텍스트 래핑·대비비) — 토큰화는 React 영역.</p>
+      <div class="margins">
+        <div class="mg big"><div class="step">R2 (대수술)</div><div class="val">+1.1</div><div class="note">6.3 → 7.4</div></div>
+        <div class="mg small"><div class="step">R3 (리듬 56/24)</div><div class="val">+0.12</div><div class="note">7.4 → 7.52</div></div>
+        <div class="mg small"><div class="step">R4 (여백 52)</div><div class="val">+0.14</div><div class="note">7.52 → 7.66</div></div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>이식 최종 판정</span><span class="n">GO</span></div>
+    <div class="box go">
+      <span class="tag">소스 이식 진행</span>
+      <p>평균 <b>7.66</b> · 5렌즈 전원 7.6+ 균질 · <b>P0 0건</b>. 이식 임계(7.5+) 통과. 추이 6.3 → 7.4(대수술) → 7.52(미세) → 7.66(여백 4px)는 안정 수렴 곡선. 지금이 React로 넘길 때.</p>
+    </div>
+
+    <div class="gap"></div>
+    <div class="sec-h"><span>이식 후 React에서 닫을 P1</span><span class="n">3</span></div>
+    <ol class="p1">
+      <li>
+        <div>
+          <div class="t">레드 액센트 하단 재등장<span class="chip">색 · 최대 실익</span></div>
+          <div class="d">레드가 상단 1/4(워드마크 + §01 05행)에 편중 → "강조 시스템"이 아니라 "히어로 잔열"로 읽힘. §04 발행 바 또는 §05 활성 상태에 레드 1점 의도적 재등장 → 색 양극 균형 회복. 이식 후 가장 점수 여지 큰 단일 레버.</div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <div class="t">2줄 텍스트 래핑 제거<span class="chip">타이포</span></div>
+          <div class="d">'03 문서 캡처' 행 + '프롬프트 + JSON 복사' 버튼이 2줄로 넘쳐 베이스라인 그리드·형제 버튼 위계 깸. React에서 <code>white-space:nowrap</code> + 폰트/약어 토큰화로 1줄 강제 → 수직 리듬 복원. 이식하면 거의 공짜로 닫힘.</div>
+        </div>
+      </li>
+      <li>
+        <div>
+          <div class="t">메이저:종속 대비비 복원 (52:24 → 52:22)<span class="chip">모티프 · 토큰 1줄</span></div>
+          <div class="d">현재 52:24 = 2.17로 어정쩡(권장 2.4~2.6). 종속 여백 24→22px 동반 조정해 2.36 복원. spacing 토큰 1개라 React 토큰 정의 시 함께 처리.</div>
+        </div>
+      </li>
+    </ol>
+    <p style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.55">P2 후속(이식 후 컴포넌트 스타일링): 진입 룰 두께/들여쓰기 · §04→§05 이중 누적 갭 · 챕터별 색면 밀도 균질화 · §05 썸네일 1px black frame 통일. <b>+ 이식 시:</b> 마스트헤드 버전 배지 v0.1.3 → manifest 0.2.0 동기화.</p>
+  </div>
+
+  <div class="foot">
+    <span>SnapContext v0.2.0 · Swiss Panel</span>
+    <span>5-Lens Adversarial · R4 · 2026-06-07</span>
+  </div>
+
+</div>
+</body>
+</html>

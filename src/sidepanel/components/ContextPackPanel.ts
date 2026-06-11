@@ -14,8 +14,8 @@ import type {
   ProjectProfile
 } from '../../types'
 import { getStorageItem, setStorageItem } from '../../storage'
-import { Braces, ClipboardCopy, CopyCheck, Sparkles } from 'lucide'
-import { panelLucideIcon, panelLucideIconRow } from '../utils/panel-lucide'
+import { swissIcon, type SwissIconName } from '../utils/swiss-icons'
+import { mkSecHead } from '../utils/section'
 import { toKoreanErrorMessage } from '../../utils/messaging'
 
 const PROFILE_STORAGE_KEY = 'projectProfiles'
@@ -27,9 +27,9 @@ const TEMPLATE_OPTIONS: ReadonlyArray<{
   id: PromptTemplateId
   label: string
 }> = [
-  { id: 'bug', label: '🐛 버그 리포트' },
-  { id: 'refactor', label: '🔧 리팩토링' },
-  { id: 'reference', label: '📐 레퍼런스' }
+  { id: 'bug', label: '버그 리포트' },
+  { id: 'refactor', label: '리팩토링' },
+  { id: 'reference', label: '레퍼런스' }
 ]
 
 function isPromptTemplateId(value: unknown): value is PromptTemplateId {
@@ -40,6 +40,8 @@ export type ContextPackPanelApi = {
   sync: () => void
   resetPack: () => void
   loadPack: (pack: ContextPack) => void
+  /** §01 프롬프트 행에서 호출 — 'AI 프롬프트 복사'와 동일 동작 */
+  copyPrompt: () => Promise<void>
 }
 
 export function mountContextPackPanel(
@@ -50,21 +52,26 @@ export function mountContextPackPanel(
     showToast: (message: string, kind?: 'info' | 'error') => void
   }
 ): ContextPackPanelApi {
-  host.classList.add('panel-card')
   host.classList.add('context-pack-panel')
 
   let profiles: ProjectProfile[] = []
   let history: PackHistoryItem[] = []
   let loadedPack: ContextPack | null = null
 
-  const title = document.createElement('h2')
-  title.className = 'context-pack-panel__title'
-  title.textContent = 'AI 디버그 팩'
+  /* ---- 섹션 헤드: 03 | 컨텍스트 팩 / AI 디버그 팩 | n 팩 ---- */
+  const { head, asideEl } = mkSecHead({
+    num: '03',
+    eyebrow: '컨텍스트 팩',
+    title: 'AI 디버그 팩',
+    titleId: 'sec-pack-title',
+    asideText: '0 팩'
+  })
+  const updateAsideCount = (): void => {
+    asideEl.textContent = `${history.length} 팩`
+  }
 
-  const intentInput = document.createElement('textarea')
-  intentInput.className = 'context-pack-panel__intent'
-  intentInput.rows = 3
-  intentInput.placeholder = '증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)'
+  const hint = document.createElement('p')
+  hint.className = 'sec-sub context-pack-panel__hint muted'
 
   const matchedProfile = document.createElement('p')
   matchedProfile.className = 'context-pack-panel__hint muted'
@@ -72,75 +79,94 @@ export function mountContextPackPanel(
   // restoration. Element kept in DOM so existing references stay valid.
   matchedProfile.hidden = true
 
-  const hint = document.createElement('p')
-  hint.className = 'context-pack-panel__hint muted'
+  /* ---- 폼 그리드 척추(a/b) — §01과 동일 좌측 정렬축 ---- */
+  const formGrid = document.createElement('div')
+  formGrid.className = 'form-grid'
 
-  let currentTemplate: PromptTemplateId = DEFAULT_PROMPT_TEMPLATE
+  const mkIdx = (ch: string): HTMLSpanElement => {
+    const s = document.createElement('span')
+    s.className = 'fg-idx'
+    s.setAttribute('aria-hidden', 'true')
+    s.textContent = ch
+    return s
+  }
 
-  const templateRow = document.createElement('div')
-  templateRow.className = 'context-pack-panel__template-row'
+  // a — 프롬프트 템플릿
+  const fieldA = document.createElement('div')
+  fieldA.className = 'fg-field'
   const templateLabel = document.createElement('label')
-  templateLabel.className = 'context-pack-panel__template-label'
+  templateLabel.className = 'lbl context-pack-panel__template-label'
+  templateLabel.htmlFor = 'pack-template'
   templateLabel.textContent = '프롬프트 템플릿'
+  const selectWrap = document.createElement('div')
+  selectWrap.className = 'select-wrap context-pack-panel__template-row'
   const templateSelect = document.createElement('select')
   templateSelect.className = 'context-pack-panel__template-select'
+  templateSelect.id = 'pack-template'
   for (const opt of TEMPLATE_OPTIONS) {
     const option = document.createElement('option')
     option.value = opt.id
     option.textContent = opt.label
     templateSelect.appendChild(option)
   }
-  templateSelect.value = currentTemplate
-  templateLabel.appendChild(templateSelect)
-  templateRow.appendChild(templateLabel)
+  const chev = swissIcon('chev', 'ic-sm chev')
+  selectWrap.append(templateSelect, chev)
+  fieldA.append(templateLabel, selectWrap)
 
-  const grid = document.createElement('div')
-  grid.className = 'context-pack-panel__grid'
+  // b — 메모
+  const fieldB = document.createElement('div')
+  fieldB.className = 'fg-field'
+  const intentLabel = document.createElement('label')
+  intentLabel.className = 'lbl'
+  intentLabel.htmlFor = 'pack-intent'
+  intentLabel.textContent = '메모'
+  const intentInput = document.createElement('textarea')
+  intentInput.className = 'field context-pack-panel__intent'
+  intentInput.id = 'pack-intent'
+  intentInput.rows = 3
+  intentInput.placeholder = '증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)'
+  fieldB.append(intentLabel, intentInput)
+
+  formGrid.append(mkIdx('a'), fieldA, mkIdx('b'), fieldB)
+
+  let currentTemplate: PromptTemplateId = DEFAULT_PROMPT_TEMPLATE
+
+  /* ---- 복사 버튼 스택 (폼 정렬축 인셋) ---- */
+  const btnStack = document.createElement('div')
+  btnStack.className = 'btn-stack fg-inset'
 
   const mkBtn = (
     label: string,
-    icon: Element,
-    variant: 'primary' | 'default'
+    icon: SwissIconName,
+    variant: 'primary' | 'ghost'
   ): HTMLButtonElement => {
     const btn = document.createElement('button')
     btn.type = 'button'
     btn.className =
       variant === 'primary'
-        ? 'context-pack-panel__btn context-pack-panel__btn--primary'
-        : 'context-pack-panel__btn'
+        ? 'btn btn-primary context-pack-panel__btn context-pack-panel__btn--primary'
+        : 'btn btn-ghost context-pack-panel__btn'
     const iconWrap = document.createElement('span')
     iconWrap.className = 'context-pack-panel__icon'
     iconWrap.setAttribute('aria-hidden', 'true')
-    iconWrap.appendChild(icon)
+    iconWrap.append(swissIcon(icon))
     const labelSpan = document.createElement('span')
     labelSpan.textContent = label
     btn.append(iconWrap, labelSpan)
     return btn
   }
 
-  const iconDual = 15
-  const iconSingle = 18
-  const btnPrompt = mkBtn(
-    'AI 프롬프트 복사',
-    panelLucideIconRow([Sparkles, ClipboardCopy], iconDual),
-    'primary'
-  )
-  const btnJson = mkBtn(
-    'JSON 복사',
-    panelLucideIconRow([Braces, ClipboardCopy], iconDual),
-    'default'
-  )
-  const btnCopyAll = mkBtn(
-    '프롬프트 + JSON 복사',
-    panelLucideIcon(CopyCheck, iconSingle),
-    'default'
-  )
-  btnCopyAll.classList.add('context-pack-panel__btn--full')
-  grid.append(btnPrompt, btnJson, btnCopyAll)
+  const btnPrompt = mkBtn('AI 프롬프트 복사', 'copy', 'primary')
+  const btnJson = mkBtn('JSON 복사', 'braces', 'ghost')
+  const btnCopyAll = mkBtn('프롬프트＋JSON', 'copy', 'ghost')
+  const duo = document.createElement('div')
+  duo.className = 'duo'
+  duo.append(btnJson, btnCopyAll)
+  btnStack.append(btnPrompt, duo)
 
+  /* ---- 프로젝트 프로필 (v0.2 복원 전까지 hidden 게이트 유지) ---- */
   const profileSection = document.createElement('details')
   profileSection.className = 'context-pack-panel__section'
-  // v0.1.x: hide project profile section pending v0.2 restoration
   profileSection.hidden = true
   const profileSummary = document.createElement('summary')
   profileSummary.textContent = '프로젝트 프로필'
@@ -152,13 +178,13 @@ export function mountContextPackPanel(
   const profileStack = mkInput('스택, 쉼표로 구분')
   const profileDesign = mkInput('디자인 시스템')
   const profilePrefs = document.createElement('textarea')
-  profilePrefs.className = 'context-pack-panel__intent'
+  profilePrefs.className = 'field context-pack-panel__intent'
   profilePrefs.rows = 2
   profilePrefs.placeholder = 'AI 선호 설정'
   const saveProfileBtn = document.createElement('button')
   saveProfileBtn.type = 'button'
-  saveProfileBtn.className = 'context-pack-panel__btn context-pack-panel__btn--full'
-  saveProfileBtn.textContent = '프로필 저장'
+  saveProfileBtn.className = 'btn btn-ghost context-pack-panel__btn'
+  saveProfileBtn.append(swissIcon('floppy'), document.createTextNode('프로필 저장'))
   const profileList = document.createElement('div')
   profileList.className = 'context-pack-panel__list'
   profileForm.append(
@@ -172,6 +198,7 @@ export function mountContextPackPanel(
   )
   profileSection.append(profileSummary, profileForm)
 
+  /* ---- 최근 팩 ---- */
   const historySection = document.createElement('details')
   historySection.className = 'context-pack-panel__section'
   const historySummary = document.createElement('summary')
@@ -180,20 +207,21 @@ export function mountContextPackPanel(
   historyList.className = 'context-pack-panel__list'
   historySection.append(historySummary, historyList)
 
+  // matchedProfile(숨김)을 hint보다 앞에 — E2E가 `.context-pack-panel__hint.muted`의
+  // .last()를 실제 상태 힌트로 읽는 기존 계약 유지.
   host.append(
-    title,
-    intentInput,
+    head,
     matchedProfile,
     hint,
-    templateRow,
-    grid,
+    formGrid,
+    btnStack,
     profileSection,
     historySection
   )
 
   function mkInput(placeholder: string): HTMLInputElement {
     const input = document.createElement('input')
-    input.className = 'context-pack-panel__input'
+    input.className = 'field context-pack-panel__input'
     input.placeholder = placeholder
     return input
   }
@@ -246,6 +274,7 @@ export function mountContextPackPanel(
 
   const renderHistory = (): void => {
     historyList.replaceChildren()
+    updateAsideCount()
     if (history.length === 0) {
       const empty = document.createElement('p')
       empty.className = 'muted'
@@ -259,25 +288,39 @@ export function mountContextPackPanel(
       const meta = document.createElement('div')
       meta.className = 'context-pack-panel__history-meta'
       meta.textContent = `${modeLabel(item.mode)} - ${item.title || item.url}`
-      const copyPrompt = document.createElement('button')
-      copyPrompt.type = 'button'
-      copyPrompt.textContent = '프롬프트'
-      copyPrompt.addEventListener('click', () => {
-        void navigator.clipboard.writeText(item.prompt)
+      const copyPromptBtn = document.createElement('button')
+      copyPromptBtn.type = 'button'
+      copyPromptBtn.textContent = '프롬프트'
+      copyPromptBtn.addEventListener('click', () => {
+        void (async () => {
+          try {
+            await navigator.clipboard.writeText(item.prompt)
+            deps.showToast('프롬프트를 복사했습니다.', 'info')
+          } catch (e) {
+            deps.showToast(toKoreanErrorMessage(e), 'error')
+          }
+        })()
       })
       const copyAll = document.createElement('button')
       copyAll.type = 'button'
       copyAll.textContent = '전체'
       copyAll.addEventListener('click', () => {
-        void navigator.clipboard.writeText(
-          `--- AI 프롬프트 ---\n\n${item.prompt}\n\n--- 컨텍스트 팩 JSON ---\n\n${item.json}`
-        )
+        void (async () => {
+          try {
+            await navigator.clipboard.writeText(
+              `--- AI 프롬프트 ---\n\n${item.prompt}\n\n--- 컨텍스트 팩 JSON ---\n\n${item.json}`
+            )
+            deps.showToast('프롬프트와 JSON을 복사했습니다.', 'info')
+          } catch (e) {
+            deps.showToast(toKoreanErrorMessage(e), 'error')
+          }
+        })()
       })
       const deleteBtn = document.createElement('button')
       deleteBtn.type = 'button'
       deleteBtn.className = 'context-pack-panel__history-delete'
       deleteBtn.setAttribute('aria-label', '히스토리 삭제')
-      deleteBtn.textContent = '×'
+      deleteBtn.append(swissIcon('x', 'ic-sm'))
       deleteBtn.addEventListener('click', () => {
         void (async () => {
           history = history.filter((h) => h.id !== item.id)
@@ -285,7 +328,7 @@ export function mountContextPackPanel(
           renderHistory()
         })()
       })
-      row.append(meta, copyPrompt, copyAll, deleteBtn)
+      row.append(meta, copyPromptBtn, copyAll, deleteBtn)
       historyList.append(row)
     }
   }
@@ -369,8 +412,8 @@ export function mountContextPackPanel(
     buildText: (pack: ContextPack) => string,
     successMessage: string
   ): Promise<void> => {
-      const pack = tryBuildPack()
-      if (!pack) {
+    const pack = tryBuildPack()
+    if (!pack) {
       deps.showToast('캡처 데이터가 없습니다.', 'error')
       return
     }
@@ -415,8 +458,11 @@ export function mountContextPackPanel(
     })()
   })
 
+  const copyPromptAction = (): Promise<void> =>
+    copyPack(buildPromptText, 'AI 프롬프트를 복사했습니다.')
+
   btnPrompt.addEventListener('click', () => {
-    void copyPack(buildPromptText, 'AI 프롬프트를 복사했습니다.')
+    void copyPromptAction()
   })
 
   btnJson.addEventListener('click', () => {
@@ -459,5 +505,5 @@ export function mountContextPackPanel(
 
   sync()
 
-  return { sync, resetPack, loadPack }
+  return { sync, resetPack, loadPack, copyPrompt: copyPromptAction }
 }

@@ -59,7 +59,7 @@ export function mountPinLayer(
       badge.style.left = `${pin.x}%`
       badge.style.top = `${pin.y}%`
       badge.textContent = String(pin.id)
-      badge.title = `핀 ${pin.id} — 한 번 더 클릭하면 삭제`
+      badge.title = `핀 ${pin.id} (한 번 더 클릭하면 삭제)`
       badge.addEventListener('click', (ev) => {
         ev.preventDefault()
         ev.stopPropagation()
