@@ -1,6 +1,5 @@
-import { MapPin, X } from 'lucide'
 import type { PinItem } from '../../types'
-import { panelLucideIcon } from '../utils/panel-lucide'
+import { swissIcon, swissPinGlyph } from '../utils/swiss-icons'
 
 export type PinMemoListApi = {
   render: (pins: PinItem[], activePinId: number | null) => void
@@ -16,22 +15,24 @@ export function mountPinMemoList(
     onFocusPin: (pinId: number) => void
   }
 ): PinMemoListApi {
-  host.classList.add('panel-card')
+  // 미리보기 카드 내부 하위 블록 (디자인 SoT §02 pin-memo)
+  host.classList.add('pin-memo')
+
+  const headRow = document.createElement('div')
+  headRow.className = 'pin-memo-head'
   const heading = document.createElement('h2')
-  heading.className = 'pin-memo__title'
+  heading.className = 'pin-memo-title pin-memo__title'
   heading.textContent = '핀 메모'
+  headRow.append(swissPinGlyph(), heading)
 
   const listRoot = document.createElement('div')
   listRoot.className = 'pin-memo__list'
 
   const placeholder = document.createElement('div')
-  placeholder.className = 'pin-memo__placeholder empty-state'
-  const placeholderText = document.createElement('p')
-  placeholderText.className = 'empty-state__text'
-  placeholderText.textContent = '이미지를 클릭하여 핀을 추가하세요'
-  placeholder.append(panelLucideIcon(MapPin, 28), placeholderText)
+  placeholder.className = 'pin-memo__placeholder pin-empty'
+  placeholder.textContent = '이미지를 클릭하여 핀을 추가하세요'
 
-  host.append(heading, listRoot, placeholder)
+  host.append(headRow, listRoot, placeholder)
 
   const highlightRow = (activePinId: number | null): void => {
     for (const row of listRoot.querySelectorAll<HTMLElement>('.pin-memo__row')) {
@@ -57,15 +58,16 @@ export function mountPinMemoList(
       }
 
       const label = document.createElement('span')
-      label.className = 'pin-memo__label'
+      label.className = 'pin-memo__label tnum'
       label.textContent = String(pin.id)
 
       const ta = document.createElement('textarea')
-      ta.className = 'pin-memo__input'
+      ta.className = 'field pin-memo__input'
       ta.rows = 1
       ta.dataset.pinId = String(pin.id)
       ta.value = pin.memo
       ta.placeholder = '메모 입력…'
+      ta.setAttribute('aria-label', `핀 ${pin.id} 메모`)
       ta.addEventListener('input', () => {
         autoGrow(ta)
         handlers.onMemoChange(pin.id, ta.value)
@@ -77,7 +79,7 @@ export function mountPinMemoList(
       del.className = 'pin-memo__delete'
       del.title = '핀 삭제'
       del.setAttribute('aria-label', '핀 삭제')
-      del.appendChild(panelLucideIcon(X, 16))
+      del.append(swissIcon('x', 'ic-sm'))
       del.addEventListener('click', () => handlers.onDelete(pin.id))
 
       const field = document.createElement('div')
@@ -103,5 +105,7 @@ export function mountPinMemoList(
 
 function autoGrow(el: HTMLTextAreaElement): void {
   el.style.height = '0px'
-  el.style.height = `${el.scrollHeight}px`
+  // border-box: scrollHeight엔 보더가 빠진다 — 보정 없으면 2px 오버플로로 스크롤바 출현
+  const border = el.offsetHeight - el.clientHeight
+  el.style.height = `${el.scrollHeight + border}px`
 }

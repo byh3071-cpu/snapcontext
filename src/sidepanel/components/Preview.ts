@@ -1,6 +1,6 @@
-import { X, ZoomIn } from 'lucide'
 import type { CaptureType } from '../../types'
-import { panelLucideIcon } from '../utils/panel-lucide'
+import { swissIcon } from '../utils/swiss-icons'
+import { mkSecHead } from '../utils/section'
 import { mountImageLightbox, type ImageLightboxPinHandlers } from './ImageLightbox'
 
 type PreviewImageInput = {
@@ -8,6 +8,8 @@ type PreviewImageInput = {
   captureType: CaptureType
   imageWidth: number
   imageHeight: number
+  /** 스테이지 좌하단 잉크 shot-tag용 소스 주소 (디자인 SoT §02) */
+  sourceUrl?: string
 }
 
 export type PreviewApi = {
@@ -16,18 +18,15 @@ export type PreviewApi = {
   hasImage: () => boolean
   pinContainer: HTMLElement
   imageEl: HTMLImageElement
+  /** §02 미리보기 카드 — 핀 메모 블록이 이 안에 들어간다 */
+  cardEl: HTMLElement
+  /** PNG 복사/저장 듀오(ImageActions)가 마운트되는 카드 내 슬롯 */
+  exportHost: HTMLElement
   openPinLightbox: () => void
   closePinLightbox: () => void
   isPinLightboxOpen: () => boolean
   refreshImageLightbox: () => void
 }
-
-const EMPTY_SVG = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 7a2 2 0 0 1 2-2h1l1.5-2h5L15 5h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/>
-  <circle cx="12" cy="12.5" r="3.25"/>
-</svg>
-`.trim()
 
 function captureLabel(type: CaptureType): string {
   if (type === 'visible') return '화면 캡처'
@@ -37,34 +36,40 @@ function captureLabel(type: CaptureType): string {
 }
 
 export function mountPreview(
-  container: HTMLElement,
+  host: HTMLElement,
   pinHandlers?: ImageLightboxPinHandlers
 ): PreviewApi {
-  container.classList.add('preview-card')
+  /* ---- 섹션 헤드: 02 | 캡처됨 / 캡처 미리보기 | 상태 배지 ---- */
+  const badge = document.createElement('span')
+  badge.className = 'badge preview-result-meta tnum'
+  badge.setAttribute('role', 'status')
+  const badgeIcon = swissIcon('check')
+  const badgeText = document.createElement('span')
+  badgeText.textContent = '준비됨'
+  badge.append(badgeIcon, badgeText)
 
-  const expandRow = document.createElement('div')
-  expandRow.className = 'preview-expand-row'
-  expandRow.hidden = true
-  const expandHint = document.createElement('p')
-  expandHint.className = 'preview-expand-hint muted'
-  expandHint.textContent = '큰 작업 화면에서 캡처를 확인하고 핀을 추가하세요.'
-  const btnExpand = document.createElement('button')
-  btnExpand.type = 'button'
-  btnExpand.className = 'preview-expand-btn'
-  btnExpand.textContent = '크게 보기'
-  btnExpand.setAttribute('aria-expanded', 'false')
-  btnExpand.disabled = true
-  expandRow.append(expandHint, btnExpand)
+  const { head, titleEl } = mkSecHead({
+    num: '02',
+    eyebrow: '캡처됨',
+    title: '',
+    titleId: 'sec-pv-title',
+    titleClass: 'preview-result-title',
+    asideNode: badge
+  })
+  const resultName = document.createElement('strong')
+  resultName.textContent = '캡처 미리보기'
+  titleEl.append(resultName)
 
-  const wrap = document.createElement('div')
-  wrap.className = 'preview-inner'
+  /* ---- 미리보기 카드 ---- */
+  const card = document.createElement('div')
+  card.className = 'pv-card'
 
   const empty = document.createElement('div')
   empty.className = 'preview-empty'
   const iconWrap = document.createElement('div')
   iconWrap.className = 'preview-empty-icon'
   iconWrap.setAttribute('aria-hidden', 'true')
-  iconWrap.innerHTML = EMPTY_SVG
+  iconWrap.append(swissIcon('camera'))
   const placeholder = document.createElement('p')
   placeholder.className = 'preview-placeholder'
   placeholder.textContent = '위 버튼으로 캡처를 시작하세요'
@@ -73,27 +78,8 @@ export function mountPreview(
   const captureWrap = document.createElement('div')
   captureWrap.className = 'preview-capture preview-capture--hidden'
 
-  const resultHeader = document.createElement('div')
-  resultHeader.className = 'preview-result-header'
-  const resultTitle = document.createElement('div')
-  resultTitle.className = 'preview-result-title'
-  const resultEyebrow = document.createElement('span')
-  resultEyebrow.className = 'preview-result-eyebrow'
-  resultEyebrow.textContent = '캡처됨'
-  const resultName = document.createElement('strong')
-  resultName.textContent = '캡처 미리보기'
-  resultTitle.append(resultEyebrow, resultName)
-
-  const resultActions = document.createElement('div')
-  resultActions.className = 'preview-result-actions'
-  const resultMeta = document.createElement('span')
-  resultMeta.className = 'preview-result-meta'
-  resultMeta.textContent = '준비됨'
-  resultActions.append(resultMeta)
-  resultHeader.append(resultTitle, resultActions)
-
   const stage = document.createElement('div')
-  stage.className = 'preview-stage'
+  stage.className = 'stage'
 
   const pinContainer = document.createElement('div')
   pinContainer.className = 'pin-container'
@@ -107,15 +93,38 @@ export function mountPreview(
   btnZoom.className = 'preview-zoom-btn'
   btnZoom.setAttribute('aria-label', '원본 이미지 확대')
   btnZoom.title = '원본 이미지 확대'
-  btnZoom.appendChild(panelLucideIcon(ZoomIn, 16))
+  btnZoom.append(swissIcon('zoomIn', 'ic-sm'))
+
+  const shotTag = document.createElement('span')
+  shotTag.className = 'shot-tag tnum'
+  shotTag.hidden = true
 
   pinContainer.appendChild(img)
   stage.appendChild(pinContainer)
   stage.appendChild(btnZoom)
-  captureWrap.append(resultHeader, stage)
+  stage.appendChild(shotTag)
+  captureWrap.append(stage)
 
-  wrap.append(empty, captureWrap)
+  /* ---- 스테이지 도구열: 크게 보기 + 휠 힌트 ---- */
+  const tools = document.createElement('div')
+  tools.className = 'stage-tools'
+  tools.hidden = true
+  const btnExpand = document.createElement('button')
+  btnExpand.type = 'button'
+  btnExpand.className = 'ghost-btn preview-expand-btn'
+  btnExpand.setAttribute('aria-expanded', 'false')
+  btnExpand.disabled = true
+  btnExpand.append(swissIcon('expand', 'ic-sm'), document.createTextNode('크게 보기'))
+  const zoomHint = document.createElement('span')
+  zoomHint.className = 'zoom-hint tnum'
+  zoomHint.textContent = 'Ctrl+휠: 확대/축소'
+  tools.append(btnExpand, zoomHint)
 
+  const exportHost = document.createElement('div')
+
+  card.append(empty, captureWrap, tools, exportHost)
+
+  /* ---- 핀 라이트박스 (크게 보기) ---- */
   const lightbox = document.createElement('div')
   lightbox.className = 'pin-lightbox'
   lightbox.hidden = true
@@ -141,7 +150,7 @@ export function mountPreview(
   btnCloseLb.type = 'button'
   btnCloseLb.className = 'pin-lightbox__close'
   btnCloseLb.setAttribute('aria-label', '닫기')
-  btnCloseLb.appendChild(panelLucideIcon(X, 18))
+  btnCloseLb.append(swissIcon('x', 'ic-sm'))
   lbHeader.append(lbTitle, lbHint, btnCloseLb)
 
   const lbScroll = document.createElement('div')
@@ -149,9 +158,10 @@ export function mountPreview(
 
   lbPanel.append(lbHeader, lbScroll)
   lightbox.append(lbBackdrop, lbPanel)
-  container.append(expandRow, wrap, lightbox)
 
-  const imageLightbox = mountImageLightbox(container, pinHandlers)
+  host.append(head, card, lightbox)
+
+  const imageLightbox = mountImageLightbox(host, pinHandlers)
   btnZoom.addEventListener('click', () => {
     if (!hasImageState || !img.src) return
     imageLightbox.open(img.src, '원본 이미지 확대')
@@ -178,7 +188,7 @@ export function mountPreview(
   }
 
   function notifyPinLightboxOpen(): void {
-    container.dispatchEvent(new CustomEvent('snapcontext:pin-lightbox-open'))
+    host.dispatchEvent(new CustomEvent('snapcontext:pin-lightbox-open'))
   }
 
   function escapeHandler(ev: KeyboardEvent): void {
@@ -275,11 +285,13 @@ export function mountPreview(
       captureWrap.classList.add('preview-capture--hidden')
       delete captureWrap.dataset.size
       empty.hidden = false
-      expandRow.hidden = true
+      tools.hidden = true
       btnExpand.disabled = true
       resultName.textContent = '캡처 미리보기'
       lbTitle.textContent = '캡처 미리보기'
-      resultMeta.textContent = '준비됨'
+      badgeText.textContent = '준비됨'
+      shotTag.hidden = true
+      shotTag.replaceChildren()
       return
     }
     const label = captureLabel(input.captureType)
@@ -287,10 +299,28 @@ export function mountPreview(
     img.src = input.dataUrl
     resultName.textContent = label
     lbTitle.textContent = label
-    resultMeta.textContent = `${input.imageWidth}×${input.imageHeight}`
+    badgeText.textContent = `${input.imageWidth}×${input.imageHeight}`
+    let host = ''
+    if (input.sourceUrl) {
+      try {
+        host = new URL(input.sourceUrl).hostname
+      } catch {
+        host = input.sourceUrl
+      }
+    }
+    if (host) {
+      const slash = document.createElement('span')
+      slash.className = 'slash'
+      slash.textContent = '/'
+      shotTag.replaceChildren(document.createTextNode(host), slash, document.createTextNode(label))
+      shotTag.hidden = false
+    } else {
+      shotTag.hidden = true
+      shotTag.replaceChildren()
+    }
     captureWrap.classList.remove('preview-capture--hidden')
     empty.hidden = true
-    expandRow.hidden = false
+    tools.hidden = false
     btnExpand.disabled = false
   }
 
@@ -302,6 +332,8 @@ export function mountPreview(
     hasImage,
     pinContainer,
     imageEl: img,
+    cardEl: card,
+    exportHost,
     openPinLightbox,
     closePinLightbox,
     isPinLightboxOpen: () => lightboxOpen,
