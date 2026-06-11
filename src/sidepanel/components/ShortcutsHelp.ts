@@ -2,13 +2,20 @@ import { swissIcon } from '../utils/swiss-icons'
 
 /* manifest commands 진실 기준: V/E/M/G만 suggested_key 등록.
    copy-png은 Chrome suggested_key 4개 제한으로 미등록 → '직접 지정' 안내. */
-const shortcuts: ReadonlyArray<readonly [string, string, boolean]> = [
-  ['화면 캡처', 'Alt+Shift+V', true],
-  ['요소 캡처', 'Alt+Shift+E', true],
-  ['문서 캡처', 'Alt+Shift+M', true],
-  ['전체 캡처', 'Alt+Shift+G', true],
-  ['PNG 복사', '직접 지정', false],
-  ['PNG 저장', '버튼만 제공', false]
+interface ShortcutEntry {
+  readonly label: string
+  readonly value: string
+  /** true = 실제 키 조합(kbd 렌더), false = 안내 문구 */
+  readonly isKey: boolean
+}
+
+const shortcuts: readonly ShortcutEntry[] = [
+  { label: '화면 캡처', value: 'Alt+Shift+V', isKey: true },
+  { label: '요소 캡처', value: 'Alt+Shift+E', isKey: true },
+  { label: '문서 캡처', value: 'Alt+Shift+M', isKey: true },
+  { label: '전체 캡처', value: 'Alt+Shift+G', isKey: true },
+  { label: 'PNG 복사', value: '직접 지정', isKey: false },
+  { label: 'PNG 저장', value: '버튼만 제공', isKey: false }
 ]
 
 /**
@@ -45,7 +52,7 @@ export function mountShortcutsHelp(
   const list = document.createElement('dl')
   list.className = 'help-list shortcuts-help__list'
 
-  for (const [label, value, isKey] of shortcuts) {
+  for (const { label, value, isKey } of shortcuts) {
     const rowEl = document.createElement('div')
     rowEl.className = 'help-row'
     const term = document.createElement('dt')

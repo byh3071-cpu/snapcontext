@@ -1,6 +1,6 @@
 import { swissIcon, type SwissIconName } from '../utils/swiss-icons'
 
-export type CaptureToolbarHandlers = {
+export interface CaptureToolbarHandlers {
   onVisible: () => void | Promise<void>
   onElement: () => void | Promise<void>
   onDocument: () => void | Promise<void>
@@ -8,7 +8,7 @@ export type CaptureToolbarHandlers = {
   onPrompt: () => void | Promise<void>
 }
 
-type CaptureRow = {
+interface CaptureRow {
   action: 'visible' | 'element' | 'document' | 'full-page' | 'prompt'
   idx: string
   icon: SwissIconName

@@ -2,7 +2,7 @@
  * 섹션 헤딩 빌더 — 좌측 번호 인덱스(01~05) 정렬축 (디자인 SoT §sec-head)
  * [sec-num | eyebrow+title | aside] 그리드. 컴포넌트가 aside에 동적 요소를 꽂을 수 있다.
  */
-export type SecHead = {
+export interface SecHead {
   head: HTMLDivElement
   titleEl: HTMLHeadingElement
   asideEl: HTMLSpanElement
