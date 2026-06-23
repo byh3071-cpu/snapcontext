@@ -37,3 +37,6 @@ docs/ui-audit/hermes/
 
 # vhk 세션 핸드오프 (로컬 절대경로·내부 맥락 포함 — 공개 제외, 로컬 보존)
 .vhk/handoff-*.md
+
+# swiss 외부 디자인 레퍼런스 이미지 (타사 캡처 — 공개 배포 제외, 로컬 보존)
+docs/ui-audit/swiss/refs/
