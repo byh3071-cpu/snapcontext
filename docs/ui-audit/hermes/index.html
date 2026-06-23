@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SnapContext — Hermès 럭셔리미니멀 3해석안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&display=swap">
+<style>
+  :root{
+    --bg:#15120f; --panel:#1d1916; --line:rgba(255,255,255,.09);
+    --ink:#ECE6DC; --muted:#a39a8c; --faint:#6f675b;
+    --accent:#E8590C; --gold:#C9A86A;
+    --frame-w:390px;
+    --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s8:48px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Pretendard',sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:var(--s8) var(--s5) 64px;
+  }
+  .head{max-width:1320px;margin:0 auto var(--s8)}
+  .eyebrow{
+    font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin:0 0 var(--s3)
+  }
+  h1{
+    font-family:'Fraunces',serif;font-weight:300;font-size:clamp(28px,4vw,46px);
+    line-height:1.08;margin:0 0 var(--s4);letter-spacing:-.01em
+  }
+  h1 em{font-style:italic;color:var(--gold)}
+  .lede{max-width:62ch;color:var(--muted);font-size:15px;margin:0 0 var(--s5)}
+  .lede b{color:var(--ink);font-weight:600}
+  .note{
+    display:flex;gap:var(--s3);flex-wrap:wrap;font-size:12.5px;color:var(--faint);
+    border-top:1px solid var(--line);padding-top:var(--s4)
+  }
+  .note span{display:inline-flex;gap:6px;align-items:center}
+  .note b{color:var(--muted);font-weight:600}
+
+  .grid{
+    max-width:1320px;margin:0 auto;
+    display:grid;grid-template-columns:repeat(3,minmax(var(--frame-w),1fr));
+    gap:var(--s5);align-items:start
+  }
+  @media(max-width:1280px){.grid{grid-template-columns:repeat(2,var(--frame-w));justify-content:center}}
+  @media(max-width:880px){.grid{grid-template-columns:var(--frame-w)}}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;display:flex;flex-direction:column
+  }
+  .card__bar{
+    height:3px;background:linear-gradient(90deg,var(--c1),var(--c2))
+  }
+  .card__head{padding:var(--s5) var(--s5) var(--s4)}
+  .rank{
+    font-family:'Fraunces',serif;font-size:12px;font-weight:500;letter-spacing:.06em;
+    color:var(--faint);display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--s2)
+  }
+  .rank .score{color:var(--gold);font-variant-numeric:tabular-nums}
+  .card h2{
+    font-family:'Fraunces',serif;font-weight:400;font-size:25px;letter-spacing:.02em;
+    margin:0 0 4px
+  }
+  .card .tag{color:var(--muted);font-size:13px;margin:0 0 var(--s4)}
+  .swatches{display:flex;gap:6px;margin:0 0 var(--s4)}
+  .swatches i{width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,.14);display:block}
+  dl.meta{display:grid;grid-template-columns:auto 1fr;gap:5px var(--s3);margin:0;font-size:12.5px}
+  dl.meta dt{color:var(--faint);font-weight:600;white-space:nowrap}
+  dl.meta dd{margin:0;color:var(--muted)}
+  .frame-wrap{
+    padding:var(--s4) var(--s4) var(--s5);background:rgba(0,0,0,.18);
+    border-top:1px solid var(--line)
+  }
+  .frame-cap{font-size:11px;color:var(--faint);letter-spacing:.04em;margin:0 0 8px;display:flex;justify-content:space-between}
+  iframe{
+    width:var(--frame-w);height:780px;border:1px solid var(--line);border-radius:10px;
+    background:#fff;display:block;margin:0 auto;box-shadow:0 24px 60px rgba(0,0,0,.4)
+  }
+  .open{
+    display:inline-block;margin-top:10px;font-size:12px;color:var(--accent);
+    text-decoration:none;border-bottom:1px solid transparent
+  }
+  .open:hover{border-bottom-color:var(--accent)}
+</style>
+</head>
+<body>
+  <header class="head">
+    <p class="eyebrow">SnapContext · Side Panel · Design Direction</p>
+    <h1>Hermès 럭셔리 <em>미니멀</em> — 3해석안</h1>
+    <p class="lede">
+      "감각적인데 심플하고 깔끔한" 방향을 <b>단일 정제 액센트 · 고운 세리프 · 넉넉한 여백 · 정밀 마감</b>으로
+      세 갈래로 풀었다. 정보구조·한국어 카피·기능 모티프(발행 도장·핀 배지·캡처 종류·단축키 키캡)는 9개 섹션 전부 동일,
+      <b>미학만</b> 다르다. 각 안은 적대적 craft 비평 → 출시 차단급 흠 픽스를 거쳤다.
+    </p>
+    <div class="note">
+      <span><b>실폭</b> 사이드패널 390px</span>
+      <span><b>공통</b> 4/8 그리드 · 24뷰박스 SVG · 4상태 · AA 실측 · reduced-motion</span>
+      <span><b>폰트</b> 프리뷰=CDN, 이식 시 OFL self-host</span>
+    </div>
+  </header>
+
+  <main class="grid">
+
+    <!-- MAISON -->
+    <section class="card" style="--c1:#E8590C;--c2:#F6F1E7">
+      <div class="card__bar"></div>
+      <div class="card__head">
+        <div class="rank"><span>해석 A · 라이트</span><span class="score">에디토리얼 럭셔리</span></div>
+        <h2>MAISON</h2>
+        <p class="tag">아이보리 화지 · 잡지 에디토리얼 · 새들스티치</p>
+        <div class="swatches">
+          <i style="background:#F6F1E7"></i><i style="background:#EFE7D7"></i>
+          <i style="background:#2A2622"></i><i style="background:#E8590C"></i>
+        </div>
+        <dl class="meta">
+          <dt>팔레트</dt><dd>화지 #F6F1E7 · 잉크 #2A2622 · 인주 #E8590C</dd>
+          <dt>타이포</dt><dd>Fraunces + Noto Serif KR / Pretendard</dd>
+          <dt>모티프</dt><dd>점선 새들스티치 · 얇은 키라인 · 비싼 여백</dd>
+        </dl>
+      </div>
+      <div class="frame-wrap">
+        <p class="frame-cap"><span>maison.html</span><span>390 × scroll</span></p>
+        <iframe loading="lazy" src="maison.html" title="MAISON 사이드패널"></iframe>
+        <a class="open" href="maison.html" target="_blank">단독 새 탭으로 열기 →</a>
+      </div>
+    </section>
+
+    <!-- NUIT -->
+    <section class="card" style="--c1:#F2670A;--c2:#C9A86A">
+      <div class="card__bar"></div>
+      <div class="card__head">
+        <div class="rank"><span>해석 B · 다크</span><span class="score">기존 브랜드 진화형</span></div>
+        <h2>NUIT</h2>
+        <p class="tag">웜 차콜 · 크림 + 골드 헤어라인 · 가죽/황동</p>
+        <div class="swatches">
+          <i style="background:#1A1714"></i><i style="background:#221E1A"></i>
+          <i style="background:#EDE6D8"></i><i style="background:#F2670A"></i><i style="background:#C9A86A"></i>
+        </div>
+        <dl class="meta">
+          <dt>팔레트</dt><dd>먹빛 #1A1714 · 크림 #EDE6D8 · 인주 #F2670A · 골드 #C9A86A</dd>
+          <dt>타이포</dt><dd>Cormorant·Fraunces + Nanum Myeongjo / Pretendard</dd>
+          <dt>모티프</dt><dd>골드 헤어라인 · 미세 emboss · 한자 낙관</dd>
+        </dl>
+      </div>
+      <div class="frame-wrap">
+        <p class="frame-cap"><span>nuit.html</span><span>390 × scroll</span></p>
+        <iframe loading="lazy" src="nuit.html" title="NUIT 사이드패널"></iframe>
+        <a class="open" href="nuit.html" target="_blank">단독 새 탭으로 열기 →</a>
+      </div>
+    </section>
+
+    <!-- CARRÉ -->
+    <section class="card" style="--c1:#EA5B0C;--c2:#FBF8F3">
+      <div class="card__bar"></div>
+      <div class="card__head">
+        <div class="rank"><span>해석 C · 라이트</span><span class="score">최소 · 정제</span></div>
+        <h2>CARRÉ</h2>
+        <p class="tag">웜 화이트 · 실크 카레 더블키라인 · 세리프 숫자</p>
+        <div class="swatches">
+          <i style="background:#FBF8F3"></i><i style="background:#F3EEE5"></i>
+          <i style="background:#33302B"></i><i style="background:#EA5B0C"></i>
+        </div>
+        <dl class="meta">
+          <dt>팔레트</dt><dd>웜 화이트 #FBF8F3 · 잉크 #33302B · 인주 #EA5B0C</dd>
+          <dt>타이포</dt><dd>Pretendard · 숫자만 Cormorant/Fraunces tnum</dd>
+          <dt>모티프</dt><dd>가는 더블 키라인 · 코너 마크 · 광활한 여백</dd>
+        </dl>
+      </div>
+      <div class="frame-wrap">
+        <p class="frame-cap"><span>carre.html</span><span>390 × scroll</span></p>
+        <iframe loading="lazy" src="carre.html" title="CARRÉ 사이드패널"></iframe>
+        <a class="open" href="carre.html" target="_blank">단독 새 탭으로 열기 →</a>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>

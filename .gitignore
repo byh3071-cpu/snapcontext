@@ -25,3 +25,9 @@ snapcontext-*.zip
 node_modules/
 dist/
 *.tsbuildinfo
+
+# Serena 툴 캐시 (.claude/ 와 동일 성격 — 추적 제외)
+.serena/
+
+# vhk 로컬 백업본 (context.md.local-bak 등)
+*.local-bak

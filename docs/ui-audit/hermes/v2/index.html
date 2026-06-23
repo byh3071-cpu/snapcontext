@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SnapContext × Hermès — grounded v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rokkitt:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..400&display=swap">
+<style>
+  :root{
+    --paper:#F4EFE6; --paper-2:#EBE3D5; --ink:#2A2018; --ink-soft:#6b5f50;
+    --orange:#F37021; --orange-deep:#B8470B;
+    --line:#d9cdb8; --line-strong:#c3b496;
+    --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s8:48px;--s10:64px;
+    --frame-w:390px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--paper);
+    background-image:
+      radial-gradient(rgba(120,90,40,.04) 1px, transparent 1px);
+    background-size:3px 3px;
+    color:var(--ink);
+    font-family:'Pretendard',sans-serif; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    padding:var(--s10) var(--s5) 72px;
+  }
+  .wrap{max-width:1340px;margin:0 auto}
+
+  /* ── 오렌지 박스 마스트헤드 ── */
+  .mast{
+    background:var(--orange);
+    border-radius:14px;
+    padding:var(--s6) var(--s6) var(--s5);
+    box-shadow:0 1px 0 rgba(255,255,255,.25) inset, 0 10px 30px rgba(180,71,11,.22);
+    margin-bottom:var(--s8);
+    position:relative; overflow:hidden;
+  }
+  .mast::after{ /* 가죽 결 */
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:repeating-linear-gradient(90deg, rgba(120,40,0,.05) 0 1px, transparent 1px 3px);
+    mix-blend-mode:multiply;opacity:.5;
+  }
+  .kicker{
+    font-family:'Rokkitt',serif;font-weight:600;font-size:12px;letter-spacing:.3em;
+    text-transform:uppercase;color:#fff7ef;margin:0 0 var(--s3);position:relative
+  }
+  .mast h1{
+    font-family:'Rokkitt',serif;font-weight:800;font-size:clamp(30px,4.4vw,52px);
+    line-height:1.02;letter-spacing:.01em;margin:0;color:#1c1206;position:relative
+  }
+  .mast .sub{
+    max-width:64ch;color:#3a2206;font-size:15px;margin:var(--s4) 0 0;position:relative
+  }
+  .mast .sub b{color:#1c1206;font-weight:700}
+
+  /* ── 진단 노트 ── */
+  .diag{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s3) var(--s6);
+    max-width:1340px;margin:0 auto var(--s8);
+    border-top:1px solid var(--line-strong);padding-top:var(--s5)
+  }
+  @media(max-width:760px){.diag{grid-template-columns:1fr}}
+  .diag .row{display:flex;gap:var(--s3);font-size:13.5px}
+  .diag .x{color:var(--ink-soft);min-width:128px}
+  .diag .x b{color:#9a3a12;font-weight:700}
+  .diag .o{color:var(--ink)}
+  .diag .o b{color:var(--orange-deep);font-weight:700}
+
+  /* ── 갤러리 ── */
+  .grid{
+    display:grid;grid-template-columns:repeat(3,minmax(var(--frame-w),1fr));
+    gap:var(--s5);align-items:start
+  }
+  @media(max-width:1300px){.grid{grid-template-columns:repeat(2,var(--frame-w));justify-content:center}}
+  @media(max-width:880px){.grid{grid-template-columns:var(--frame-w)}}
+
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(60,40,10,.05)
+  }
+  .card__num{
+    font-family:'Rokkitt',serif;font-weight:700;font-size:13px;color:var(--orange-deep);
+    letter-spacing:.12em
+  }
+  .card__head{padding:var(--s5) var(--s5) var(--s4)}
+  .card__top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--s2)}
+  .theme{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+  .card h2{
+    font-family:'Rokkitt',serif;font-weight:800;font-size:30px;letter-spacing:.02em;margin:0 0 4px;color:var(--ink)
+  }
+  .card .tag{color:var(--ink-soft);font-size:13px;margin:0 0 var(--s4)}
+  .swatches{display:flex;gap:6px;margin:0 0 var(--s4)}
+  .swatches i{width:24px;height:24px;border-radius:6px;border:1px solid rgba(0,0,0,.1);display:block}
+  dl.meta{display:grid;grid-template-columns:auto 1fr;gap:6px var(--s3);margin:0;font-size:12.5px}
+  dl.meta dt{color:#9a3a12;font-weight:700;white-space:nowrap}
+  dl.meta dd{margin:0;color:var(--ink-soft)}
+  .signature{
+    margin-top:var(--s4);padding:var(--s3);background:var(--paper);border-radius:8px;
+    font-size:12.5px;color:var(--ink);border-left:3px solid var(--orange)
+  }
+  .signature b{color:var(--orange-deep)}
+  .frame-wrap{padding:var(--s4) var(--s4) var(--s5);background:var(--paper-2);border-top:1px solid var(--line)}
+  .frame-cap{font-size:11px;color:var(--ink-soft);letter-spacing:.04em;margin:0 0 8px;display:flex;justify-content:space-between}
+  iframe{
+    width:var(--frame-w);height:800px;border:1px solid var(--line);border-radius:10px;
+    background:#fff;display:block;margin:0 auto;box-shadow:0 18px 44px rgba(60,40,10,.18)
+  }
+  .open{display:inline-block;margin-top:10px;font-size:12px;color:var(--orange-deep);text-decoration:none;border-bottom:1px solid transparent;font-weight:600}
+  .open:hover{border-bottom-color:var(--orange-deep)}
+  .footnote{max-width:1340px;margin:var(--s8) auto 0;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:var(--s4)}
+  .footnote a{color:var(--orange-deep)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="mast">
+      <p class="kicker">SnapContext × Hermès · Grounded redesign · v2</p>
+      <h1>오렌지 박스, 슬랩, 그리고 여백</h1>
+      <p class="sub">1차안은 “안전한 럭셔리 미니멀”이라 개성·감각·완성도가 부족했다. 이번엔 <b>실제 Hermès</b>를 grounding했다 —
+        오렌지 <b>#F37021</b>를 1px 액센트가 아니라 <b>박스/필드로 대담하게</b>, 워드마크는 디도네가 아닌 <b>기하학적 슬랩세리프</b>(Memphis 오마주, Rokkitt),
+        모티프는 <b>Chaîne d’ancre</b> 체인. lazyweb 레퍼런스 + hermes.com + 브랜드 리서치 기반.</p>
+    </header>
+
+    <section class="diag" aria-label="진단">
+      <div class="row"><span class="x"><b>✗</b> 오렌지 1px 소심 액센트</span><span class="o"><b>→</b> 오렌지 박스·채도 필드(버킨 듀오톤)</span></div>
+      <div class="row"><span class="x"><b>✗</b> Fraunces 디도네 워드마크</span><span class="o"><b>→</b> Rokkitt 슬랩세리프(Memphis 오마주)</span></div>
+      <div class="row"><span class="x"><b>✗</b> 텍스처·개성 없음</span><span class="o"><b>→</b> 종이 그레인·가죽결·Chaîne d’ancre 체인</span></div>
+      <div class="row"><span class="x"><b>✗</b> 잔잔하게 바쁨</span><span class="o"><b>→</b> 큰 타입·큰 여백·확신있는 절제</span></div>
+    </section>
+
+    <main class="grid">
+
+      <!-- MAISON -->
+      <section class="card">
+        <div class="card__head">
+          <div class="card__top"><span class="card__num">N° 01</span><span class="theme">Light · Éditorial</span></div>
+          <h2>MAISON</h2>
+          <p class="tag">오렌지 박스 + 가죽 세피아 + 종이 텍스처</p>
+          <div class="swatches">
+            <i style="background:#F4EFE6"></i><i style="background:#F37021"></i>
+            <i style="background:#B8470B"></i><i style="background:#3A2A20"></i>
+          </div>
+          <dl class="meta">
+            <dt>팔레트</dt><dd>크림 #F4EFE6 · 오렌지 #F37021 · 번트 #B8470B · 잉크 #3A2A20</dd>
+            <dt>워드마크</dt><dd>Rokkitt 슬랩 캡스 / Pretendard</dd>
+            <dt>모티프</dt><dd>Chaîne d’ancre 체인 띠 · 2가닥 새들스티치 · 종이 그레인</dd>
+          </dl>
+          <p class="signature"><b>시그니처:</b> 96px 오렌지 마스트헤드 띠 + 크림 인장 카드, 캡처 모드 전체를 오렌지 라디얼 패널로 감싸 버튼이 떠 있는 <b>버킨 오브제-온-오렌지</b> 구조. 첫 화면 오렌지 30%+.</p>
+        </div>
+        <div class="frame-wrap">
+          <p class="frame-cap"><span>v2/maison.html</span><span>390 × scroll</span></p>
+          <iframe loading="lazy" src="maison.html" title="MAISON v2"></iframe>
+          <a class="open" href="maison.html" target="_blank">단독 새 탭 →</a>
+        </div>
+      </section>
+
+      <!-- NOIR -->
+      <section class="card">
+        <div class="card__head">
+          <div class="card__top"><span class="card__num">N° 02</span><span class="theme">Dark · Premium agent</span></div>
+          <h2>NOIR</h2>
+          <p class="tag">프리미엄 AI 에이전트 + 둥근 pill 칩 + 오렌지 들판</p>
+          <div class="swatches">
+            <i style="background:#161412"></i><i style="background:#211D19"></i>
+            <i style="background:#ECE6DC"></i><i style="background:#F37021"></i>
+          </div>
+          <dl class="meta">
+            <dt>팔레트</dt><dd>웜 near-black #161412 · 크림 #ECE6DC · 오렌지 #F37021</dd>
+            <dt>워드마크</dt><dd>Rokkitt 46px 슬랩 / Pretendard</dd>
+            <dt>모티프</dt><dd>feTurbulence 가죽 그레인 · 얇은 체인 링크 · édition 발행번호</dd>
+          </dl>
+          <p class="signature"><b>시그니처:</b> 46px 슬랩 워드마크가 상단 지배 + 미리보기 스테이지 전체가 <b>오렌지 들판</b>, 그 위 진잉크 브라우저 오브제(버킨 듀오톤). “캡처 № 128 · 3장 발행” 넘버드 에디션.</p>
+        </div>
+        <div class="frame-wrap">
+          <p class="frame-cap"><span>v2/noir.html</span><span>390 × scroll</span></p>
+          <iframe loading="lazy" src="noir.html" title="NOIR v2"></iframe>
+          <a class="open" href="noir.html" target="_blank">단독 새 탭 →</a>
+        </div>
+      </section>
+
+      <!-- BLANC -->
+      <section class="card">
+        <div class="card__head">
+          <div class="card__top"><span class="card__num">N° 03</span><span class="theme">Light · Minimal</span></div>
+          <h2>BLANC</h2>
+          <p class="tag">극단 절제 + 오렌지 박스 8곳 + 잉크 듀오톤</p>
+          <div class="swatches">
+            <i style="background:#F7F6F2"></i><i style="background:#F37021"></i>
+            <i style="background:#211D19"></i><i style="background:#1A1714"></i>
+          </div>
+          <dl class="meta">
+            <dt>팔레트</dt><dd>웜 화이트 #F7F6F2 · 오렌지 #F37021 · 잉크 #1A1714</dd>
+            <dt>워드마크</dt><dd>Rokkitt 슬랩 + 잉크 underline-rule / Pretendard</dd>
+            <dt>모티프</dt><dd>오렌지 체인룰 · 섹션번호 오렌지 슬랩 · 잉크 듀오톤 스테이지</dd>
+          </dl>
+          <p class="signature"><b>시그니처:</b> “단 한 점” 폐기 → 오렌지가 <b>마스트헤드 박스 + CTA 4 + 섹션번호 5</b>로 면을 점령. 스테이지를 잉크 패널로 눌러 캡처가 ‘면 위 오브제’. lovefrom식 여백 위 확신.</p>
+        </div>
+        <div class="frame-wrap">
+          <p class="frame-cap"><span>v2/blanc.html</span><span>390 × scroll</span></p>
+          <iframe loading="lazy" src="blanc.html" title="BLANC v2"></iframe>
+          <a class="open" href="blanc.html" target="_blank">단독 새 탭 →</a>
+        </div>
+      </section>
+
+    </main>
+
+    <p class="footnote">
+      grounding: <a href="DESIGN-LANGUAGE.md">DESIGN-LANGUAGE.md</a> · 레퍼런스 이미지 <code>refs/</code> (Hermès 오렌지박스 · lovefrom · opal · niccolo) ·
+      폰트는 프리뷰=CDN(Rokkitt·Pretendard·Noto Serif KR), src 이식 시 OFL self-host. 9개 섹션 IA·한국어 카피·기능 모티프 불변, 미학만 재스킨.
+    </p>
+  </div>
+</body>
+</html>

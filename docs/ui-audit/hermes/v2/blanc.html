@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SnapContext — BLANC</title>
+<!-- 폰트 — PREVIEW: 갤러리 렌더용 CDN(Pretendard=jsdelivr / 슬랩=Rokkitt·Google Fonts).
+     src 이식 시엔 동일 OFL 폰트(Rokkitt·Pretendard)를 확장 패키지에 self-host
+     (@font-face src:url("fonts/*.woff2")) — MV3 CSP·오프라인·프라이버시 충족. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rokkitt:wght@400;500;600;700&display=swap">
+<style>
+/* =========================================================================
+   BLANC — near-white 정제 + Hermès 오렌지 박스 (그 박스가 제품을 감싼다)
+   철학: 비움이 아니라 정제. 단, 오렌지는 '한 점'이 아니라 '면(박스)'으로 쓴다.
+         Hermès 오렌지박스 = 제품 전체를 감싸는 채도 높은 면.
+         → 헤더 마스트헤드 전체를 오렌지 박스로(첫 화면·idle부터 오렌지가 지배),
+           primary 액션(프롬프트·복사·공유)을 오렌지 박스로(잉크 라벨),
+           섹션 번호 01~05를 오렌지 슬랩으로(아무 행동 안 해도 오렌지가 시야에).
+         위계는 타입·간격·체인 룰·오렌지 면으로. 무채색 미니멀 금지.
+   대비 실측(WCAG 2.1, 계산 검증 완료):
+   배경 #F7F6F2 기준 —
+   - 본문 잉크 #1A1714 / #F7F6F2   → 15.6:1  (AAA)            ← 본문/라벨/제목/워드마크
+   - 부제 먹  #423B33 / #F7F6F2    →  9.5:1  (AAA)            ← 부제/설명
+   - 메타 먹  #6B6157 / #F7F6F2    →  4.9:1  (AA 본문)        ← 메타/플레이스홀더/eyebrow
+   - 흐린    #7C7367 / #F7F6F2     →  4.05:1 (AA 본문)        ← 빈상태/zoom 힌트(≥12px)
+   - 오렌지톤 #C24A0E / #F7F6F2    →  4.54:1 (AA 본문)        ← 섹션번호·체인·메모점·busy 텍스트
+   - 준비됨  #2F6B47 / #F7F6F2     →  5.1:1  (AA 본문) + 체크 아이콘 병행
+   - 위험    #A93A2C / #F7F6F2     →  5.2:1  (AA 본문) + 휴지통 아이콘 병행
+   오렌지 박스 #F37021 위 —
+   - 잉크 라벨 #1A1714 / #F37021   →  6.08:1 (AA·AA-Large·근AAA) ← 마스트헤드 워드마크·primary 라벨
+   - 부제 잉크 #2A2018 / #F37021   →  5.42:1 (AA 본문)        ← 박스 내 eyebrow·메타
+   - 흰 글리프 #FFF / #F37021      →  2.94:1 → 비텍스트(체인 인장·아이콘 조형) 전용. 라벨엔 미사용
+   잉크 스테이지 #211D19 위 —
+   - 스테이지=오브제-온-잉크 듀오톤(면 대비 15.5:1). 캡처가 면 위에 놓인 물건으로 읽힘.
+   깊은 면 #D6CFBC (썸네일/카드 가라앉음) — paper와 1.44:1 면 대비, ink 11.5:1.
+   - 포커스링 오렌지 #F37021 / near-white → 3.0:1 비텍스트 UI 컴포넌트(AA 3:1) + 2px 오프셋
+   설계 결정: primary = 오렌지 박스(잉크 라벨). 마스트헤드·섹션번호로 idle부터 오렌지 면 지배.
+              '단 한 점' 철학 폐기 — 오렌지는 확신있는 면이다.
+   ========================================================================= */
+
+:root{
+  /* ---- 색 토큰 (near-white / 웜 잉크 / Hermès 오렌지 박스) ---- */
+  --paper:        #F7F6F2;   /* near-white 종이 */
+  --paper-2:      #F2F0EA;   /* 면 한 단계 가라앉음 */
+  --paper-sink:   #ECE9E1;   /* hover 면 */
+  --paper-deep:   #D6CFBC;   /* 깊은 면 — 썸네일/카드 (paper와 1.44:1 면 대비) */
+  --paper-edge:   #E4E0D6;   /* 1px 새들스티치 룰 */
+  --paper-edge-2: #D6D0C2;   /* 진한 키라인/필드 보더 */
+  --ink:          #1A1714;   /* 웜 near-black 잉크 */
+  --ink-soft:     #423B33;   /* 부제 */
+  --ink-meta:     #6B6157;   /* 메타/플레이스홀더 (AA 4.9:1) */
+  --ink-faint:    #7C7367;   /* 흐린 보조 (AA 4.05:1, ≥12px) */
+  --ink-stage:    #211D19;   /* 잉크 스테이지 패널 — 캡처 오브제 띄움(듀오톤) */
+
+  --orange:       #F37021;   /* Hermès 오렌지 — 박스 면(마스트헤드·primary·인장) */
+  --orange-press: #D85E14;   /* 박스 active */
+  --orange-edge:  #DC5E14;   /* 오렌지 박스 안쪽 1px 가죽선 */
+  --orange-tint:  #FBE7D8;   /* 오렌지 박스 hover 보조 틴트 */
+  --orange-ink:   #C24A0E;   /* 오렌지 톤 텍스트/체인/busy (AA 4.54:1) */
+  --on-orange:    #1A1714;   /* 오렌지 박스 위 잉크 라벨 (6.08:1) */
+  --on-orange-2:  #2A2018;   /* 오렌지 박스 위 부제 잉크 (5.42:1) */
+
+  --ok:           #2F6B47;   /* 준비됨 녹색 (AA 5.1:1) */
+  --danger:       #A93A2C;   /* 위험 (AA 5.2:1) */
+  --danger-tint:  #F1E5E1;
+  --busy:         #C24A0E;   /* 진행 — 오렌지 모노로 통일(보라 폐기) (AA 4.54:1) */
+
+  /* ---- 라디우스 (극단 절제 — 거의 직각, 인장만 둥근 사각) ---- */
+  --r-xs:   2px;
+  --r-sm:   3px;
+  --r-md:   5px;
+  --r-seal: 8px;
+  --r-pill: 999px;
+
+  /* ---- 스페이싱 4/8 그리드 (s-0~s-9) — 극단 여백 위해 상단 확장 ---- */
+  --s-0: 2px;
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 44px;
+  --s-9: 64px;
+
+  /* ---- 타입 스케일 1.25 모듈러 (micro~display 9단) ---- */
+  --t-micro:  10px;
+  --t-meta:   11px;
+  --t-eyebrow:11px;
+  --t-body:   13.5px;
+  --t-label:  15px;
+  --t-title:  19px;
+  --t-head:   26px;
+  --t-brand:  30px;
+  --t-display:46px;   /* lovefrom 모먼트 워드마크 */
+
+  /* ---- 레터스페이스 토큰 ---- */
+  --tr-eyebrow: .28em;   /* 아이브로우 극단 트래킹 */
+  --tr-num:     .06em;   /* 숫자/메타 */
+  --tr-wordmark:.02em;
+
+  /* ---- 라인하이트 ---- */
+  --lh-tight: 1.08;
+  --lh-snug:  1.3;
+  --lh-body:  1.62;
+
+  /* ---- 그림자 — 거의 0(평면). 인장만 극미세 ---- */
+  --sh-flat:  none;
+  --sh-seal:  0 1px 2px rgba(195,74,14,.22);
+  --sh-pop:   0 12px 30px -20px rgba(26,23,20,.4);
+
+  /* ---- 모션 ---- */
+  --ease:    cubic-bezier(.22,.61,.18,1);
+  --dur-1:   140ms;
+  --dur-2:   220ms;
+  --dur-3:   360ms;
+
+  /* 진행바: busy 진입 시 의미 있는 시작 진행도(정적 스냅샷 정합) */
+  --progress-init: 34%;
+
+  /* 포커스 링 — 오렌지(단 한 점 원칙: 포커스도 오렌지) */
+  --focus-ring: 0 0 0 2px var(--paper), 0 0 0 4px var(--orange);
+}
+
+/* ========================= 리셋 ========================= */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    /* near-white 위 극미세 웜 그레인 — 평면을 유지하되 종이감만 */
+    repeating-linear-gradient(0deg, rgba(124,115,103,.012) 0, rgba(124,115,103,.012) 1px, transparent 1px, transparent 4px),
+    var(--paper);
+  color:var(--ink);
+  font-family:'Pretendard',sans-serif;
+  font-size:var(--t-body);
+  line-height:var(--lh-body);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.tnum{font-variant-numeric:tabular-nums;letter-spacing:var(--tr-num)}
+.slab{font-family:'Rokkitt','Pretendard',serif}
+
+/* 사이드패널 셸 — 390px 표시폭 */
+.panel{
+  width:390px;
+  margin:0 auto;
+  min-height:100%;
+  background:transparent;
+  display:flex;
+  flex-direction:column;
+}
+.scroll{
+  padding:0 var(--s-7) var(--s-9);
+  display:flex;
+  flex-direction:column;
+  gap:var(--s-9);   /* 섹션 간 극단 여백 s-9(64px) */
+}
+
+/* ========================= 공통 아이콘 ========================= */
+.ic{width:18px;height:18px;flex:none;stroke:currentColor;stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;display:block}
+.ic-sm{width:15px;height:15px}
+.ic-lg{width:22px;height:22px}
+
+/* 아이브로우 — 극단 레터스페이스(lovefrom 메타 위계) */
+.eyebrow{
+  font-size:var(--t-eyebrow);
+  letter-spacing:var(--tr-eyebrow);
+  text-transform:uppercase;
+  font-weight:600;
+  color:var(--ink-meta);
+}
+
+/* ========================= 헤더 — Hermès 오렌지 박스 ========================= */
+/* 마스트헤드 전체가 채도 높은 오렌지 면 — 제품을 감싸는 박스. idle 첫 화면부터 지배. */
+.masthead{
+  padding:var(--s-9) var(--s-7) var(--s-8);
+  position:relative;
+  text-align:center;
+  background:var(--orange);
+  /* 가죽 박스 안쪽 1px 음각선 + 미세 결 */
+  box-shadow:inset 0 0 0 1px var(--orange-edge);
+  margin-bottom:var(--s-2);
+}
+.mh-eyebrow{
+  display:flex;align-items:center;justify-content:center;gap:var(--s-3);
+  margin-bottom:var(--s-5);
+}
+.mh-eyebrow .dash{width:18px;height:1px;background:var(--on-orange-2);opacity:.5}
+.mh-eyebrow span{
+  font-size:var(--t-micro);
+  letter-spacing:var(--tr-eyebrow);
+  text-transform:uppercase;
+  font-weight:700;
+  color:var(--on-orange-2);
+}
+/* 슬랩세리프 워드마크 — 오렌지 박스 위 잉크. 큰 타입 한 순간 */
+.wordmark{
+  font-family:'Rokkitt','Pretendard',serif;
+  font-weight:700;
+  font-size:var(--t-display);
+  line-height:1;
+  letter-spacing:var(--tr-wordmark);
+  color:var(--on-orange);
+  margin:0;
+}
+/* 시그니처: 워드마크 끝에 잉크 슬랩 룰 — 한 번 보면 기억나는 마크 */
+.wordmark::after{
+  content:"";
+  display:block;
+  width:54px;height:4px;
+  margin:var(--s-4) auto 0;
+  background:var(--on-orange);
+  border-radius:var(--r-pill);
+}
+.mh-foot{
+  display:flex;align-items:center;justify-content:center;gap:var(--s-3);
+  margin-top:var(--s-5);
+}
+.mh-foot .ver{
+  font-family:'Pretendard',monospace;
+  font-variant-numeric:tabular-nums;
+  font-size:var(--t-micro);
+  letter-spacing:var(--tr-num);
+  color:var(--on-orange-2);
+  font-weight:600;
+}
+.mh-foot .mh-dot{width:3px;height:3px;border-radius:50%;background:var(--on-orange-2);opacity:.6}
+.mh-foot .place{
+  font-size:var(--t-micro);
+  letter-spacing:var(--tr-eyebrow);
+  text-transform:uppercase;
+  font-weight:700;
+  color:var(--on-orange-2);
+}
+/* 톱니 설정 — 오렌지 박스 위, 잉크 톤 */
+.mh-settings{position:absolute;top:var(--s-5);right:var(--s-5)}
+.icon-btn{
+  width:34px;height:34px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid transparent;
+  border-radius:var(--r-md);
+  background:transparent;
+  color:var(--ink-meta);
+  cursor:pointer;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);
+}
+.icon-btn:hover{background:var(--paper-sink);color:var(--ink)}
+.icon-btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.icon-btn:active{background:var(--paper-edge);transform:translateY(.5px)}
+.icon-btn:disabled{color:var(--ink-faint);cursor:not-allowed;background:transparent;opacity:.6}
+/* 오렌지 박스 위 톱니 — 잉크 톤 + 잉크 hover 면 */
+.masthead .icon-btn{color:var(--on-orange-2)}
+.masthead .icon-btn:hover{background:var(--on-orange);color:var(--orange)}
+.masthead .icon-btn:active{background:var(--orange-press)}
+
+/* Chaîne d'ancre 체인 룰 — 시그니처 구분(오렌지 솔리드, 또렷하게) */
+.chain-rule{
+  display:flex;align-items:center;justify-content:center;
+  margin-top:var(--s-7);
+  color:var(--orange-ink);
+}
+.chain-rule svg{display:block;height:13px;width:auto}
+/* 오렌지 박스 내부 체인은 잉크 솔리드(면 위 음각 시그니처) */
+.masthead .chain-rule{color:var(--on-orange)}
+
+/* ========================= 섹션 헤딩 ========================= */
+.sec-head{
+  display:flex;align-items:baseline;gap:var(--s-3);
+  margin-bottom:var(--s-6);
+}
+/* 섹션 번호 — 오렌지 슬랩 숫자. idle 첫 스크롤부터 오렌지가 시야에 */
+.sec-no{
+  font-family:'Rokkitt','Pretendard',serif;
+  font-weight:700;
+  font-size:var(--t-head);
+  line-height:1;
+  color:var(--orange-ink);
+  font-variant-numeric:lining-nums;
+  letter-spacing:.01em;
+}
+.sec-no::before{content:"";}
+.sec-titles{flex:1;min-width:0}
+.sec-titles .eyebrow{display:block;margin-bottom:var(--s-2)}
+.sec-title{
+  font-family:'Rokkitt','Pretendard',serif;
+  font-weight:600;
+  font-size:var(--t-title);
+  line-height:var(--lh-snug);
+  color:var(--ink);
+  letter-spacing:.005em;
+}
+.sec-sub{
+  font-size:var(--t-body);
+  color:var(--ink-meta);
+  line-height:var(--lh-body);
+  margin-bottom:var(--s-5);
+}
+
+/* 새들 스티치 하이라인 (점선) — 섹션 사이 정제된 구분 (gap이 주, stitch는 미세 강조) */
+.stitch{
+  height:0;border:0;border-top:1px dashed var(--paper-edge-2);
+  opacity:.7;
+}
+.hairline{height:1px;background:var(--paper-edge);border:0;margin:0}
+
+/* ========================= 壱 캡처 툴바 ========================= */
+.toolbar{display:flex;flex-direction:column;gap:0}
+.cap-btn{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:var(--s-4);
+  width:100%;
+  padding:var(--s-4) var(--s-1);
+  background:transparent;
+  border:0;
+  border-top:1px solid var(--paper-edge);
+  cursor:pointer;
+  text-align:left;
+  color:var(--ink);
+  transition:background var(--dur-1) var(--ease),padding var(--dur-1) var(--ease);
+}
+.cap-btn:first-child{border-top:0}
+.cap-btn:hover{background:var(--paper-sink);padding-left:var(--s-3);padding-right:var(--s-3)}
+.cap-btn:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--r-sm);position:relative;z-index:1}
+.cap-btn:active{background:var(--paper-edge)}
+.cap-btn:disabled{opacity:.42;cursor:not-allowed;background:transparent;padding-left:var(--s-1);padding-right:var(--s-1)}
+
+/* 아이콘칸 — 평면 윤곽선 */
+.cap-icon{
+  width:30px;height:30px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--r-sm);
+  background:transparent;
+  color:var(--ink);
+  border:1px solid var(--paper-edge-2);
+  transition:border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease);
+}
+.cap-btn:hover .cap-icon{border-color:var(--ink);background:var(--paper)}
+.cap-icon .ic{width:18px;height:18px}
+.cap-text{min-width:0}
+.cap-label{font-size:var(--t-label);font-weight:600;line-height:var(--lh-tight);color:var(--ink)}
+.cap-desc{font-size:var(--t-meta);color:var(--ink-meta);line-height:1.35;margin-top:2px}
+
+/* 키캡 칩 — 평면, 그림자 0 */
+kbd, .kbd{
+  font-family:'Pretendard',monospace;
+  font-variant-numeric:tabular-nums;
+  font-size:var(--t-micro);
+  letter-spacing:.03em;
+  color:var(--ink-meta);
+  background:var(--paper);
+  border:1px solid var(--paper-edge-2);
+  border-radius:var(--r-sm);
+  padding:3px 7px;
+  white-space:nowrap;
+}
+
+/* 프롬프트 primary — Hermès 오렌지 박스(잉크 라벨 6.08:1). 박스가 패널 폭 전체를 먹음 */
+.cap-btn.is-primary{
+  margin-top:var(--s-6);
+  background:var(--orange);
+  border:1px solid var(--orange-edge);
+  box-shadow:inset 0 0 0 1px var(--orange-edge);
+  border-radius:var(--r-md);
+  padding:var(--s-4);
+  color:var(--on-orange);
+}
+.cap-btn.is-primary:first-child{border-top:1px solid var(--orange-edge)}
+.cap-btn.is-primary .cap-label{color:var(--on-orange);font-weight:700}
+.cap-btn.is-primary .cap-desc{color:var(--on-orange-2)}
+.cap-btn.is-primary .cap-icon{background:rgba(26,23,20,.08);color:var(--on-orange);border-color:rgba(26,23,20,.32)}
+.cap-btn.is-primary kbd{background:rgba(26,23,20,.07);color:var(--on-orange);border-color:rgba(26,23,20,.3)}
+.cap-btn.is-primary:hover{background:var(--orange-press);padding-left:var(--s-4);padding-right:var(--s-4)}
+.cap-btn.is-primary:hover .cap-icon{border-color:rgba(26,23,20,.5);background:rgba(26,23,20,.12)}
+.cap-btn.is-primary:active{background:var(--orange-press);transform:translateY(.5px)}
+
+/* ========================= 弐 미리보기 ========================= */
+.pv-head-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--s-5)}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:var(--t-meta);font-weight:600;
+  letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 0;
+  color:var(--ok);background:transparent;
+}
+.badge .ic{width:13px;height:13px}
+
+/* 스테이지 — 잉크 패널 위에 캡처를 띄움(오브제-온-잉크 듀오톤, 면 대비 15.5:1) */
+.stage{
+  position:relative;
+  border-radius:var(--r-md);
+  overflow:hidden;
+  border:1px solid var(--ink-stage);
+  background:var(--ink-stage);
+  padding:var(--s-3);
+}
+.stage svg.shot{
+  display:block;width:100%;height:auto;
+  border-radius:var(--r-xs);
+  box-shadow:0 6px 18px -10px rgba(0,0,0,.55);
+}
+/* 메모 핀 마커 (미리보기 위) — 오렌지 톤(인장 계열) */
+.pin-marker{
+  position:absolute;left:64%;top:30%;
+  width:20px;height:20px;
+}
+.shot-tag{
+  position:absolute;left:var(--s-5);bottom:var(--s-5);
+  font-size:var(--t-micro);
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;
+  background:rgba(26,23,20,.9);color:var(--paper);
+  padding:3px 8px;border-radius:var(--r-xs);
+}
+.stage-tools{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:var(--s-4);gap:var(--s-2);
+}
+.ghost-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:var(--t-meta);font-weight:600;
+  padding:6px 10px;border-radius:var(--r-sm);
+  background:transparent;border:1px solid var(--paper-edge-2);
+  color:var(--ink-soft);cursor:pointer;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);
+}
+.ghost-btn:hover{background:var(--paper-sink);color:var(--ink);border-color:var(--ink)}
+.ghost-btn:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.ghost-btn:active{background:var(--paper-edge);transform:translateY(.5px)}
+.ghost-btn:disabled{opacity:.45;cursor:not-allowed}
+.zoom-group{display:flex;align-items:center;gap:var(--s-3)}
+.zoom-btns{display:inline-flex;border:1px solid var(--paper-edge-2);border-radius:var(--r-sm);overflow:hidden;background:transparent}
+.zoom-btns button{
+  width:30px;height:28px;display:inline-flex;align-items:center;justify-content:center;
+  background:transparent;border:0;color:var(--ink-soft);cursor:pointer;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease);
+}
+.zoom-btns button + button{border-left:1px solid var(--paper-edge-2)}
+.zoom-btns button:hover{background:var(--paper-sink);color:var(--ink)}
+.zoom-btns button:focus-visible{outline:none;box-shadow:var(--focus-ring);z-index:1;position:relative}
+.zoom-btns button:active{background:var(--paper-edge)}
+.zoom-btns button:disabled{color:var(--ink-faint);cursor:not-allowed}
+.zoom-hint{font-size:var(--t-micro);color:var(--ink-faint);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+/* ----- 핀 메모 ----- */
+.pin-memo{margin-top:var(--s-6)}
+.pin-memo-head{display:flex;align-items:center;gap:var(--s-2);margin-bottom:var(--s-4)}
+.pin-memo-title{font-size:var(--t-label);font-weight:600;color:var(--ink)}
+.pin-row{display:flex;align-items:center;gap:var(--s-3);margin-bottom:var(--s-3)}
+.pin-dot{width:22px;height:22px;flex:none}
+.field{
+  width:100%;
+  font-family:'Pretendard',sans-serif;
+  font-size:var(--t-body);
+  color:var(--ink);
+  background:var(--paper);
+  border:0;
+  border-bottom:1px solid var(--paper-edge-2);
+  border-radius:0;
+  padding:8px 2px;
+  transition:border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease);
+}
+.field::placeholder{color:var(--ink-meta)}
+.field:hover{border-color:var(--ink-faint)}
+.field:focus-visible,.field:focus{outline:none;border-bottom-color:transparent;box-shadow:var(--focus-ring);border-radius:var(--r-sm);background:var(--paper)}
+.field:disabled{opacity:.5;cursor:not-allowed}
+.pin-empty{
+  border:1px dashed var(--paper-edge-2);
+  border-radius:var(--r-sm);
+  padding:var(--s-4);
+  text-align:center;
+  font-size:var(--t-meta);
+  color:var(--ink-faint);
+  margin-top:var(--s-2);
+}
+
+/* ========================= 参 컨텍스트 팩 ========================= */
+.lbl{
+  display:block;
+  font-size:var(--t-meta);font-weight:600;
+  letter-spacing:var(--tr-eyebrow);text-transform:uppercase;
+  color:var(--ink-meta);margin-bottom:var(--s-2);
+}
+.select-wrap{position:relative}
+.select-wrap select{
+  width:100%;
+  -webkit-appearance:none;appearance:none;
+  font-family:'Pretendard',sans-serif;
+  font-size:var(--t-body);color:var(--ink);
+  background:var(--paper);
+  border:0;border-bottom:1px solid var(--paper-edge-2);border-radius:0;
+  padding:9px 30px 9px 2px;cursor:pointer;
+  transition:border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);
+}
+.select-wrap select:hover{border-bottom-color:var(--ink-faint)}
+.select-wrap select:focus-visible{outline:none;border-bottom-color:transparent;box-shadow:var(--focus-ring);border-radius:var(--r-sm)}
+.select-wrap .chev{position:absolute;right:4px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink-meta)}
+textarea.field{resize:vertical;min-height:70px;line-height:var(--lh-body);border:1px solid var(--paper-edge-2);border-radius:var(--r-sm);padding:10px}
+textarea.field:hover{border-color:var(--ink-faint)}
+textarea.field:focus-visible,textarea.field:focus{border-color:transparent;box-shadow:var(--focus-ring)}
+
+.field-stack{display:flex;flex-direction:column;gap:var(--s-5)}
+.btn-stack{display:flex;flex-direction:column;gap:var(--s-3);margin-top:var(--s-6)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-2)}
+
+/* primary / secondary 버튼 — primary는 오렌지 박스(잉크 라벨) */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;
+  font-family:'Pretendard',sans-serif;
+  font-size:var(--t-body);font-weight:600;
+  padding:11px 14px;border-radius:var(--r-md);
+  cursor:pointer;border:1px solid transparent;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),transform var(--dur-1) var(--ease);
+}
+/* primary = Hermès 오렌지 박스(잉크 라벨 6.08:1) — 패널 폭 전체를 먹는 오렌지 면 */
+.btn-primary{
+  background:var(--orange);color:var(--on-orange);
+  border-color:var(--orange-edge);
+  box-shadow:inset 0 0 0 1px var(--orange-edge);
+  font-weight:700;
+}
+.btn-primary:hover{background:var(--orange-press)}
+.btn-primary:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.btn-primary:active{background:var(--orange-press);transform:translateY(.5px)}
+.btn-primary:disabled{background:transparent;color:var(--ink-faint);border-color:var(--paper-edge-2);box-shadow:none;font-weight:600;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--ink-soft);border-color:var(--paper-edge-2)}
+.btn-ghost:hover{background:var(--paper-sink);color:var(--ink);border-color:var(--ink)}
+.btn-ghost:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.btn-ghost:active{background:var(--paper-edge);transform:translateY(.5px)}
+.btn-ghost:disabled{opacity:.45;cursor:not-allowed}
+.btn .ic{width:16px;height:16px}
+
+/* 프로젝트 프로필 */
+.profile{margin-top:var(--s-7);padding-top:var(--s-6);border-top:1px dashed var(--paper-edge-2)}
+.profile-head{display:flex;align-items:center;gap:var(--s-2);margin-bottom:var(--s-5)}
+.profile-title{font-size:var(--t-label);font-weight:600;color:var(--ink)}
+.profile-empty{
+  display:flex;align-items:center;gap:var(--s-2);
+  font-size:var(--t-meta);color:var(--ink-faint);
+  border:1px dashed var(--paper-edge-2);border-radius:var(--r-sm);
+  padding:var(--s-3);margin-top:var(--s-4);
+}
+.profile-empty .ic{width:16px;height:16px;color:var(--ink-faint)}
+
+/* ========================= 肆 공유 (발행) ========================= */
+/* 상태 머신: data-state 하나가 idle/busy/done 3상태의 가시성을 단독 제어.
+   각 상태는 '나머지 두 상태의 마크업'을 정확히 숨긴다 → 한 DOM에 두 상태 공존 불가.
+   정적 갤러리 캡처: data-state="idle"이 기본(깨끗). done 스냅샷이 필요하면
+   <section class="share" data-state="done"> 로 열면 idle 버튼·busy 스피너가 둘 다 사라진
+   깨끗한 done 단독 화면이 보장된다(우연한 상태 겹침 경로 차단). */
+.share[data-state="idle"] .share-status,
+.share[data-state="idle"] .share-result{display:none}
+.share[data-state="busy"] #shareBtn,
+.share[data-state="busy"] .share-result{display:none}
+.share[data-state="done"] #shareBtn,
+.share[data-state="done"] .share-status{display:none}
+
+/* 발행 영역 토글 — 발행되면 오렌지 인장이 색을 띤다 */
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);
+  margin-top:var(--s-5);padding-top:var(--s-5);
+  border-top:1px solid var(--paper-edge);
+}
+.toggle-text .tt-title{font-size:var(--t-body);font-weight:600;color:var(--ink)}
+.toggle-text .tt-sub{font-size:var(--t-meta);color:var(--ink-meta)}
+/* 스위치 — checked 시 오렌지 면(켜짐=확신). 오렌지가 active 상태를 면으로 알림 */
+.switch{position:relative;display:inline-flex;align-items:center}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.track{
+  width:42px;height:24px;border-radius:var(--r-pill);
+  background:transparent;border:1px solid var(--paper-edge-2);
+  position:relative;transition:background var(--dur-2) var(--ease),border-color var(--dur-2) var(--ease);
+}
+.track::after{
+  content:"";position:absolute;top:2px;left:2px;
+  width:18px;height:18px;border-radius:var(--r-pill);
+  background:var(--ink-faint);
+  transition:transform var(--dur-2) var(--ease),background var(--dur-2) var(--ease);
+}
+.switch input:checked + .track{background:var(--orange);border-color:var(--orange-edge)}
+.switch input:checked + .track::after{transform:translateX(18px);background:var(--paper)}
+.switch input:focus-visible + .track{box-shadow:var(--focus-ring)}
+.switch input:active + .track::after{width:21px}
+
+/* busy 상태 */
+.share-status{display:flex;flex-direction:column;gap:var(--s-3);padding-top:var(--s-1)}
+.status-line{display:flex;align-items:center;gap:var(--s-2);font-size:var(--t-body);font-weight:600;color:var(--busy);letter-spacing:.01em}
+.spin{animation:spin 900ms linear infinite;transform-origin:center;color:var(--busy)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stitch-bar{
+  height:3px;border-radius:var(--r-pill);
+  background:var(--paper-edge);overflow:hidden;position:relative;
+}
+.stitch-bar::after{
+  content:"";position:absolute;inset:0;width:var(--progress,var(--progress-init));
+  border-radius:var(--r-pill);
+  background:var(--orange);
+  transition:width var(--dur-3) var(--ease);
+}
+
+/* done 상태 — 오렌지 발행 인장이 처음으로 색을 띤다 */
+.share-result{display:flex;flex-direction:column;gap:var(--s-4)}
+.published{
+  display:flex;align-items:center;gap:var(--s-3);
+}
+.seal-stamp{flex:none;filter:drop-shadow(var(--sh-seal))}
+.published-text .pt-title{font-size:var(--t-body);font-weight:600;color:var(--ink)}
+.published-text .pt-sub{font-size:var(--t-micro);color:var(--ink-meta);letter-spacing:.04em;text-transform:uppercase;font-weight:600;margin-top:2px}
+.link-box{
+  display:flex;align-items:center;gap:var(--s-2);
+  background:transparent;border:1px solid var(--paper-edge-2);
+  border-radius:var(--r-sm);padding:6px 6px 6px 10px;
+}
+.link-box .chain{color:var(--orange-ink);flex:none}
+.link-box code{
+  flex:1;min-width:0;
+  font-family:'Pretendard',monospace;
+  font-variant-numeric:tabular-nums;
+  font-size:var(--t-body);color:var(--ink);
+  letter-spacing:.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+/* ========================= 伍 캡처 기록 ========================= */
+.hist-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--s-5)}
+.danger-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:var(--t-meta);font-weight:600;
+  color:var(--danger);background:transparent;border:0;cursor:pointer;
+  padding:5px 4px;border-radius:var(--r-sm);
+  transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);
+}
+.danger-link .ic{width:14px;height:14px}
+.danger-link:hover{background:var(--danger-tint)}
+.danger-link:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.danger-link:active{transform:translateY(.5px)}
+
+.hist-list{display:flex;flex-direction:column}
+.hist-row{
+  display:grid;grid-template-columns:44px 1fr 30px;align-items:center;gap:var(--s-4);
+  padding:var(--s-4) 2px;
+  border-top:1px solid var(--paper-edge);
+  transition:background var(--dur-1) var(--ease),padding var(--dur-1) var(--ease);
+}
+.hist-row:first-child{border-top:0}
+.hist-row:hover{background:var(--paper-sink);padding-left:var(--s-2);padding-right:var(--s-2)}
+.thumb{
+  width:44px;height:34px;border-radius:var(--r-sm);overflow:hidden;
+  border:1px solid var(--ink-stage);background:var(--ink-stage);flex:none;
+}
+.thumb svg{display:block;width:100%;height:100%}
+.hist-text{min-width:0}
+.hist-title{
+  font-size:var(--t-body);font-weight:500;color:var(--ink);
+  line-height:var(--lh-tight);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.hist-meta{
+  font-size:var(--t-micro);color:var(--ink-meta);
+  font-variant-numeric:tabular-nums;margin-top:3px;letter-spacing:.03em;
+}
+.row-del{
+  width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;
+  background:transparent;border:1px solid transparent;border-radius:var(--r-sm);
+  color:var(--ink-meta);cursor:pointer;
+  transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease);
+}
+.row-del .ic{width:15px;height:15px}
+.row-del:hover{background:var(--danger-tint);color:var(--danger)}
+.row-del:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+.row-del:active{transform:translateY(.5px)}
+.hist-empty{font-size:var(--t-meta);color:var(--ink-faint);padding:var(--s-4);text-align:center}
+
+/* 푸터 — Chaîne d'ancre 시그니처 닫음 */
+.colophon{
+  text-align:center;
+  padding-top:var(--s-7);
+  margin-top:var(--s-2);
+}
+.colophon .chain-rule{margin-top:0;margin-bottom:var(--s-4)}
+.colophon p{
+  font-size:var(--t-micro);
+  letter-spacing:var(--tr-eyebrow);
+  text-transform:uppercase;
+  font-weight:600;
+  color:var(--ink-faint);
+}
+
+/* ========================= reduced-motion 가드 ========================= */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- 공유 SVG defs: Chaîne d'ancre 체인 + 메모 핀 + 발행 인장 -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <!-- #chain-link: Chaîne d'ancre 앵커 체인 한 링크 (구분선용 타일) -->
+    <symbol id="chain-link" viewBox="0 0 28 14">
+      <rect x="2" y="2" width="24" height="10" rx="5" fill="none" stroke="currentColor" stroke-width="2.1"/>
+      <line x1="14" y1="2" x2="14" y2="12" stroke="currentColor" stroke-width="2.1"/>
+    </symbol>
+    <!-- #pin: 메모 핀 물방울 (오렌지 톤 외곽 — 인장 계열) -->
+    <symbol id="pin" viewBox="0 0 22 22">
+      <path d="M11 1.6c4 0 7.4 3.2 7.4 7.3 0 4.5-5.1 9.3-6.9 10.9-.3.3-.7.3-1 0C8.7 18.2 3.6 13.4 3.6 8.9 3.6 4.8 7 1.6 11 1.6Z"
+            fill="none" stroke="#C24A0E" stroke-width="1.5"/>
+    </symbol>
+    <!-- #publish-seal: 발행 오렌지 인장 — Chaîne d'ancre 링크 음각 -->
+    <symbol id="publish-seal" viewBox="0 0 40 40">
+      <rect x="2" y="2" width="36" height="36" rx="8" fill="#F37021"/>
+      <rect x="2" y="2" width="36" height="36" rx="8" fill="none" stroke="#D85E14" stroke-width="1.4"/>
+      <!-- 체인 링크 음각 글리프 -->
+      <rect x="11" y="14.5" width="18" height="11" rx="5.5" fill="none" stroke="#FFFFFF" stroke-width="2.2"/>
+      <line x1="20" y1="14.5" x2="20" y2="25.5" stroke="#FFFFFF" stroke-width="2.2"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="panel">
+
+  <!-- ============ 헤더 — lovefrom 모먼트 ============ -->
+  <header class="masthead">
+    <div class="mh-settings">
+      <button class="icon-btn" type="button" aria-label="설정 / 도움말: 단축키" title="설정 / 도움말: 단축키">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 13.5a7.8 7.8 0 0 0 0-3l1.7-1.3-1.8-3.1-2 .8a7.7 7.7 0 0 0-2.6-1.5l-.3-2.1H7.6l-.3 2.1a7.7 7.7 0 0 0-2.6 1.5l-2-.8L.9 9.2l1.7 1.3a7.8 7.8 0 0 0 0 3L.9 14.8l1.8 3.1 2-.8a7.7 7.7 0 0 0 2.6 1.5l.3 2.1h4.8l.3-2.1a7.7 7.7 0 0 0 2.6-1.5l2 .8 1.8-3.1-1.7-1.3Z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="mh-eyebrow" aria-hidden="true">
+      <span class="dash"></span>
+      <span>Maison de Capture</span>
+      <span class="dash"></span>
+    </div>
+    <!-- 슬랩세리프 워드마크 — 큰 타입 한 순간 -->
+    <h1 class="wordmark">SnapContext</h1>
+    <div class="mh-foot">
+      <span class="ver tnum">v0.1.3</span>
+      <span class="mh-dot" aria-hidden="true"></span>
+      <span class="place">Paris · Séoul</span>
+    </div>
+
+    <!-- Chaîne d'ancre 체인 룰 -->
+    <div class="chain-rule" aria-hidden="true">
+      <svg viewBox="0 0 196 14" preserveAspectRatio="xMidYMid meet" width="196" height="11">
+        <use href="#chain-link" x="0"/><use href="#chain-link" x="28"/><use href="#chain-link" x="56"/>
+        <use href="#chain-link" x="84"/><use href="#chain-link" x="112"/><use href="#chain-link" x="140"/>
+        <use href="#chain-link" x="168"/>
+      </svg>
+    </div>
+  </header>
+
+  <main class="scroll">
+
+    <!-- ============ 壱 (01) 캡처 모드 ============ -->
+    <section aria-labelledby="sec-cap">
+      <div class="sec-head">
+        <span class="sec-no slab" aria-hidden="true">01</span>
+        <div class="sec-titles">
+          <span class="eyebrow">캡처 모드</span>
+          <h2 class="sec-title" id="sec-cap">화면을 잡아 컨텍스트로</h2>
+        </div>
+      </div>
+
+      <div class="toolbar" role="group" aria-label="캡처 모드">
+        <!-- 화면 캡처 -->
+        <button class="cap-btn" type="button">
+          <span class="cap-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M3 8h18M8 21h8M12 17v4"/></svg></span>
+          <span class="cap-text">
+            <span class="cap-label">화면 캡처</span>
+            <span class="cap-desc">현재 보이는 화면</span>
+          </span>
+          <kbd>Alt+Shift+V</kbd>
+        </button>
+        <!-- 요소 캡처 -->
+        <button class="cap-btn" type="button">
+          <span class="cap-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg></span>
+          <span class="cap-text">
+            <span class="cap-label">요소 캡처</span>
+            <span class="cap-desc">페이지 요소 선택</span>
+          </span>
+          <kbd>Alt+Shift+E</kbd>
+        </button>
+        <!-- 문서 캡처 -->
+        <button class="cap-btn" type="button">
+          <span class="cap-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M19 8.5V19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6.5L19 8.5Z"/><path d="M9 13h6M9 16.5h4"/></svg></span>
+          <span class="cap-text">
+            <span class="cap-label">문서 캡처</span>
+            <span class="cap-desc">본문 영역 자동 감지</span>
+          </span>
+          <kbd>Alt+Shift+M</kbd>
+        </button>
+        <!-- 전체 캡처 -->
+        <button class="cap-btn" type="button">
+          <span class="cap-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>
+          <span class="cap-text">
+            <span class="cap-label">전체 캡처</span>
+            <span class="cap-desc">스크롤 전체 페이지</span>
+          </span>
+          <kbd>Alt+Shift+G</kbd>
+        </button>
+        <!-- 프롬프트 (primary — 잉크 박스) -->
+        <button class="cap-btn is-primary" type="button">
+          <span class="cap-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="M18.5 15.5l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7.7-1.9Z"/></svg></span>
+          <span class="cap-text">
+            <span class="cap-label">프롬프트</span>
+            <span class="cap-desc">AI 프롬프트 생성</span>
+          </span>
+          <kbd>Alt+Shift+P</kbd>
+        </button>
+      </div>
+    </section>
+
+    <hr class="stitch" aria-hidden="true" />
+
+    <!-- ============ 弐 (02) 캡처 미리보기 ============ -->
+    <section aria-labelledby="sec-pv">
+      <div class="sec-head">
+        <span class="sec-no slab" aria-hidden="true">02</span>
+        <div class="sec-titles">
+          <span class="eyebrow">캡처됨</span>
+          <h2 class="sec-title" id="sec-pv">캡처 미리보기</h2>
+        </div>
+      </div>
+
+      <div class="pv-head-row">
+        <span class="lbl" style="margin-bottom:0">현재 캡처</span>
+        <span class="badge" role="status">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          준비됨
+        </span>
+      </div>
+
+      <div class="stage">
+        <!-- 미니 브라우저 창 목업 (viewBox 300x118) — 회색 빈박스 박멸 -->
+        <svg class="shot" viewBox="0 0 300 118" role="img" aria-label="캡처 미리보기: example.com 본문 영역">
+          <rect width="300" height="118" fill="#FBFAF6"/>
+          <!-- 브라우저 크롬바 -->
+          <rect x="0" y="0" width="300" height="20" fill="#EFEDE5"/>
+          <circle cx="12" cy="10" r="3" fill="#D6D0C2"/>
+          <circle cx="23" cy="10" r="3" fill="#D6D0C2"/>
+          <circle cx="34" cy="10" r="3" fill="#D6D0C2"/>
+          <rect x="48" y="5" width="200" height="10" rx="5" fill="#FBFAF6" stroke="#E4E0D6"/>
+          <rect x="54" y="8.5" width="70" height="3" rx="1.5" fill="#BBB2A2"/>
+          <!-- 본문 헤딩 -->
+          <rect x="16" y="34" width="150" height="9" rx="2" fill="#1A1714"/>
+          <!-- 단락 4줄 -->
+          <rect x="16" y="52" width="172" height="5" rx="2.5" fill="#C8C1B2"/>
+          <rect x="16" y="63" width="172" height="5" rx="2.5" fill="#C8C1B2"/>
+          <rect x="16" y="74" width="158" height="5" rx="2.5" fill="#C8C1B2"/>
+          <rect x="16" y="85" width="120" height="5" rx="2.5" fill="#D6CFC1"/>
+          <!-- 강조 버튼 (잉크) -->
+          <rect x="16" y="98" width="58" height="14" rx="3" fill="#1A1714"/>
+          <rect x="26" y="103.5" width="38" height="4" rx="2" fill="#F7F6F2"/>
+          <!-- 우측 사이드카드 -->
+          <rect x="206" y="30" width="80" height="80" rx="4" fill="#F2F0EA" stroke="#E4E0D6"/>
+          <rect x="216" y="40" width="50" height="6" rx="3" fill="#ABA292"/>
+          <rect x="216" y="54" width="60" height="4" rx="2" fill="#CDC6B7"/>
+          <rect x="216" y="63" width="60" height="4" rx="2" fill="#CDC6B7"/>
+          <rect x="216" y="72" width="44" height="4" rx="2" fill="#CDC6B7"/>
+          <rect x="216" y="90" width="60" height="11" rx="3" fill="#EFEDE5" stroke="#E4E0D6"/>
+        </svg>
+        <!-- 메모 핀 마커 (오렌지 톤 외곽) -->
+        <span class="pin-marker">
+          <svg width="20" height="20" viewBox="0 0 22 22" aria-hidden="true"><use href="#pin"/>
+            <circle cx="11" cy="9" r="2.3" fill="#C24A0E"/>
+          </svg>
+        </span>
+        <span class="shot-tag tnum">example.com / 본문 영역</span>
+      </div>
+
+      <div class="stage-tools">
+        <button class="ghost-btn" type="button">
+          <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          크게 보기
+        </button>
+        <div class="zoom-group">
+          <div class="zoom-btns" role="group" aria-label="확대 / 축소">
+            <button type="button" aria-label="확대"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg></button>
+            <button type="button" aria-label="축소"><svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8 11h6"/></svg></button>
+          </div>
+          <span class="zoom-hint tnum">Ctrl+휠: 확대/축소</span>
+        </div>
+      </div>
+
+      <!-- 핀 메모 -->
+      <div class="pin-memo">
+        <div class="pin-memo-head">
+          <svg width="18" height="18" viewBox="0 0 22 22" aria-hidden="true"><use href="#pin"/><circle cx="11" cy="9" r="2.1" fill="#C24A0E"/></svg>
+          <span class="pin-memo-title">핀 메모</span>
+        </div>
+        <!-- 채워진 상태 -->
+        <div class="pin-row">
+          <svg class="pin-dot" viewBox="0 0 22 22" aria-hidden="true"><use href="#pin"/><text x="11" y="12" text-anchor="middle" font-size="8.5" font-weight="700" fill="#C24A0E" font-family="Pretendard">1</text></svg>
+          <input class="field" type="text" placeholder="메모 입력…" value="이 버튼 정렬이 1px 어긋남" aria-label="핀 1 메모" />
+        </div>
+        <div class="pin-row">
+          <svg class="pin-dot" viewBox="0 0 22 22" aria-hidden="true"><use href="#pin"/><text x="11" y="12" text-anchor="middle" font-size="8.5" font-weight="700" fill="#C24A0E" font-family="Pretendard">2</text></svg>
+          <input class="field" type="text" placeholder="메모 입력…" aria-label="핀 2 메모" />
+        </div>
+      </div>
+    </section>
+
+    <hr class="stitch" aria-hidden="true" />
+
+    <!-- ============ 参 (03) AI 디버그 팩 ============ -->
+    <section aria-labelledby="sec-pack">
+      <div class="sec-head">
+        <span class="sec-no slab" aria-hidden="true">03</span>
+        <div class="sec-titles">
+          <span class="eyebrow">컨텍스트 팩</span>
+          <h2 class="sec-title" id="sec-pack">AI 디버그 팩</h2>
+        </div>
+      </div>
+      <p class="sec-sub">AI용 디버그 프롬프트, JSON 팩 또는 주석이 포함된 PNG를 복사하세요.</p>
+
+      <div class="field-stack">
+        <div>
+          <label class="lbl" for="tmpl">프롬프트 템플릿</label>
+          <div class="select-wrap">
+            <select id="tmpl">
+              <option>버그 리포트</option>
+              <option>디자인 시스템</option>
+            </select>
+            <svg class="ic ic-sm chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div>
+          <label class="lbl" for="memo">메모</label>
+          <textarea id="memo" class="field" placeholder="증상 또는 AI에게 요청할 내용 (추가 메모로 프롬프트에 삽입됨)"></textarea>
+        </div>
+      </div>
+
+      <div class="btn-stack">
+        <button class="btn btn-primary" type="button">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+          AI 프롬프트 복사
+        </button>
+        <div class="duo">
+          <button class="btn btn-ghost" type="button">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H7a2 2 0 0 0-2 2v3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v3a2 2 0 0 0 2 2h1M16 4h1a2 2 0 0 1 2 2v3a2 2 0 0 0 2 2 2 2 0 0 0-2 2v3a2 2 0 0 1-2 2h-1"/></svg>
+            JSON 복사
+          </button>
+          <button class="btn btn-ghost" type="button">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+            프롬프트 + JSON 복사
+          </button>
+        </div>
+      </div>
+
+      <!-- 프로젝트 프로필 -->
+      <div class="profile">
+        <div class="profile-head">
+          <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5 9-5M3 8v8l9 5 9-5V8M12 13v8"/></svg>
+          <span class="profile-title">프로젝트 프로필</span>
+        </div>
+        <div class="field-stack">
+          <input class="field" type="text" placeholder="프로젝트 이름" aria-label="프로젝트 이름" />
+          <input class="field" type="text" placeholder="URL 패턴, 예: localhost:5173" aria-label="URL 패턴" />
+          <input class="field" type="text" placeholder="스택, 쉼표로 구분" aria-label="스택" />
+          <input class="field" type="text" placeholder="AI 선호 설정" aria-label="AI 선호 설정" />
+        </div>
+        <div class="btn-stack" style="margin-top:var(--s-5)">
+          <button class="btn btn-ghost" type="button">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+            프로필 저장
+          </button>
+        </div>
+        <div class="profile-empty">
+          <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="m3 8 9 5 9-5M3 8v8l9 5 9-5V8"/></svg>
+          아직 프로젝트 프로필이 없습니다.
+        </div>
+      </div>
+    </section>
+
+    <hr class="stitch" aria-hidden="true" />
+
+    <!-- ============ 肆 (04) 공유 / 발행 ============ -->
+    <section class="share" id="share" data-state="idle" aria-labelledby="sec-share">
+      <div class="sec-head">
+        <span class="sec-no slab" aria-hidden="true">04</span>
+        <div class="sec-titles">
+          <span class="eyebrow">발행</span>
+          <h2 class="sec-title" id="sec-share">공유</h2>
+        </div>
+      </div>
+
+      <!-- idle: 공유 버튼 (오렌지 박스) -->
+      <button class="btn btn-primary" id="shareBtn" type="button" onclick="startShare()">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+        공유 링크 생성 (공개·7일)
+      </button>
+
+      <!-- busy: 진행 (idle/done에선 data-state CSS로 숨김) -->
+      <div class="share-status">
+        <div class="status-line" role="status">
+          <svg class="ic ic-sm spin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>
+          업로드 중…
+        </div>
+        <div class="stitch-bar" id="stitchBar"></div>
+      </div>
+
+      <!-- done: 결과 — 오렌지 발행 인장이 처음으로 색을 띤다 -->
+      <div class="share-result">
+        <div class="published">
+          <svg class="seal-stamp" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><use href="#publish-seal"/></svg>
+          <div class="published-text">
+            <div class="pt-title">발행되었습니다</div>
+            <div class="pt-sub">공개 · 7일간 유효</div>
+          </div>
+        </div>
+        <div class="link-box">
+          <svg class="ic ic-sm chain" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>
+          <code class="tnum">snapctx.app/s/7Qk2-aR9</code>
+          <button class="icon-btn" type="button" style="width:30px;height:30px" aria-label="링크 복사" title="링크 복사">
+            <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 컨텍스트 토글 — 항상 노출 -->
+      <div class="toggle-row">
+        <div class="toggle-text">
+          <div class="tt-title">컨텍스트 포함</div>
+          <div class="tt-sub">소스 주소·핀 메모</div>
+        </div>
+        <label class="switch" title="기본 꺼짐">
+          <input type="checkbox" aria-label="컨텍스트 포함 (소스 주소·핀 메모)" />
+          <span class="track" aria-hidden="true"></span>
+        </label>
+      </div>
+    </section>
+
+    <hr class="stitch" aria-hidden="true" />
+
+    <!-- ============ 伍 (05) 캡처 기록 ============ -->
+    <section aria-labelledby="sec-hist">
+      <div class="sec-head">
+        <span class="sec-no slab" aria-hidden="true">05</span>
+        <div class="sec-titles">
+          <span class="eyebrow">기록</span>
+          <h2 class="sec-title" id="sec-hist">캡처 기록</h2>
+        </div>
+      </div>
+
+      <div class="hist-head">
+        <span class="lbl" style="margin-bottom:0">최근 3건</span>
+        <button class="danger-link" type="button">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6"/></svg>
+          캡처 기록 모두 삭제
+        </button>
+      </div>
+
+      <div class="hist-list">
+        <!-- 행1 — 대시보드/브라우저 본문 -->
+        <div class="hist-row">
+          <span class="thumb">
+            <svg viewBox="0 0 44 34" aria-hidden="true">
+              <rect width="44" height="34" fill="#2c2824"/>
+              <rect x="0" y="0" width="44" height="6" fill="#3a352f"/>
+              <circle cx="4" cy="3" r="1.4" fill="#C24A0E"/><circle cx="9" cy="3" r="1.4" fill="#6b6157"/>
+              <rect x="4" y="10" width="20" height="3" rx="1.5" fill="#d6cfc1"/>
+              <rect x="4" y="16" width="36" height="2" rx="1" fill="#7c7367"/>
+              <rect x="4" y="20" width="36" height="2" rx="1" fill="#7c7367"/>
+              <rect x="4" y="24" width="24" height="2" rx="1" fill="#5f574c"/>
+              <rect x="4" y="28" width="14" height="4" rx="1.5" fill="#C24A0E"/>
+            </svg>
+          </span>
+          <div class="hist-text">
+            <div class="hist-title">예시 페이지 제목 — 길면 말줄임</div>
+            <div class="hist-meta tnum">06.04 14:32 · 영역 · 핀 3</div>
+          </div>
+          <button class="row-del" type="button" aria-label="캡처 삭제" title="캡처 삭제">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+          </button>
+        </div>
+
+        <!-- 행2 — 디자인 토큰 스와치 -->
+        <div class="hist-row">
+          <span class="thumb">
+            <svg viewBox="0 0 44 34" aria-hidden="true">
+              <rect width="44" height="34" fill="#322d26"/>
+              <rect x="5" y="5" width="15" height="10" rx="1.5" fill="#F37021"/>
+              <rect x="24" y="5" width="15" height="10" rx="1.5" fill="#D85E14"/>
+              <rect x="5" y="19" width="15" height="10" rx="1.5" fill="#cabf9f"/>
+              <rect x="24" y="19" width="15" height="10" rx="1.5" fill="#6b6157"/>
+            </svg>
+          </span>
+          <div class="hist-text">
+            <div class="hist-title">디자인 시스템 토큰 점검 화면</div>
+            <div class="hist-meta tnum">06.04 11:08 · 요소 · 핀 1</div>
+          </div>
+          <button class="row-del" type="button" aria-label="캡처 삭제" title="캡처 삭제">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+          </button>
+        </div>
+
+        <!-- 행3 — 로그인 폼/에러 -->
+        <div class="hist-row">
+          <span class="thumb">
+            <svg viewBox="0 0 44 34" aria-hidden="true">
+              <rect width="44" height="34" fill="#262420"/>
+              <rect x="7" y="7" width="30" height="6" rx="1.5" fill="none" stroke="#5f574c" stroke-width="1"/>
+              <rect x="7" y="16" width="30" height="6" rx="1.5" fill="none" stroke="#C24A0E" stroke-width="1.2"/>
+              <circle cx="40" cy="19" r="1.6" fill="#C24A0E"/>
+              <rect x="7" y="25" width="30" height="5" rx="1.5" fill="#1A1714"/>
+              <rect x="11" y="27" width="18" height="1.6" rx=".8" fill="#d6cfc1"/>
+            </svg>
+          </span>
+          <div class="hist-text">
+            <div class="hist-title">로그인 폼 버그 재현 캡처</div>
+            <div class="hist-meta tnum">06.03 19:47 · 전체 · 핀 0</div>
+          </div>
+          <button class="row-del" type="button" aria-label="캡처 삭제" title="캡처 삭제">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 콜로폰 — Chaîne d'ancre 시그니처로 닫음 -->
+      <div class="colophon">
+        <div class="chain-rule" aria-hidden="true">
+          <svg viewBox="0 0 84 14" preserveAspectRatio="xMidYMid meet" width="84" height="11">
+            <use href="#chain-link" x="0"/><use href="#chain-link" x="28"/><use href="#chain-link" x="56"/>
+          </svg>
+        </div>
+        <p>SnapContext · Atelier 0.1.3</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var share = document.getElementById('share');
+  var bar   = document.getElementById('stitchBar');
+  var timers = [];
+  function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+
+  window.startShare = function(){
+    clearTimers();
+    if(reduce){ share.setAttribute('data-state','done'); return; }
+
+    // busy 진입: 인라인 --progress 비움 → CSS --progress-init(34%)로 의미 있게 시작
+    bar.style.removeProperty('--progress');
+    share.setAttribute('data-state','busy');
+    // requestAnimationFrame 2회 후 92%
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        bar.style.setProperty('--progress','92%');
+      });
+    });
+    // 760ms 후 100%
+    timers.push(setTimeout(function(){
+      bar.style.setProperty('--progress','100%');
+    }, 760));
+    // 100% 도달 240ms 후 done (오렌지 인장 등장)
+    timers.push(setTimeout(function(){
+      share.setAttribute('data-state','done');
+    }, 1000));
+  };
+})();
+</script>
+</body>
+</html>
