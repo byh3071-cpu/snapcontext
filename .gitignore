@@ -25,3 +25,15 @@ snapcontext-*.zip
 node_modules/
 dist/
 *.tsbuildinfo
+
+# Serena 툴 캐시 (.claude/ 와 동일 성격 — 추적 제외)
+.serena/
+
+# vhk 로컬 백업본 (context.md.local-bak 등)
+*.local-bak
+
+# 내부 디자인 탐색 (타사 브랜드 레퍼런스·실명 포함 — 공개 배포 제외, 로컬 보존)
+docs/ui-audit/hermes/
+
+# vhk 세션 핸드오프 (로컬 절대경로·내부 맥락 포함 — 공개 제외, 로컬 보존)
+.vhk/handoff-*.md
