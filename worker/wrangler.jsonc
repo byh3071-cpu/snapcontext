@@ -3,7 +3,18 @@
   "name": "snapcontext-worker",
   "main": "src/index.ts",
   "compatibility_date": "2025-05-01",
+  // agents SDK createMcpHandler — nodejs_compat 필요 여부는 wrangler dev로 확인 후 반영
+  "compatibility_flags": ["nodejs_compat"],
   "r2_buckets": [
     { "binding": "BUCKET", "bucket_name": "snapcontext-uploads" }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "snapcontext-captures",
+      // Phase 4 사람 게이트: wrangler d1 create snapcontext-captures 후 실제 id로 교체
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
   ]
 }
