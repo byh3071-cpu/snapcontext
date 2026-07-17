@@ -1,17 +1,18 @@
 {
   "schemaVersion": 1,
-  "objective": "사이드패널/오버레이 UI 리파인 (토큰화·일관성·디테일, 다크 브랜드 유지·정돈)",
+  "objective": "0.3.0 트랙 B — Worker 원격 MCP 서버 (Phase 1: /mcp 라우트 + snap_history/snap_pack read-only, D1 인덱스+backfill)",
   "scope": [
-    "src/sidepanel/**",
-    "src/content/**",
-    "docs/ui-audit/**"
+    "worker/**",
+    "docs/**",
+    "scripts/**",
+    ".vhk/mission.json"
   ],
   "forbidden": [
-    "src/storage/**",
-    "src/background/**",
-    "src/notion/**",
-    "**/*.env"
+    "src/**",
+    "worker/node_modules/**",
+    "**/*.env",
+    "docs/ui-audit/**"
   ],
   "createdAt": "2026-06-04T13:32:15.559Z",
-  "updatedAt": "2026-06-04T13:32:15.559Z"
+  "updatedAt": "2026-07-18T00:00:00.000Z"
 }

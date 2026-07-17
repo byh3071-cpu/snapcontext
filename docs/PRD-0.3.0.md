@@ -37,9 +37,9 @@ AI 에이전트(Claude Code·Cursor)가 SnapContext가 캡처한 Context Pack을
 | # | 항목 | 결정 | 배제/보류 |
 |---|------|------|-----------|
 | 1 | Transport | Cloudflare Worker **원격(HTTP) MCP 서버** | Native Messaging 로컬앱 기각 |
-| 2 | Storage | **R2(기존) + 경량 JSON 인덱스** | Turso 보류 |
+| 2 | Storage | **R2(기존, blob) + D1 메타데이터 인덱스** — 질문 D 확정([ADR-009](./adr/009-mcp-index-storage-d1.md)). 초안의 "경량 JSON 인덱스"는 자리표시자였음 | Turso 보류 · index.json 폐기 |
 | 3 | 인증/과금 | **보류** — 단일 개발자용 최소 토큰만 | Pro 게이팅·OAuth 풀 인증 배제 |
-| 4 | MCP 툴 | 4종 계획: `snap_capture`·`snap_analyze`·`snap_history`·`snap_pack` | `snap_capture`는 조건부(아래) |
+| 4 | MCP 툴 | 0.3.0 = `snap_history`·`snap_pack`(MVP 코어) + `snap_analyze`(Phase 3) | **`snap_capture` 드랍 확정**(질문 C, 아래) — 0.4+ 재검토 |
 | 5 | DoD | Claude Code/Cursor에서 `snap_history`·`snap_pack` 실호출 → Context Pack JSON 반환 | — |
 
 ## MCP 툴 4종 스펙
@@ -51,7 +51,7 @@ AI 에이전트(Claude Code·Cursor)가 SnapContext가 캡처한 Context Pack을
 - **목적**: 저장된 캡처를 최신순으로 나열해 에이전트가 무엇이 있는지 파악.
 - **입력**: `limit`(선택, 기본값 Phase 0 확정), `url`/`tag` 필터(선택), `cursor`(선택, 페이지네이션).
 - **출력**: 인덱스 엔트리 배열 — `id`, `createdAt`, `url`, `title`, `captureType`, `pinCount`(데이터 모델의 인덱스 스키마와 일치).
-- **비고**: 인덱스를 읽는다(R2 `list` vs KV vs D1 = 질문 D). read-only, 부작용 없음.
+- **비고**: D1 `captures` 테이블을 읽는다(질문 D 확정 — [ADR-009](./adr/009-mcp-index-storage-d1.md)). read-only, 부작용 없음.
 
 ### snap_pack — 단일 Context Pack 조회 (MVP 코어)
 
@@ -65,12 +65,10 @@ AI 에이전트(Claude Code·Cursor)가 SnapContext가 캡처한 Context Pack을
 - **목적**: 특정 캡처를 요약/이슈 추출 형태로 가공해 에이전트가 바로 쓰게. **MVP 코어(`snap_history`+`snap_pack`)와 분리 — DoD 범위 밖.**
 - **스펙**: `snap_pack` 위에서 요약/이슈 추출. 입력(`id` + mode 등)·분석 위치(Worker vs 클라이언트 에이전트)·출력 시그니처는 Phase 3 확정.
 
-### snap_capture — 지금 이 탭 캡처 (조건부 — Phase 0 판단)
+### snap_capture — 지금 이 탭 캡처 (**0.3.0 드랍 확정** — Phase 0 판단 완료)
 
-- **목적**: 에이전트 요청 즉시 사용자 브라우저의 현재 탭을 캡처.
-- **구조적 문제**: 원격 Worker는 사용자 브라우저 확장을 직접 제어할 수 없다. "지금 캡처"를 실현하려면 원격 서버 → 클라이언트(확장) 트리거 패턴(long-polling / job queue / WebSocket / Durable Objects 등)이 필요 → 복잡도·타당성 미검증(질문 C).
-- **판단**: **Phase 0 리서치 결과에 따라 0.3.0 MVP 포함 또는 0.4+ 드랍**. 기본 방향은 "이미 저장된 팩 읽기(history·pack)에 집중, capture는 근거 확보 전까지 배제".
-- **비고**: 이 툴만 read-only가 아니다(부작용 = 캡처 생성). MVP 확정 전까지 시그니처 미정.
+- **판단(2026-07-18)**: **0.3.0에서 드랍, 0.4+ 재검토.** 근거: 원격→MV3 확장 트리거 패턴 전수 비교(폴링 ≥30초 바닥 / SSE 공식 가이드 부재 / WS+DO keepalive·과금 / Web Push 권한 경고·FCM 관리) 결과 어느 것도 MVP 비용에 안 맞고, **원격 MCP→확장 캡처 E2E 공개 사례 미발견**. 상세: `docs/research/phase0-capture-trigger.md`.
+- **재검토 조건(0.4+)**: (a) Web Push silent + subscription 수명 PoC, (b) 비동기 캡처 결과를 ≤N초 내 반환하는 MCP 프로토콜 확정, (c) 탭 선택·오프라인 에러 시맨틱 ADR.
 
 ## 아키텍처
 
@@ -105,7 +103,7 @@ AI 에이전트(Claude Code·Cursor)가 SnapContext가 캡처한 Context Pack을
 |----|------|------|
 | `{id}` | 캡처 PNG (`image/png`) | 현행(v0.2). `id = crypto.randomUUID()` — R2 오브젝트 키. 팩 내부 id(`snap_{ts}_{rand}`)와 별개 |
 | `{id}.json` | 축약 `SharedContext`(아래) | 현행(v0.2) |
-| `index.json` | 캡처 목록 경량 인덱스(아래) | **신규(0.3.0)** — 저장소는 질문 D에서 확정 |
+| (인덱스) | ~~`index.json`~~ → **D1 `captures` 테이블**(아래) | **신규(0.3.0)** — 질문 D 확정([ADR-009](./adr/009-mcp-index-storage-d1.md)). R2에는 인덱스 객체 없음 |
 
 > 주의: 현행 `{id}.json`은 공유용 **화이트리스트 축약본**이라 원본 Context Pack보다 필드가 적다 — `imageBase64`·핀 `x`/`y`·`userNote`·`tags`·`userAgent` 없음, `pins`는 `{id, memo}`만. `snap_pack`이 원본 스펙 수준을 반환하려면 Phase 2 수집 파이프라인에서 저장 범위를 넓혀야 한다.
 
@@ -116,40 +114,38 @@ sourceUrl · sourceTitle · captureType · capturedAt
 viewport{width,height} · pins[{id, memo}]
 ```
 
-### 인덱스 스키마 초안 (index.json — Phase 0/1 확정 대상)
+### 인덱스 스키마 (D1 `captures` — 질문 D 확정, ADR-009)
 
-```
-{
-  "version": 1,
-  "entries": [
-    {
-      "id": "…",            // R2 키 = 캡처 식별자
-      "createdAt": "ISO",   // 정렬 키
-      "url": "…",           // source.url
-      "title": "…",         // source.title
-      "captureType": "visible|element|document|full-page",
-      "pinCount": 0
-    }
-  ]
-}
+```sql
+CREATE TABLE captures (
+  id TEXT PRIMARY KEY,          -- R2 오브젝트 키 = 캡처 식별자
+  created_at TEXT NOT NULL,     -- 정렬 키
+  url TEXT NOT NULL,
+  title TEXT NOT NULL,
+  capture_type TEXT NOT NULL,   -- visible|element|document|full-page
+  pin_count INTEGER NOT NULL,
+  expires_at TEXT NOT NULL      -- R2 7일 lifecycle과 정합용
+);
+CREATE INDEX idx_captures_created ON captures(created_at DESC);
 ```
 
-- `snap_history` 출력 = `entries` 그대로. `snap_pack`은 `id`로 R2 원본을 가져온다.
-- 인덱스를 별도 `index.json`으로 둘지, R2 `list()`로 대체할지, KV/D1로 뺄지 = 질문 D. 초안은 최소 형태만 잡아둔 것.
-- **질문 D 결정 ↔ DoD #1 시연 연결**: `index.json`을 택할 경우 Phase 1 시연을 위해 기존 R2 객체를 1회 **백필**해야 한다(R2 `list()` 직접 열거를 택하면 백필 불요).
+- `snap_history` 출력 = 위 행들(최신순). `snap_pack`은 `id`로 R2 원본을 가져온다.
+- 단일 `index.json` read-modify-write는 lost update 때문에 폐기(ADR-009). KV는 eventual consistency, R2 list는 사전순·필터 불가로 배제.
+- **DoD #1 시연 연결**: 기존 R2 `{id}.json` 객체를 `list()`로 열거해 D1에 1회 **백필**하는 스크립트를 Phase 1에 포함.
+- 조회 시 `expires_at` 필터 + 필요 시 R2 `head` 실재 확인(리스크 표 정합 항목).
 
-## 미해결 질문 A~F (Phase 0에서 답 확정)
+## 질문 A~F — 결론 확정 (Phase 0 완료, 2026-07-18)
 
-> 아래는 리서치 **브리프**의 질문 목록이며 답은 아직 없다. 근거(출처·날짜) 확보 후 Phase 0에서 결론을 고정하고 ADR로 남긴다. 여기서 답을 지어내지 않는다.
+> 리서치 3건(`docs/research/phase0-*.md`, 병렬 워커 Claude·Cursor·Codex) + 지휘자 교차 검증(핵심 근거 2건 공식 문서 재확인)으로 확정.
 
-| ID | 우선 | 질문 요지 | 결론 상태 |
-|----|------|-----------|-----------|
-| A | P0 | 2025–2026 원격 MCP 표준 transport(stdio/SSE/Streamable HTTP 중 권장·폐기)와 Cloudflare 공식 원격 MCP 스택(`agents` SDK `McpAgent`·`workers-mcp`·`workers-oauth-provider` 중 무엇). Worker에서 MCP 서버 띄우는 최소 셋업 | Phase 0 |
-| B | P0 | Claude Desktop/Code·Cursor가 원격 HTTP MCP에 네이티브 연결 가능한가, `mcp-remote` 브리지 필요한가 + 클라이언트별 실제 등록 config | Phase 0 (DoD 직결) |
-| C | P0 | 원격 MCP 서버가 클라이언트(확장) 액션을 트리거하는 패턴 존재 여부·복잡도 → `snap_capture` MVP 포함/드랍 판단 | Phase 0 |
-| D | P1 | 메타데이터 인덱스: R2(objects+list) vs KV vs D1 — 프리티어·정합성·조회 제약 비교 후 택1 | Phase 0 |
-| E | P1 | 확장→R2/인덱스 수집 경로(직접 PUT presigned/aws4fetch vs Worker 엔드포인트 경유) + "내 데이터만" 반환용 최소 인증(bearer 등) | Phase 0/2 |
-| F | P2 | Workers 프리티어 계정당 한도(예: 100K req/day)·초과 과금 구조 현재 수치 확인(출처·날짜) | Phase 0 |
+| ID | 질문 요지 | **결론** | 근거 |
+|----|-----------|----------|------|
+| A | 원격 MCP 표준 transport·CF 스택 | **Streamable HTTP 단일 `/mcp`** (SSE 폐기) + **`agents` SDK `createMcpHandler`**(무상태·DO 불필요). `workers-mcp` 폐기됨 | [ADR-008](./adr/008-mcp-remote-transport.md) |
+| B | 클라이언트 네이티브 연결 | Claude Code·Cursor 모두 **네이티브 연결, `mcp-remote` 불필요**. Claude `.mcp.json`은 `type: "http"` 필수 | ADR-008 · research R1 |
+| C | 원격→확장 트리거 → snap_capture | **드랍 확정** — E2E 공개 사례 미발견, 전 패턴 MVP 비용 초과 | research R2 (`phase0-capture-trigger.md`) |
+| D | 메타데이터 인덱스 저장소 | **D1** (index.json·KV·R2 list 배제) | [ADR-009](./adr/009-mcp-index-storage-d1.md) |
+| E | 수집 경로 + 최소 인증 | **기존 `/upload` 확장 + bearer**(secret·timingSafeEqual·fail closed). presigned PUT 배제 | [ADR-010](./adr/010-mcp-auth-ingestion.md) |
+| F | Workers 프리티어 한도 | Workers **100K req/day hard stop**(Error 1027)·KV/D1 일한도 초과=실패·**R2만 초과 과금형** | research R3 (`phase0-storage-auth-limits.md`) |
 
 ## DoD (완료 판정)
 
