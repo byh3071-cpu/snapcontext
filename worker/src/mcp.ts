@@ -1,5 +1,11 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
+import {
+  ANALYZE_MODES,
+  DEFAULT_ANALYZE_MODE,
+  snapAnalyze,
+  SnapAnalyzeError
+} from './analyze'
 import { listCaptures, DEFAULT_HISTORY_LIMIT } from './history'
 import { getSnapPack, SnapPackError } from './pack'
 import type { Env } from './env'
@@ -71,6 +77,47 @@ export function createSnapMcpServer(env: Env, requestUrl: URL): McpServer {
       } catch (err) {
         const message =
           err instanceof SnapPackError
+            ? err.message
+            : err instanceof Error
+              ? err.message
+              : String(err)
+        return {
+          isError: true,
+          content: [{ type: 'text', text: message }]
+        }
+      }
+    }
+  )
+
+  server.registerTool(
+    'snap_analyze',
+    {
+      description:
+        'Build a markdown digest from a capture (meta + pins + mode instructions + image URL). Read-only; no LLM call on the worker — the client agent performs analysis.',
+      inputSchema: {
+        id: z.string().min(1).describe('Capture id (R2 object key)'),
+        mode: z
+          .string()
+          .optional()
+          .describe(
+            `Analysis mode allowlist: ${ANALYZE_MODES.join('|')} (default ${DEFAULT_ANALYZE_MODE})`
+          )
+      }
+    },
+    async ({ id, mode }) => {
+      try {
+        const digest = await snapAnalyze(env.BUCKET, {
+          id,
+          origin: requestUrl.origin,
+          now: Date.now(),
+          mode
+        })
+        return {
+          content: [{ type: 'text', text: digest }]
+        }
+      } catch (err) {
+        const message =
+          err instanceof SnapAnalyzeError || err instanceof SnapPackError
             ? err.message
             : err instanceof Error
               ? err.message
