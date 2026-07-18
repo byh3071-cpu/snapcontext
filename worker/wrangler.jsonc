@@ -12,8 +12,8 @@
     {
       "binding": "DB",
       "database_name": "snapcontext-captures",
-      // Phase 4 사람 게이트: wrangler d1 create snapcontext-captures 후 실제 id로 교체
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // 실 DB (2026-07-18 생성, APAC)
+      "database_id": "4fb3b111-5594-42fe-8bf4-256a356ce73e",
       "migrations_dir": "migrations"
     }
   ]

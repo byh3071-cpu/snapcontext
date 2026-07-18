@@ -6,6 +6,17 @@ tags: [changelog]
 
 # Changelog
 
+## 0.3.0 — 2026-07-18
+
+### 원격 MCP 서버 — 에이전트의 브라우저 지각 계층
+
+- **`/mcp` 원격 MCP 서버:** 기존 Cloudflare Worker에 Streamable HTTP 단일 엔드포인트 추가(`agents` SDK `createMcpHandler`, 무상태·DO 불필요, 요청당 새 `McpServer` — SDK 1.26.0 응답 누출 수정 준수). Claude Code·Cursor에서 네이티브 연결(`mcp-remote` 불필요).
+- **MCP 툴 3종:** `snap_history`(D1 인덱스 최신순 목록) · `snap_pack`(Context Pack JSON, R2 `head()` 실재 확인) · `snap_analyze`(분석용 마크다운 다이제스트 — Worker LLM 미호출, mode allowlist 검증). 만료·없는 id·orphan은 명시적 에러(조용한 빈 반환 없음).
+- **수집 파이프라인:** `/upload` 성공 시 D1 `captures` INSERT(공유 업로드분만 — 동의 모델 불변, 자동 전송 없음). D1 실패 시 R2 정리 후 명시적 500. `expires_at`은 서버 시각+7일.
+- **보안:** `/mcp` bearer 인증(SHA-256 + `timingSafeEqual`, secret 미설정 = 500 fail-closed) + Origin 검증(OPTIONS 포함 403). D1엔 화이트리스트 파생 7컬럼만 — 핀 좌표·노트 미저장, `/s`·`/i` 응답 불변. `snap_capture`는 근거 리서치 후 0.4+ 드랍.
+- **인프라:** D1 `snapcontext-captures` 생성(APAC)·마이그레이션·`wrangler deploy`(2026-07-18, 버전 4a91cc35). backfill 스크립트 동봉(기존 R2 데이터 0건 — 7일 lifecycle — 실행 불요). 확장(src/**) 코드 변경 0.
+- **품질:** ADR 008~010, 리서치 노트 3건(질문 A~F 출처 확정), 멀티벤더 적대 검증 4라운드(codex R1 FAIL→PASS·claude P2/P3 PASS), worker vitest 83개, 배포본 E2E 스모크(negative 포함) PASS. PR #13·#14·#15.
+
 ## 0.2.0 — 2026-06-06
 
 ### 익명 공유 기능 정식 마감

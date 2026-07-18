@@ -40,3 +40,12 @@ docs/ui-audit/hermes/
 
 # swiss 외부 디자인 레퍼런스 이미지 (타사 캡처 — 공개 배포 제외, 로컬 보존)
 docs/ui-audit/swiss/refs/
+
+# 로컬 시크릿 (커밋 절대 금지)
+.secret-*.txt
+.dev.vars
+
+# Phase 4 1회용 로컬 스크립트 잔재 (정식본은 scripts/e2e-smoke.ps1)
+worker/release-gates.ps1
+worker/e2e-smoke.ps1
+worker/e2e-results.txt
