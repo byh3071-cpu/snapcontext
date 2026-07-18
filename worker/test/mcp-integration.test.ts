@@ -162,6 +162,7 @@ describe('handleMcpRequest 통합 (MAJOR-4 fallback)', () => {
     )
     expect(JSON.stringify(listed.json)).toContain('snap_history')
     expect(JSON.stringify(listed.json)).toContain('snap_pack')
+    expect(JSON.stringify(listed.json)).toContain('snap_analyze')
 
     const hist = await mcpCall(
       env,
@@ -191,6 +192,24 @@ describe('handleMcpRequest 통합 (MAJOR-4 fallback)', () => {
     const packStr = JSON.stringify(pack.json)
     expect(packStr).toContain('/i/p1')
     expect(packStr).not.toMatch(/"isError"\s*:\s*true/)
+
+    const analyze = await mcpCall(
+      env,
+      {
+        jsonrpc: '2.0',
+        id: 5,
+        method: 'tools/call',
+        params: {
+          name: 'snap_analyze',
+          arguments: { id: 'p1', mode: 'bug-report' }
+        }
+      },
+      init.sessionId
+    )
+    const analyzeStr = JSON.stringify(analyze.json)
+    expect(analyzeStr).toContain('/i/p1')
+    expect(analyzeStr).toMatch(/원인 추정|버그/)
+    expect(analyzeStr).not.toMatch(/"isError"\s*:\s*true/)
   })
 
   it('없는 id snap_pack → isError 응답', async () => {
@@ -216,6 +235,104 @@ describe('handleMcpRequest 통합 (MAJOR-4 fallback)', () => {
       init.sessionId
     )
     expect(JSON.stringify(pack.json)).toMatch(/isError|not found|NOT_FOUND|Capture/i)
+  })
+
+  it('tools/call snap_analyze — 유효 id + mode', async () => {
+    const env = makeEnv(
+      new Map([
+        ['p1.json', { text: ctxJson, uploaded: new Date() }],
+        ['p1', { uploaded: new Date() }]
+      ])
+    )
+    const init = await mcpCall(env, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'test', version: '1.0.0' }
+      }
+    })
+    const refactor = await mcpCall(
+      env,
+      {
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'tools/call',
+        params: {
+          name: 'snap_analyze',
+          arguments: { id: 'p1', mode: 'refactor' }
+        }
+      },
+      init.sessionId
+    )
+    const body = JSON.stringify(refactor.json)
+    expect(body).toMatch(/리팩토링|개선/)
+    expect(body).toContain('/i/p1')
+    expect(body).not.toMatch(/"isError"\s*:\s*true/)
+  })
+
+  it('tools/call snap_analyze — allowlist 위반 mode → isError', async () => {
+    const env = makeEnv(
+      new Map([
+        ['p1.json', { text: ctxJson, uploaded: new Date() }],
+        ['p1', { uploaded: new Date() }]
+      ])
+    )
+    const init = await mcpCall(env, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'test', version: '1.0.0' }
+      }
+    })
+    const bad = await mcpCall(
+      env,
+      {
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'tools/call',
+        params: {
+          name: 'snap_analyze',
+          arguments: { id: 'p1', mode: 'summary' }
+        }
+      },
+      init.sessionId
+    )
+    const body = JSON.stringify(bad.json)
+    expect(body).toMatch(/isError|Invalid mode|allowlist/i)
+  })
+
+  it('tools/call snap_analyze — 없는 id → isError', async () => {
+    const env = makeEnv(new Map())
+    const init = await mcpCall(env, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'test', version: '1.0.0' }
+      }
+    })
+    const missing = await mcpCall(
+      env,
+      {
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'tools/call',
+        params: {
+          name: 'snap_analyze',
+          arguments: { id: 'missing' }
+        }
+      },
+      init.sessionId
+    )
+    expect(JSON.stringify(missing.json)).toMatch(/isError|not found|NOT_FOUND|Capture/i)
   })
 
   it('2연속 요청마다 새 McpServer 인스턴스', async () => {
