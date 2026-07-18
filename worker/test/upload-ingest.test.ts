@@ -38,6 +38,7 @@ interface CaptureInsert {
 
 function makeUploadEnv(opts?: {
   d1Fail?: boolean
+  cleanupFail?: boolean
   now?: number
 }): {
   env: Env
@@ -83,6 +84,9 @@ function makeUploadEnv(opts?: {
         }
       },
       async delete(key: string) {
+        if (opts?.cleanupFail) {
+          throw new Error('R2 delete failed')
+        }
         deleted.push(key)
         objects.delete(key)
       }
@@ -209,6 +213,45 @@ describe('POST /upload — D1 captures INSERT (Phase 2)', () => {
       ])
     )
     expect(objects.size).toBe(0)
+    vi.restoreAllMocks()
+  })
+
+  it('D1 실패 후 R2 cleanup 자체 실패해도 명시적 500 유지 (가짜 성공 금지)', async () => {
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue('44444444-4444-4444-8444-444444444444')
+    const { env, objects } = makeUploadEnv({ d1Fail: true, cleanupFail: true })
+    const res = await postUpload(env, {
+      image: new Blob([PNG], { type: 'image/png' }),
+      context: JSON.stringify(SHARED_CTX)
+    })
+
+    expect(res.status).toBe(500)
+    const text = await res.text()
+    expect(text.length).toBeGreaterThan(0)
+    // cleanup 실패 → orphan 잔존 가능. 응답은 여전히 500 (allSettled best-effort)
+    expect(objects.size).toBeGreaterThan(0)
+    vi.restoreAllMocks()
+  })
+
+  it('context 존재 + JSON 파싱 실패: D1 스킵·200 유지 + console.warn 관측', async () => {
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue('55555555-5555-4555-8555-555555555555')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const { env, objects, inserts } = makeUploadEnv()
+    const res = await postUpload(env, {
+      image: new Blob([PNG], { type: 'image/png' }),
+      context: '{not-valid-json'
+    })
+
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { id: string; url: string }
+    expect(body.id).toBe('55555555-5555-4555-8555-555555555555')
+    expect(objects.has(body.id)).toBe(true)
+    expect(objects.has(`${body.id}.json`)).toBe(true)
+    expect(inserts).toHaveLength(0)
+    expect(warn).toHaveBeenCalledWith(
+      '[upload] context present but JSON parse failed; D1 index skipped',
+      { id: body.id }
+    )
+    warn.mockRestore()
     vi.restoreAllMocks()
   })
 })
