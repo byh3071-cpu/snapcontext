@@ -40,7 +40,7 @@ tags: [d1, r2, index, storage, v0.3.0]
 - `snap_history` = `SELECT ... ORDER BY created_at DESC LIMIT ?` (+ 향후 url/type 필터 자연 확장).
 - R2↔D1 cross-service 트랜잭션은 없음 → `id`를 idempotency key로 쓰고, R2 7일 lifecycle 삭제가 D1 행을 지우지 않으므로 조회 시 `expires_at` 필터 + 필요 시 R2 `head` 실재 확인(PRD 리스크 표와 일치). orphan 정리 정책은 Phase 2에서 확정.
 - 무료 한도 여유: D1 Free 5M reads/100K writes/day·5GB — 개인 캡처량 대비 충분(질문 F 수치).
-- wrangler에 D1 바인딩 + 마이그레이션 추가 필요. **D1 DB 생성(`wrangler d1 create`)은 계정 리소스 생성 — 사람 게이트 후보**(비용 0이지만 계정 상태 변경이므로 Phase 1 착수 시 1회 확인).
+- wrangler에 D1 바인딩 + 마이그레이션 추가 필요. **실 D1 DB 생성(`wrangler d1 create`)은 Phase 4 사람 게이트로 확정**(2026-07-18 개정 — Phase 1~2는 wrangler 로컬 시뮬레이션 D1로 완결, placeholder `database_id` 사용. 배포 직전 실 생성 → backfill 실행 순).
 
 ## 출처
 
