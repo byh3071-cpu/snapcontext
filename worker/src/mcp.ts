@@ -4,7 +4,15 @@ import { listCaptures, DEFAULT_HISTORY_LIMIT } from './history'
 import { getSnapPack, SnapPackError } from './pack'
 import type { Env } from './env'
 
+/** 테스트에서 인스턴스 생성 횟수 검증용 (요청마다 신규) */
+export let mcpServerCreateCount = 0
+
+export function resetMcpServerCreateCount(): void {
+  mcpServerCreateCount = 0
+}
+
 export function createSnapMcpServer(env: Env, requestUrl: URL): McpServer {
+  mcpServerCreateCount += 1
   const server = new McpServer({
     name: 'snapcontext',
     version: '0.3.0'

@@ -9,15 +9,15 @@
  *   CF_ACCOUNT_ID, CF_API_TOKEN (R2+D1 권한)
  *   R2_BUCKET=snapcontext-uploads
  *   D1_DATABASE_NAME=snapcontext-captures
- *
- * 이 스크립트는 wrangler CLI를 호출하지 않고 HTTP API를 쓴다.
- * 로컬 단위 로직은 scripts/lib/backfill-d1.mjs — worker/test/backfill-d1.test.ts 참조.
  */
 
 import {
   collectBackfillRows,
   isContextJsonKey,
-  captureIdFromKey
+  captureIdFromKey,
+  parseCfEnvelope,
+  listAllR2ObjectsFromPages,
+  insertRowsWithCheckpoint
 } from './lib/backfill-d1.mjs'
 
 const ACCOUNT_ID = process.env.CF_ACCOUNT_ID
@@ -33,8 +33,9 @@ function requireEnv() {
   }
 }
 
-async function cf(path, init = {}) {
-  const res = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
+/** Cloudflare API — result + result_info envelope 보존 (BLOCKER-1) */
+export async function cf(path, init = {}, fetchImpl = fetch) {
+  const res = await fetchImpl(`https://api.cloudflare.com/client/v4${path}`, {
     ...init,
     headers: {
       Authorization: `Bearer ${API_TOKEN}`,
@@ -46,28 +47,18 @@ async function cf(path, init = {}) {
   if (!res.ok || body.success === false) {
     throw new Error(`CF API ${path}: ${JSON.stringify(body.errors ?? body)}`)
   }
-  return body.result
+  return parseCfEnvelope(body)
 }
 
-async function listAllR2Keys() {
-  const keys = []
-  let cursor = undefined
-  for (;;) {
-    const q = new URLSearchParams({ per_page: '1000' })
-    if (cursor) q.set('cursor', cursor)
-    const result = await cf(
-      `/accounts/${ACCOUNT_ID}/r2/buckets/${BUCKET}/objects?${q}`
-    )
-    const objects = result?.objects ?? result ?? []
-    for (const o of objects) {
-      const key = typeof o === 'string' ? o : o.key
-      if (key) keys.push(key)
-    }
-    const next = result?.cursor
-    if (!next) break
-    cursor = next
-  }
-  return keys
+export async function listAllR2Objects(fetchPage) {
+  const doFetch =
+    fetchPage ??
+    (async (cursor) => {
+      const q = new URLSearchParams({ per_page: '1000' })
+      if (cursor) q.set('cursor', cursor)
+      return cf(`/accounts/${ACCOUNT_ID}/r2/buckets/${BUCKET}/objects?${q}`)
+    })
+  return listAllR2ObjectsFromPages(doFetch)
 }
 
 async function getR2Json(id) {
@@ -83,8 +74,8 @@ async function getR2Json(id) {
 }
 
 async function resolveD1Id() {
-  const list = await cf(`/accounts/${ACCOUNT_ID}/d1/database`)
-  const found = (list ?? []).find((d) => d.name === D1_NAME)
+  const { result } = await cf(`/accounts/${ACCOUNT_ID}/d1/database`)
+  const found = (result ?? []).find((d) => d.name === D1_NAME)
   if (!found) {
     throw new Error(
       `D1 database "${D1_NAME}" not found — create via wrangler d1 create (Phase 4 human gate)`
@@ -93,39 +84,35 @@ async function resolveD1Id() {
   return found.uuid
 }
 
-async function insertRows(d1Id, rows) {
-  let inserted = 0
-  for (const row of rows) {
-    const sql = `INSERT OR REPLACE INTO captures (id, created_at, url, title, capture_type, pin_count, expires_at)
+async function insertOneRow(d1Id, row) {
+  const sql = `INSERT OR REPLACE INTO captures (id, created_at, url, title, capture_type, pin_count, expires_at)
       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    await cf(`/accounts/${ACCOUNT_ID}/d1/database/${d1Id}/query`, {
-      method: 'POST',
-      body: JSON.stringify({
-        sql,
-        params: [
-          row.id,
-          row.created_at,
-          row.url,
-          row.title,
-          row.capture_type,
-          row.pin_count,
-          row.expires_at
-        ]
-      })
+  await cf(`/accounts/${ACCOUNT_ID}/d1/database/${d1Id}/query`, {
+    method: 'POST',
+    body: JSON.stringify({
+      sql,
+      params: [
+        row.id,
+        row.created_at,
+        row.url,
+        row.title,
+        row.capture_type,
+        row.pin_count,
+        row.expires_at
+      ]
     })
-    inserted += 1
-  }
-  return inserted
+  })
 }
 
 export async function runBackfill(deps = {}) {
   requireEnv()
-  const listKeys = deps.listKeys ?? listAllR2Keys
+  const listObjects = deps.listObjects ?? (() => listAllR2Objects())
   const getJson = deps.getJson ?? getR2Json
   const d1Id = deps.d1Id ?? (await resolveD1Id())
-  const rows = await collectBackfillRows({ listKeys, getJson })
-  const inserted = await (deps.insertRows ?? insertRows)(d1Id, rows)
-  return { scanned: rows.length, inserted }
+  const rows = await collectBackfillRows({ listObjects, getJson })
+  const insertOne =
+    deps.insertOne ?? ((row) => insertOneRow(d1Id, row))
+  return insertRowsWithCheckpoint(rows, insertOne)
 }
 
 async function main() {
@@ -143,8 +130,21 @@ const isDirect =
 if (isDirect) {
   main().catch((err) => {
     console.error(err instanceof Error ? err.message : err)
+    if (err && typeof err === 'object' && 'failedId' in err) {
+      console.error(
+        `checkpoint: inserted=${err.inserted} failedId=${err.failedId} scanned=${err.scanned}`
+      )
+      console.error('re-run: node scripts/backfill-d1.mjs')
+    }
     process.exit(1)
   })
 }
 
-export { isContextJsonKey, captureIdFromKey, collectBackfillRows }
+export {
+  isContextJsonKey,
+  captureIdFromKey,
+  collectBackfillRows,
+  parseCfEnvelope,
+  listAllR2ObjectsFromPages,
+  insertRowsWithCheckpoint
+}

@@ -22,12 +22,28 @@ export interface GetSnapPackOptions {
   now: number
 }
 
-/** snap_pack: R2 {id}.json 조회. 만료/없음은 명시적 에러 (조용한 빈 반환 금지) */
+/** snap_pack: 이미지 head() 실재 확인 후 {id}.json 조회. orphan/만료는 명시적 에러 */
 export async function getSnapPack(
   bucket: R2Bucket,
   opts: GetSnapPackOptions
 ): Promise<SnapPackResult> {
   const { id, origin, includeImage, now } = opts
+
+  let imageHead: R2Object | null
+  try {
+    imageHead = await bucket.head(id)
+  } catch (err) {
+    throw new SnapPackError(
+      'NOT_FOUND',
+      `Failed to head image ${id}: ${err instanceof Error ? err.message : String(err)}`
+    )
+  }
+  if (!imageHead) {
+    throw new SnapPackError('NOT_FOUND', `Capture image not found: ${id}`)
+  }
+  if (isExpired(imageHead.uploaded, now)) {
+    throw new SnapPackError('EXPIRED', `Capture expired: ${id}`)
+  }
 
   let obj: R2ObjectBody | null
   try {
@@ -40,11 +56,11 @@ export async function getSnapPack(
   }
 
   if (!obj) {
-    throw new SnapPackError('NOT_FOUND', `Capture not found: ${id}`)
+    throw new SnapPackError('NOT_FOUND', `Capture context not found: ${id}`)
   }
 
   if (isExpired(obj.uploaded, now)) {
-    throw new SnapPackError('EXPIRED', `Capture expired: ${id}`)
+    throw new SnapPackError('EXPIRED', `Capture context expired: ${id}`)
   }
 
   const raw = await obj.text()

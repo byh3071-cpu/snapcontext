@@ -55,14 +55,15 @@ export default {
   ): Promise<Response> {
     const url = new URL(req.url)
 
-    if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: CORS })
-    }
-
-    // MCP (Streamable HTTP) — ADR-008 / ADR-010
+    // MCP 분기 우선 — 전역 OPTIONS 보다 먼저 (MAJOR-1). Origin 불일치는 OPTIONS 포함 403
     if (url.pathname === '/mcp') {
       const originDenied = rejectInvalidOrigin(req)
       if (originDenied) return originDenied
+
+      if (req.method === 'OPTIONS') {
+        // preflight 는 Authorization 미포함 — Origin 통과 시에만 허용, bearer 는 실제 MCP 메서드에서
+        return new Response(null, { headers: CORS })
+      }
 
       const authDenied = await gateMcpBearer(req, env.SNAPCONTEXT_BEARER_TOKEN)
       if (authDenied) return authDenied
@@ -70,6 +71,10 @@ export default {
       // agents/mcp 는 cloudflare: 워커 모듈 — 게이트 통과 후에만 로드
       const { handleMcpRequest } = await import('./mcp-route')
       return handleMcpRequest(req, env, ctx)
+    }
+
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: CORS })
     }
 
     // 업로드: POST /upload (multipart/form-data: image 필수, context 선택)
