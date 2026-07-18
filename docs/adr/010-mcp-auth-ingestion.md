@@ -22,7 +22,7 @@ tags: [auth, bearer, upload, security, v0.3.0]
    - 256-bit 난수 토큰을 Worker secret(`SNAPCONTEXT_BEARER_TOKEN`)에 저장 — `wrangler secret put`은 **사람 게이트**.
    - 검증 = 헤더 전체·기대값 각각 SHA-256 digest 후 `crypto.subtle.timingSafeEqual()` 비교. 단순 `===`·길이 조기 반환 금지.
    - secret 미설정 = 500 **fail closed**. 불일치 = 401 + `WWW-Authenticate: Bearer`.
-   - 적용 라우트: `/upload`(Phase 2)·`/mcp`(snap_history·snap_pack, Phase 1). 기존 `/i/{id}`·`/s/{id}`는 **의도적 공유 링크로 무인증 유지** — "bearer 보유자만 조회" 정책의 명시적 예외.
+   - 적용 라우트: `/mcp`(snap_history·snap_pack, Phase 1 완료)·`/upload`(**Phase 4** — 아래 결과 절의 이연 근거 참조, 2026-07-18 개정). 기존 `/i/{id}`·`/s/{id}`는 **의도적 공유 링크로 무인증 유지** — "bearer 보유자만 조회" 정책의 명시적 예외.
 4. CORS: `chrome-extension://<id>` origin으로 좁히고 `Allow-Headers`에 `Authorization` 추가(Phase 2). CORS는 인증 수단이 아님 — bearer 검증은 항상 별도.
 5. 이 토큰은 **개인용 접근 게이트**이지 사용자 신원 증명이 아니다. 다중 사용자 전환 시 OAuth/Cloudflare Access + `owner_id` 매핑으로 교체(0.3.0 비목표).
 
