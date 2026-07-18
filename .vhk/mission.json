@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
-  "objective": "0.3.0 트랙 B — Worker 원격 MCP 서버 (Phase 1: /mcp 라우트 + snap_history/snap_pack read-only, D1 인덱스+backfill)",
+  "objective": "0.3.0 트랙 B — Worker 원격 MCP 서버 (Phase 2: /upload→D1 captures 수집 파이프라인, snap_history 반영, /upload bearer는 Phase 4 이연, SharedContext 화이트리스트·누출 회귀 0)",
   "scope": [
     "worker/**",
     "docs/**",
     "scripts/**",
     ".vhk/mission.json",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml"
   ],
   "forbidden": [
     "src/**",
@@ -15,5 +16,5 @@
     "docs/ui-audit/**"
   ],
   "createdAt": "2026-06-04T13:32:15.559Z",
-  "updatedAt": "2026-07-18T01:00:00.000Z"
+  "updatedAt": "2026-07-18T02:00:00.000Z"
 }

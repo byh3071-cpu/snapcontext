@@ -29,7 +29,7 @@ tags: [auth, bearer, upload, security, v0.3.0]
 ## 결과
 
 - Phase 1: `/mcp` 라우트에 bearer 게이트 먼저 적용(읽기 보호가 우선 — 인증 없이 원격 노출 금지, PRD 리스크 표).
-- Phase 2: `/upload`에 동일 게이트 + D1 INSERT 추가. 저장 범위 확장 필드는 기존 동의 범위 내 + `/s` 뷰어 신규 필드 미노출 확인(로드맵 완료 기준).
+- Phase 2: `/upload`에 D1 INSERT 추가(수집 = 기존 공유 업로드분·SharedContext 화이트리스트 유지). **`/upload` bearer 게이트는 Phase 4로 이연** — 근거: (1) 확장은 현행 무인증 `/upload` 계약에 의존하며 Phase 2 범위는 `src/**` 변경 금지(서버측만)라 확장 측 Authorization 헤더 추가가 불가 (2) 수집 동의 모델은 기존 공유 업로드와 동일해 인덱스 적재만으로도 snap_history 파이프라인이 성립 (3) 원격 조회(`/mcp`)는 Phase 1에서 이미 bearer fail-closed. Phase 4에서 확장 연동·secret 프로비저닝과 함께 `/upload`에 동일 게이트를 적용한다.
 - Workers Free 100K req/day 초과는 Error 1027 hard stop — 보안 라우트는 fail closed 유지(질문 F).
 
 ## 출처
