@@ -60,10 +60,19 @@ AI 에이전트(Claude Code·Cursor)가 SnapContext가 캡처한 Context Pack을
 - **출력**: Context Pack JSON. 현재 R2에 저장된 축약 `SharedContext`만으로는 원본 스펙(핀 x/y·userNote·tags)이 비므로, **반환 형태 = "현재 저장분"인지 "확장 수집분"인지 Phase 2 수집 파이프라인 설계와 함께 확정**(데이터 모델 참조).
 - **비고**: 만료(7일)·없는 `id`는 명시적 에러 반환(조용한 빈 반환 금지). read-only.
 
-### snap_analyze — Context Pack 분석 (Phase 3 파생 툴 · DoD 밖)
+### snap_analyze — Context Pack 분석 다이제스트 (Phase 3 · DoD 밖)
 
-- **목적**: 특정 캡처를 요약/이슈 추출 형태로 가공해 에이전트가 바로 쓰게. **MVP 코어(`snap_history`+`snap_pack`)와 분리 — DoD 범위 밖.**
-- **스펙**: `snap_pack` 위에서 요약/이슈 추출. 입력(`id` + mode 등)·분석 위치(Worker vs 클라이언트 에이전트)·출력 시그니처는 Phase 3 확정.
+- **목적**: 특정 캡처를 마크다운 다이제스트로 가공해 클라이언트 에이전트가 바로 분석에 쓰게. **Worker는 LLM을 호출하지 않는다** — 분석 위치 = 클라이언트 에이전트. MVP 코어(`snap_history`+`snap_pack`)와 분리 — DoD 범위 밖.
+- **입력**:
+  - `id`(필수) — 캡처 id (R2 object key)
+  - `mode`(선택) — allowlist: `bug-report` | `refactor` | `reference` (기본 `bug-report`). 위반 시 명시적 MCP 에러(`INVALID_MODE`).
+- **출력**: 마크다운 다이제스트 (read-only)
+  1. 캡처 메타 요약 (id·title·url·captureType·capturedAt·viewport)
+  2. 핀 메모 목록
+  3. mode별 분석 지시 (확장 `prompts/templates` 취지를 worker 내 자체 모듈로 재구현 — `src/` import 금지)
+  4. 이미지 URL (`{origin}/i/{id}`)
+- **에러**: 만료·없음·orphan은 `snap_pack`/`getSnapPack` 헬퍼 재사용(명시적 `SnapPackError`). mode allowlist 위반은 `SnapAnalyzeError`.
+- **비고**: `getSnapPack(..., includeImage: true)` 위에 구조화만 수행. 부작용 없음.
 
 ### snap_capture — 지금 이 탭 캡처 (**0.3.0 드랍 확정** — Phase 0 판단 완료)
 
