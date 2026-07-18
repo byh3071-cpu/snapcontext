@@ -8,15 +8,16 @@ import {
   parseSharedContext,
   safeDecodeId
 } from './lib'
+import { gateMcpBearer } from './auth'
+import { rejectInvalidOrigin } from './origin'
+import type { Env } from './env'
 
-export interface Env {
-  BUCKET: R2Bucket
-}
+export type { Env }
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type'
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 }
 
 const GONE_MSG = '이 링크는 만료되었거나 존재하지 않습니다. (업로드 후 7일 보관)'
@@ -47,8 +48,30 @@ function htmlResponse(body: string, status: number): Response {
 }
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(
+    req: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<Response> {
     const url = new URL(req.url)
+
+    // MCP 분기 우선 — 전역 OPTIONS 보다 먼저 (MAJOR-1). Origin 불일치는 OPTIONS 포함 403
+    if (url.pathname === '/mcp') {
+      const originDenied = rejectInvalidOrigin(req)
+      if (originDenied) return originDenied
+
+      if (req.method === 'OPTIONS') {
+        // preflight 는 Authorization 미포함 — Origin 통과 시에만 허용, bearer 는 실제 MCP 메서드에서
+        return new Response(null, { headers: CORS })
+      }
+
+      const authDenied = await gateMcpBearer(req, env.SNAPCONTEXT_BEARER_TOKEN)
+      if (authDenied) return authDenied
+
+      // agents/mcp 는 cloudflare: 워커 모듈 — 게이트 통과 후에만 로드
+      const { handleMcpRequest } = await import('./mcp-route')
+      return handleMcpRequest(req, env, ctx)
+    }
 
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: CORS })
@@ -124,8 +147,8 @@ export default {
           return htmlResponse(buildExpiredHtml(), 410)
         }
         const ctxObj = await env.BUCKET.get(`${id}.json`)
-        const ctx = ctxObj ? parseSharedContext(await ctxObj.text()) : null
-        const html = buildViewerHtml(id, ctx, formatExpiryKST(head.uploaded))
+        const shared = ctxObj ? parseSharedContext(await ctxObj.text()) : null
+        const html = buildViewerHtml(id, shared, formatExpiryKST(head.uploaded))
         return htmlResponse(html, 200)
       } catch {
         return textResponse('페이지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 502)
