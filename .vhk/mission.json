@@ -5,7 +5,8 @@
     "worker/**",
     "docs/**",
     "scripts/**",
-    ".vhk/mission.json"
+    ".vhk/mission.json",
+    "pnpm-lock.yaml"
   ],
   "forbidden": [
     "src/**",
@@ -14,5 +15,5 @@
     "docs/ui-audit/**"
   ],
   "createdAt": "2026-06-04T13:32:15.559Z",
-  "updatedAt": "2026-07-18T00:00:00.000Z"
+  "updatedAt": "2026-07-18T01:00:00.000Z"
 }
