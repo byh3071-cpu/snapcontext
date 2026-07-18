@@ -100,4 +100,21 @@ describe('getSnapPack (snap_pack)', () => {
       })
     ).rejects.toBeInstanceOf(SnapPackError)
   })
+
+  it('orphan(JSON만 있고 이미지 없음): NOT_FOUND (MAJOR-3)', async () => {
+    const bucket = makeBucket(
+      new Map([['orphan.json', { text: ctxJson, uploaded: new Date() }]])
+    )
+    await expect(
+      getSnapPack(bucket as unknown as R2Bucket, {
+        id: 'orphan',
+        origin: 'https://w.test',
+        includeImage: true,
+        now: Date.now()
+      })
+    ).rejects.toMatchObject({
+      name: 'SnapPackError',
+      code: 'NOT_FOUND'
+    })
+  })
 })
