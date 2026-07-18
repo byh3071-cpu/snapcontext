@@ -10,6 +10,11 @@ import {
 } from './lib'
 import { gateMcpBearer } from './auth'
 import { rejectInvalidOrigin } from './origin'
+import {
+  captureRowFromSharedContext,
+  cleanupUploadObjects,
+  insertCapture
+} from './ingest'
 import type { Env } from './env'
 
 export type { Env }
@@ -101,19 +106,43 @@ export default {
         return textResponse('PNG 이미지만 업로드할 수 있습니다.', 415)
       }
       const id = crypto.randomUUID()
+      const nowMs = Date.now()
+      const context = form.get('context')
+      const hasContext = typeof context === 'string' && context.length > 0
+      let wroteJson = false
       try {
         await env.BUCKET.put(id, buf, {
           httpMetadata: { contentType: 'image/png' }
         })
-        const context = form.get('context')
-        if (typeof context === 'string' && context.length > 0) {
+        if (hasContext) {
           await env.BUCKET.put(`${id}.json`, context, {
             httpMetadata: { contentType: 'application/json' }
           })
+          wroteJson = true
         }
       } catch {
         return textResponse('업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.', 502)
       }
+
+      // 수집 = 공유 업로드분(context 있을 때만 D1 인덱스). bearer는 Phase 4 이연(ADR-010).
+      if (hasContext) {
+        const shared = parseSharedContext(context)
+        if (shared) {
+          try {
+            await insertCapture(
+              env.DB,
+              captureRowFromSharedContext(id, shared, nowMs)
+            )
+          } catch {
+            await cleanupUploadObjects(env.BUCKET, id, wroteJson)
+            return textResponse(
+              '인덱스 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+              500
+            )
+          }
+        }
+      }
+
       return jsonResponse({ id, url: `${url.origin}/s/${id}` })
     }
 
