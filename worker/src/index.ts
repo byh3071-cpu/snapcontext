@@ -140,6 +140,12 @@ export default {
               500
             )
           }
+        } else {
+          // malformed JSON: R2 raw 는 유지·뷰어 그레이스풀 저하와 일관. D1 스킵은 관측 가능하게.
+          console.warn(
+            '[upload] context present but JSON parse failed; D1 index skipped',
+            { id }
+          )
         }
       }
 

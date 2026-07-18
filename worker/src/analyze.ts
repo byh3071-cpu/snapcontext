@@ -87,9 +87,7 @@ export function buildAnalyzeDigest(
           .map((p) => `- **핀 ${p.id}**: ${formatPinMemo(p.memo)}`)
           .join('\n')
 
-  const imageUrl =
-    pack.imageUrl ?? `(missing imageUrl for id=${pack.id})`
-
+  // imageUrl 은 snapAnalyze → getSnapPack(includeImage:true) 가 항상 채움
   return [
     `# SnapContext Analyze — ${MODE_TITLES[mode]}`,
     '',
@@ -108,7 +106,7 @@ export function buildAnalyzeDigest(
     MODE_INSTRUCTIONS[mode],
     '',
     '## ④ 이미지',
-    imageUrl,
+    pack.imageUrl,
     ''
   ].join('\n')
 }

@@ -120,6 +120,36 @@ describe('snapAnalyze (만료/없음 — snap_pack 헬퍼 재사용)', () => {
     expect(md).toMatch(/원인 추정|버그/)
   })
 
+  it('누출 회귀: {id}.json 화이트리스트 밖 필드(userNote·tags·userAgent·pin x/y)가 다이제스트에 미노출', async () => {
+    const leaky = {
+      ...ctx,
+      userNote: 'SECRET_NOTE',
+      tags: ['SECRET_TAG'],
+      userAgent: 'SECRET_UA',
+      pins: [{ id: 1, memo: '핀메모OK', x: 99, y: 88 }]
+    }
+    const bucket = makeBucket(
+      new Map([
+        ['leak.json', { text: JSON.stringify(leaky), uploaded: new Date() }],
+        ['leak', { uploaded: new Date() }]
+      ])
+    )
+    const md = await snapAnalyze(bucket as unknown as R2Bucket, {
+      id: 'leak',
+      origin: 'https://w.test',
+      now: Date.now()
+    })
+    expect(md).toContain('핀메모OK')
+    expect(md).toContain('https://w.test/i/leak')
+    expect(md).not.toContain('SECRET_NOTE')
+    expect(md).not.toContain('SECRET_TAG')
+    expect(md).not.toContain('SECRET_UA')
+    expect(md).not.toContain('userNote')
+    expect(md).not.toContain('userAgent')
+    expect(md).not.toMatch(/\b99\b/)
+    expect(md).not.toMatch(/\b88\b/)
+  })
+
   it('없는 id → SnapPackError', async () => {
     const bucket = makeBucket(new Map())
     await expect(
