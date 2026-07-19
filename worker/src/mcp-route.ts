@@ -1,4 +1,5 @@
 import { createMcpHandler } from 'agents/mcp'
+import type { McpAuthResult } from './auth'
 import { createSnapMcpServer } from './mcp'
 import type { Env } from './env'
 
@@ -6,10 +7,11 @@ import type { Env } from './env'
 export async function handleMcpRequest(
   req: Request,
   env: Env,
-  ctx: ExecutionContext
+  ctx: ExecutionContext,
+  auth: McpAuthResult
 ): Promise<Response> {
   const url = new URL(req.url)
-  const server = createSnapMcpServer(env, url)
+  const server = createSnapMcpServer(env, url, auth)
   return createMcpHandler(server, {
     route: '/mcp',
     enableJsonResponse: true

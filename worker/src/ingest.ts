@@ -8,13 +8,16 @@ export interface CaptureInsertRow {
   capture_type: string
   pin_count: number
   expires_at: string
+  /** SHA-256(토큰) hex. 익명 업로드는 null */
+  owner: string | null
 }
 
 /** SharedContext → D1 captures 행. created_at/expires_at = 서버 now 기준 (ADR-009·Phase 2) */
 export function captureRowFromSharedContext(
   id: string,
   ctx: SharedContext,
-  nowMs: number
+  nowMs: number,
+  owner: string | null = null
 ): CaptureInsertRow {
   const pins = Array.isArray(ctx.pins) ? ctx.pins : []
   return {
@@ -24,7 +27,8 @@ export function captureRowFromSharedContext(
     title: typeof ctx.sourceTitle === 'string' ? ctx.sourceTitle : '',
     capture_type: typeof ctx.captureType === 'string' ? ctx.captureType : '',
     pin_count: pins.length,
-    expires_at: new Date(nowMs + MAX_AGE_MS).toISOString()
+    expires_at: new Date(nowMs + MAX_AGE_MS).toISOString(),
+    owner
   }
 }
 
@@ -34,8 +38,8 @@ export async function insertCapture(
 ): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO captures (id, created_at, url, title, capture_type, pin_count, expires_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO captures (id, created_at, url, title, capture_type, pin_count, expires_at, owner)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       row.id,
@@ -44,7 +48,8 @@ export async function insertCapture(
       row.title,
       row.capture_type,
       row.pin_count,
-      row.expires_at
+      row.expires_at,
+      row.owner
     )
     .run()
 }
