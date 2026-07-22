@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   EXPIRY_DAYS_ALLOWLIST,
+  UploadFailedError,
   isExpiryDays,
+  isUnauthorizedUploadError,
   uploadShare
 } from '../src/utils/upload'
 import type { ExpiryDays } from '../src/utils/upload'
@@ -100,6 +102,40 @@ describe('uploadShare', () => {
     const blob = new Blob([new Uint8Array([1])], { type: 'image/png' })
     await uploadShare(blob)
     expect(fetchMock.mock.calls[0][0]).toBe('https://w.example.dev/upload')
+  })
+})
+
+describe('업로드 실패 분류 (B1)', () => {
+  beforeEach(() => {
+    vi.stubEnv('VITE_UPLOAD_ENDPOINT', 'https://w.example.dev')
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  const pngBlob = () => new Blob([new Uint8Array([1])], { type: 'image/png' })
+
+  it('401 은 status 를 담은 UploadFailedError 로 던진다', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('Unauthorized', { status: 401 }))
+    )
+    const err = await uploadShare(pngBlob()).catch((e: unknown) => e)
+
+    expect(err).toBeInstanceOf(UploadFailedError)
+    expect((err as UploadFailedError).status).toBe(401)
+    // 기존 메시지 포맷은 유지한다
+    expect((err as UploadFailedError).message).toBe('업로드 실패 (401)')
+  })
+
+  it('isUnauthorizedUploadError 가 401 만 참이다', async () => {
+    expect(isUnauthorizedUploadError(new UploadFailedError(401))).toBe(true)
+    expect(isUnauthorizedUploadError(new UploadFailedError(413))).toBe(false)
+    expect(isUnauthorizedUploadError(new Error('업로드 실패 (401)'))).toBe(false)
+    expect(isUnauthorizedUploadError(new TypeError('Failed to fetch'))).toBe(false)
+    expect(isUnauthorizedUploadError(null)).toBe(false)
   })
 })
 

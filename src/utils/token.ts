@@ -1,4 +1,4 @@
-import { getStorageItem, setStorageItem } from '../storage'
+import { getStorageItem, removeStorageItem, setStorageItem } from '../storage'
 
 /**
  * per-user 토큰 클라이언트 (PRD 0.4.0 F007).
@@ -48,8 +48,31 @@ export async function ensureUserToken(): Promise<string | null> {
   }
 }
 
+/**
+ * 서버가 거부한 토큰을 폐기한다 (401 복구 경로).
+ *
+ * 폐기하지 않으면 시크릿 로테이션·엔드포인트 전환 뒤에 같은 토큰으로 계속 401 을 받아
+ * 익명이면 200 이 나올 업로드가 영구히 실패한다.
+ * 지우기 실패가 익명 재시도를 막으면 안 되므로 던지지 않고 사유만 남긴다.
+ */
+export async function clearUserToken(): Promise<void> {
+  try {
+    await removeStorageItem(TOKEN_STORAGE_KEY)
+  } catch (e) {
+    console.warn('[token] 저장된 토큰을 지우지 못했습니다.', e)
+  }
+}
+
 async function resolveUserToken(): Promise<string | null> {
-  const stored = await getStorageItem<unknown>(TOKEN_STORAGE_KEY)
+  // storage I/O 도 "실패하면 null" 계약 안에 둔다 — 여기서 예외가 새면 호출측 catch 가
+  // 잡아 업로드 자체가 안 나가고, 선택 기능인 토큰이 필수 기능을 죽이게 된다
+  let stored: unknown
+  try {
+    stored = await getStorageItem<unknown>(TOKEN_STORAGE_KEY)
+  } catch (e) {
+    console.warn('[token] 저장된 토큰을 읽지 못했습니다. 새로 발급합니다.', e)
+    stored = undefined
+  }
   if (isValidTokenFormat(stored)) return stored
   if (stored !== undefined) {
     // 손상된 값은 폐기하고 재발급. 발급이 실패하면 잔존하지만 다음 호출에서 다시
@@ -59,7 +82,13 @@ async function resolveUserToken(): Promise<string | null> {
 
   const issued = await requestUserToken()
   if (issued === null) return null
-  await setStorageItem(TOKEN_STORAGE_KEY, issued)
+  try {
+    await setStorageItem(TOKEN_STORAGE_KEY, issued)
+  } catch (e) {
+    // 저장은 실패해도 방금 발급받은 토큰은 유효하다. 여기서 버리면 rate-limit 슬롯까지
+    // 쓴 토큰을 날리면서 이번 업로드도 죽인다 — 이번엔 쓰고 다음에 재발급한다.
+    console.warn('[token] 발급받은 토큰을 저장하지 못했습니다. 이번 요청에만 사용합니다.', e)
+  }
   return issued
 }
 

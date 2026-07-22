@@ -13,6 +13,27 @@ export function isExpiryDays(value: unknown): value is ExpiryDays {
   return EXPIRY_DAYS_ALLOWLIST.some((allowed) => allowed === value)
 }
 
+/**
+ * HTTP 상태를 담은 업로드 실패. 호출측이 401(토큰 거부)만 따로 복구할 수 있어야 한다.
+ * 메시지 포맷은 기존과 동일하게 유지한다.
+ */
+export class UploadFailedError extends Error {
+  readonly status: number
+  constructor(status: number) {
+    super(`업로드 실패 (${status})`)
+    this.name = 'UploadFailedError'
+    this.status = status
+  }
+}
+
+/**
+ * 서버가 bearer 토큰을 거부한 경우(=시크릿 로테이션·엔드포인트 전환).
+ * 토큰을 폐기하고 익명으로 재시도해야 하는 유일한 신호다.
+ */
+export function isUnauthorizedUploadError(error: unknown): boolean {
+  return error instanceof UploadFailedError && error.status === 401
+}
+
 export type UploadShareOptions = {
   /**
    * ensureUserToken() 결과를 그대로 넘기면 된다(null 허용 = 발급 실패 시 익명 업로드).
@@ -73,7 +94,7 @@ export async function uploadShare(
 
   const res = await fetch(`${base}/upload`, init)
   if (!res.ok) {
-    throw new Error(`업로드 실패 (${res.status})`)
+    throw new UploadFailedError(res.status)
   }
   let data: { url?: string }
   try {

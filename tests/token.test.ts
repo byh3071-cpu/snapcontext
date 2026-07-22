@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   TOKEN_STORAGE_KEY,
+  clearUserToken,
   ensureUserToken,
   isValidTokenFormat
 } from '../src/utils/token'
@@ -173,6 +174,28 @@ describe('ensureUserToken', () => {
     expect(console.warn).toHaveBeenCalled()
   })
 
+  // N1 — storage I/O 는 "실패하면 null" 계약의 구멍이었다. 예외가 호출측으로 새면
+  // ImageActions 의 catch 가 잡아 업로드 자체가 안 나간다.
+  it('storage 읽기가 실패해도 던지지 않고 발급으로 진행한다', async () => {
+    const storage = stubChromeStorage()
+    storage.get.mockRejectedValueOnce(new Error('storage unavailable'))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(tokenJson(ISSUED_TOKEN)))
+
+    await expect(ensureUserToken()).resolves.toBe(ISSUED_TOKEN)
+    expect(console.warn).toHaveBeenCalled()
+  })
+
+  it('storage 저장이 실패해도 방금 발급받은 토큰을 반환한다', async () => {
+    const storage = stubChromeStorage()
+    storage.set.mockRejectedValueOnce(new Error('QUOTA_BYTES quota exceeded'))
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(tokenJson(ISSUED_TOKEN)))
+
+    // 발급에 성공해 rate-limit 슬롯까지 쓴 유효 토큰을 버리면 안 된다 —
+    // 이번 업로드는 성공하고 다음 번에 재발급될 뿐이다
+    await expect(ensureUserToken()).resolves.toBe(ISSUED_TOKEN)
+    expect(console.warn).toHaveBeenCalled()
+  })
+
   it('엔드포인트가 없으면 fetch 없이 null 을 반환한다', async () => {
     vi.stubEnv('VITE_UPLOAD_ENDPOINT', '')
     stubChromeStorage()
@@ -182,5 +205,43 @@ describe('ensureUserToken', () => {
     await expect(ensureUserToken()).resolves.toBeNull()
     expect(fetchMock).not.toHaveBeenCalled()
     expect(console.warn).toHaveBeenCalled()
+  })
+})
+
+describe('clearUserToken', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('저장된 토큰을 지운다 (서버가 거부한 토큰 폐기용)', async () => {
+    const storage = stubChromeStorage({ [TOKEN_STORAGE_KEY]: VALID_TOKEN })
+
+    await clearUserToken()
+
+    expect(storage.remove).toHaveBeenCalledWith(TOKEN_STORAGE_KEY)
+    expect(storage.store.has(TOKEN_STORAGE_KEY)).toBe(false)
+  })
+
+  it('지우기가 실패해도 던지지 않는다 (익명 재시도를 막으면 안 된다)', async () => {
+    const storage = stubChromeStorage({ [TOKEN_STORAGE_KEY]: VALID_TOKEN })
+    storage.remove.mockRejectedValueOnce(new Error('storage unavailable'))
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await expect(clearUserToken()).resolves.toBeUndefined()
+    expect(console.warn).toHaveBeenCalled()
+  })
+
+  it('지운 뒤 다음 호출은 재발급을 탄다', async () => {
+    stubChromeStorage({ [TOKEN_STORAGE_KEY]: VALID_TOKEN })
+    vi.stubEnv('VITE_UPLOAD_ENDPOINT', 'https://w.example.dev')
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const fetchMock = vi.fn(async () => tokenJson(ISSUED_TOKEN))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await clearUserToken()
+    await expect(ensureUserToken()).resolves.toBe(ISSUED_TOKEN)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    vi.unstubAllEnvs()
   })
 })

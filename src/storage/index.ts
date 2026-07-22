@@ -6,3 +6,7 @@ export async function getStorageItem<T>(key: string): Promise<T | undefined> {
 export async function setStorageItem<T>(key: string, value: T): Promise<void> {
   await chrome.storage.local.set({ [key]: value })
 }
+
+export async function removeStorageItem(key: string): Promise<void> {
+  await chrome.storage.local.remove(key)
+}

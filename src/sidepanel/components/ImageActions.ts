@@ -5,8 +5,8 @@ import {
   renderAnnotatedPngBlob
 } from '../../utils/annotated-image'
 import { toKoreanErrorMessage } from '../../utils/messaging'
-import { uploadShare, type ExpiryDays } from '../../utils/upload'
-import { ensureUserToken } from '../../utils/token'
+import type { ExpiryDays } from '../../utils/upload'
+import { uploadShareWithToken } from '../../utils/share-upload'
 import {
   DEFAULT_SHARE_EXPIRY_DAYS,
   SHARE_EXPIRY_CHANGED_EVENT,
@@ -219,9 +219,8 @@ export function mountImageActions(
       const ctx = toggleInput.checked ? deps.getContext() ?? undefined : undefined
       // 토큰 발급은 반드시 업로드 직전에 — 사이드패널 초기화 시점에 부르면
       // e2e 의 fetch mock 설치(page.goto 후) 이전이라 실제 네트워크로 나간다.
-      // null 이어도 익명 업로드로 그대로 진행된다(uploadShare 가 헤더를 생략).
-      const token = await ensureUserToken()
-      const url = await uploadShare(blob, ctx, { token, expiresInDays: days })
+      // 발급 실패(null)면 익명 업로드, 서버가 토큰을 거부(401)하면 폐기 후 익명 재시도.
+      const url = await uploadShareWithToken(blob, ctx, days)
       try {
         await navigator.clipboard.writeText(url)
         // /upload 응답에 expiresAt 이 없다(ADR-013) → 로컬 선택값으로 문구를 만든다
