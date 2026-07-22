@@ -137,7 +137,7 @@ export function parseSharedContext(raw: string): SharedContext | null {
 }
 
 export function buildExpiredHtml(): string {
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>SnapContext 공유</title><style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0f1424;color:#e8eaf0;display:grid;place-items:center;min-height:100vh}div{text-align:center;padding:24px}p{color:#9aa3bd}</style></head><body><div><h1>링크 만료</h1><p>이 링크는 만료되었거나 존재하지 않습니다.<br>(업로드 후 7일간 보관됩니다)</p></div></body></html>`
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>SnapContext 공유</title><style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0f1424;color:#e8eaf0;display:grid;place-items:center;min-height:100vh}div{text-align:center;padding:24px}p{color:#9aa3bd}</style></head><body><div><h1>링크 만료</h1><p>이 링크는 만료되었거나 존재하지 않습니다.<br>(공유 링크는 선택한 보관 기간이 지나면 자동 삭제됩니다)</p></div></body></html>`
 }
 
 export function buildViewerHtml(

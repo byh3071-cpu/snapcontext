@@ -7,6 +7,7 @@ import {
   isExpiredAt,
   formatExpiryKST,
   buildViewerHtml,
+  buildExpiredHtml,
   parseSharedContext,
   parseExpiresInDays,
   safeDecodeId,
@@ -242,6 +243,22 @@ describe('buildViewerHtml', () => {
     expect(html).toContain('업로드 후 1일 자동 삭제')
     expect(html).not.toContain('업로드 후 7일 자동 삭제')
     expect(html).toContain(formatExpiryKST(T + DAY_MS))
+  })
+})
+
+describe('buildExpiredHtml (T3.3 — 탈-7일)', () => {
+  it("'7일' 이 없고 보관 기간 문구로 대체된다", () => {
+    const html = buildExpiredHtml()
+    expect(html).not.toContain('7일')
+    expect(html).toContain(
+      '이 링크는 만료되었거나 존재하지 않습니다.<br>(공유 링크는 선택한 보관 기간이 지나면 자동 삭제됩니다)'
+    )
+  })
+
+  it('인자 0개를 유지한다 — 보관일수를 붙이면 존재 오라클이 된다', () => {
+    // 물리 삭제된 객체는 보관일수를 알 수 없고, 아는 경우에만 일수를 붙이면
+    // "이 id 는 실재했다" 가 응답 차이로 새어 나간다
+    expect(buildExpiredHtml.length).toBe(0)
   })
 })
 

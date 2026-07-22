@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import worker from '../src/index'
 import { DAY_MS, MAX_AGE_MS } from '../src/lib'
 
@@ -110,6 +110,141 @@ describe('GET /s/{id} — 만료/없는 키 410 렌더 (#4)', () => {
     const html = await res.text()
     expect(html).toContain('/i/s1')
     expect(html).toContain('TITLE_OK')
+  })
+})
+
+describe('/i/ Cache-Control — 잔여 수명만큼만 캐시 (T3.3)', () => {
+  const T = Date.parse('2026-07-22T00:00:00.000Z')
+  const meta = (expiresAtMs: number) => ({
+    expiresAt: new Date(expiresAtMs).toISOString()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('7일 업로드 @T · 조회 @T+1d → public, max-age=518400 (잔여 6일)', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(T + DAY_MS)
+    const env = makeEnv(
+      new Map([
+        [
+          'c1',
+          {
+            bytes: PNG,
+            uploaded: new Date(T),
+            contentType: 'image/png',
+            customMetadata: meta(T + MAX_AGE_MS)
+          }
+        ]
+      ])
+    )
+    const res = await worker.fetch(req('/i/c1'), env)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=518400')
+  })
+
+  it('레거시(메타 없음) 도 같은 잔여초를 낸다', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(T + DAY_MS)
+    const env = makeEnv(
+      new Map([
+        ['c2', { bytes: PNG, uploaded: new Date(T), contentType: 'image/png' }]
+      ])
+    )
+    const res = await worker.fetch(req('/i/c2'), env)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=518400')
+  })
+
+  it('1일 업로드는 max-age 도 1일치 (보관기간 따라 변한다)', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(T)
+    const env = makeEnv(
+      new Map([
+        [
+          'c3',
+          {
+            bytes: PNG,
+            uploaded: new Date(T),
+            contentType: 'image/png',
+            customMetadata: meta(T + DAY_MS)
+          }
+        ]
+      ])
+    )
+    const res = await worker.fetch(req('/i/c3'), env)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=86400')
+  })
+
+  it('만료 500ms 전(잔여 1초 미만) → no-store', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(T + MAX_AGE_MS - 500)
+    const env = makeEnv(
+      new Map([
+        [
+          'c4',
+          {
+            bytes: PNG,
+            uploaded: new Date(T),
+            contentType: 'image/png',
+            customMetadata: meta(T + MAX_AGE_MS)
+          }
+        ]
+      ])
+    )
+    const res = await worker.fetch(req('/i/c4'), env)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('잔여 정확히 1000ms → public, max-age=1 (경계)', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(T + MAX_AGE_MS - 1000)
+    const env = makeEnv(
+      new Map([
+        [
+          'c5',
+          {
+            bytes: PNG,
+            uploaded: new Date(T),
+            contentType: 'image/png',
+            customMetadata: meta(T + MAX_AGE_MS)
+          }
+        ]
+      ])
+    )
+    const res = await worker.fetch(req('/i/c5'), env)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=1')
+  })
+
+  it('/i/ 410(없는 키·만료) 에도 Cache-Control: no-store — 410 은 heuristic cacheable', async () => {
+    const missing = await worker.fetch(req('/i/nope'), makeEnv(new Map()))
+    expect(missing.status).toBe(410)
+    expect(missing.headers.get('cache-control')).toBe('no-store')
+
+    const env = makeEnv(new Map([['old', { bytes: PNG, uploaded: stale() }]]))
+    const expired = await worker.fetch(req('/i/old'), env)
+    expect(expired.status).toBe(410)
+    expect(expired.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('/s/ 410 은 기존 no-cache 유지 (회귀 방어)', async () => {
+    const res = await worker.fetch(req('/s/nope'), makeEnv(new Map()))
+    expect(res.status).toBe(410)
+    expect(res.headers.get('cache-control')).toBe('no-cache')
+  })
+})
+
+describe('만료 문구 탈-7일 (T3.3)', () => {
+  it("/i/ 410 본문에 '7일' 이 없고 보관 기간 문구로 대체", async () => {
+    const res = await worker.fetch(req('/i/nope'), makeEnv(new Map()))
+    const text = await res.text()
+    expect(text).not.toContain('7일')
+    expect(text).toBe(
+      '이 링크는 만료되었거나 존재하지 않습니다. (공유 링크는 선택한 보관 기간이 지나면 자동 삭제됩니다)'
+    )
+  })
+
+  it("/s/ 410 HTML 에도 '7일' 없음", async () => {
+    const res = await worker.fetch(req('/s/nope'), makeEnv(new Map()))
+    const html = await res.text()
+    expect(html).not.toContain('7일')
+    expect(html).toContain('선택한 보관 기간이 지나면 자동 삭제됩니다')
   })
 })
 

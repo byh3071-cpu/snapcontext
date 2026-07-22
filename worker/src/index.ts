@@ -30,7 +30,10 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 }
 
-const GONE_MSG = '이 링크는 만료되었거나 존재하지 않습니다. (업로드 후 7일 보관)'
+// 보관 기간이 1/7/30 으로 갈라진 뒤에도 맞는 문구. 일수를 붙이지 않는 이유는
+// 물리 삭제된 객체의 보관일수를 알 수 없고, 아는 경우에만 붙이면 존재 오라클이 되기 때문
+const GONE_MSG =
+  '이 링크는 만료되었거나 존재하지 않습니다. (공유 링크는 선택한 보관 기간이 지나면 자동 삭제됩니다)'
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -39,10 +42,14 @@ function jsonResponse(data: unknown, status = 200): Response {
   })
 }
 
-function textResponse(body: string, status: number): Response {
+function textResponse(
+  body: string,
+  status: number,
+  extra: Record<string, string> = {}
+): Response {
   return new Response(body, {
     status,
-    headers: { 'Content-Type': 'text/plain; charset=utf-8', ...CORS }
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', ...CORS, ...extra }
   })
 }
 
@@ -229,16 +236,22 @@ export default {
       } catch {
         return textResponse('이미지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 502)
       }
+      // 410 은 RFC 9111 상 heuristic cacheable — 명시적으로 캐시를 막는다
       if (!obj) {
-        return textResponse(GONE_MSG, 410)
+        return textResponse(GONE_MSG, 410, { 'Cache-Control': 'no-store' })
       }
-      if (isExpiredAt(readExpiry(obj).expiresAtMs, now)) {
-        return textResponse(GONE_MSG, 410)
+      const expiry = readExpiry(obj)
+      if (isExpiredAt(expiry.expiresAtMs, now)) {
+        return textResponse(GONE_MSG, 410, { 'Cache-Control': 'no-store' })
       }
+      // 만료 뒤에도 캐시가 살아 유령 서빙하지 않도록 잔여 수명만큼만 캐시.
+      // 이 지점은 isExpiredAt 가드를 통과한 뒤라 음수가 불가능하다 → Math.max 보정 금지(보정 = fallback)
+      const remainingSec = Math.floor((expiry.expiresAtMs - now) / 1000)
       return new Response(obj.body, {
         headers: {
           'Content-Type': obj.httpMetadata?.contentType ?? 'image/png',
-          'Cache-Control': 'public, max-age=604800',
+          'Cache-Control':
+            remainingSec > 0 ? `public, max-age=${remainingSec}` : 'no-store',
           ...CORS
         }
       })
