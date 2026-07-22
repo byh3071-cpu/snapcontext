@@ -270,9 +270,11 @@ export function mountShortcutsHelp(
     tokenEmptyNote.hidden = Boolean(token)
     if (token) tokenMasked.textContent = maskToken(token)
 
-    const tokenForCmd = token ?? NO_TOKEN_PLACEHOLDER
-    claudeCmdPre.textContent = buildClaudeCommand(mcpBase, tokenForCmd)
-    codexCmdPre.textContent = buildCodexCommand(mcpBase, tokenForCmd)
+    // 명령 표시엔 마스킹 토큰만 넣는다 — 원문 Bearer 가 화면·스크린샷·DOM 으로 새지 않도록.
+    // 원문 명령은 복사 시점에만 currentToken 으로 생성한다.
+    const tokenForDisplay = token ? maskToken(token) : NO_TOKEN_PLACEHOLDER
+    claudeCmdPre.textContent = buildClaudeCommand(mcpBase, tokenForDisplay)
+    codexCmdPre.textContent = buildCodexCommand(mcpBase, tokenForDisplay)
   }
   renderTokenViews(null)
 
@@ -321,11 +323,12 @@ export function mountShortcutsHelp(
     })()
   })
 
+  // 복사는 화면의 마스킹 명령(pre.textContent)이 아니라 원문 토큰으로 재생성한 명령을 넣는다.
   claudeCopyBtn.addEventListener('click', () => {
-    copyWithFeedback(claudeCmdPre.textContent ?? '')
+    copyWithFeedback(buildClaudeCommand(mcpBase, currentToken ?? NO_TOKEN_PLACEHOLDER))
   })
   codexCopyBtn.addEventListener('click', () => {
-    copyWithFeedback(codexCmdPre.textContent ?? '')
+    copyWithFeedback(buildCodexCommand(mcpBase, currentToken ?? NO_TOKEN_PLACEHOLDER))
   })
 
   panel.append(

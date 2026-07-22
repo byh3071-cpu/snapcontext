@@ -20,6 +20,14 @@ if ($Admin) {
     Write-Host "admin 토큰 파일 없음: $tokenFile" -ForegroundColor Red; exit 1
   }
   $t = (Get-Content $tokenFile -Raw).Trim()
+  if ([string]::IsNullOrWhiteSpace($t)) {
+    Write-Host "admin 토큰 파일이 비어 있습니다: $tokenFile" -ForegroundColor Red; exit 1
+  }
+  if ($t.StartsWith("sc_")) {
+    # admin 은 sc_ 접두 금지(운영 규칙, ADR-012). user 토큰을 admin 경로로 등록하면
+    # '전체조회'라고 안내하면서 실제로는 격리된 owner 로 붙는 오등록이 된다.
+    Write-Host "admin 토큰이 sc_ 로 시작합니다 — user 토큰을 admin 경로로 등록하려는 것 같습니다. 개인 토큰은 -Token 을 쓰세요." -ForegroundColor Red; exit 1
+  }
   Write-Host "admin(전체조회) 토큰으로 등록합니다 — 운영 예비 경로." -ForegroundColor Yellow
 }
 else {

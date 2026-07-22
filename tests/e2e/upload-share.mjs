@@ -243,17 +243,17 @@ async function main() {
     const tokenMasked = page.locator('.shortcuts-help__token-row code')
     const maskedText = (await tokenMasked.textContent()) ?? ''
     log('내 토큰 마스킹 표시', maskedText === 'sc_AAAA…BBBB', maskedText)
+    // 명령 표시까지 포함해 패널 어디에도 원문 토큰이 보이면 안 된다(화면공유·스크린샷 방지)
     const panelText = (await page.locator('#help-panel').textContent()) ?? ''
-    log('마스킹이 토큰 원문을 DOM 에 노출하지 않음(명령 블록 제외)',
-      // 원문은 복붙 명령 pre 안에서만 보여야 한다 — code 태그(마스킹)엔 없다
-      !maskedText.includes(ISSUED))
+    log('토큰 원문이 패널 어디에도(명령 포함) 노출되지 않음', !panelText.includes(ISSUED))
 
-    // 복붙 명령엔 원문 토큰·URL 이 치환돼 있다(사용자가 복사해야 하므로 평문 노출은 의도됨)
+    // 복붙 명령 표시도 마스킹 토큰 — 원문은 복사 시점에만 생성한다
     const claudeCmd = (await page.locator('#help-panel pre').first().textContent()) ?? ''
-    log('Claude 복붙 명령에 토큰·URL 치환',
-      claudeCmd.includes('claude mcp add') && claudeCmd.includes(ISSUED) && claudeCmd.includes('/mcp'))
+    log('Claude 명령 표시는 마스킹(원문 노출 없음)',
+      claudeCmd.includes('claude mcp add') && claudeCmd.includes('sc_AAAA…BBBB') && !claudeCmd.includes(ISSUED) && claudeCmd.includes('/mcp'))
     const codexCmd = (await page.locator('#help-panel pre').nth(1).textContent()) ?? ''
-    log('Codex 복붙 명령 2줄 + env var', codexCmd.includes('setx SNAPCONTEXT_MCP_TOKEN') && codexCmd.includes('--bearer-token-env-var'))
+    log('Codex 명령 표시는 마스킹 2줄 + env var',
+      codexCmd.includes('setx SNAPCONTEXT_MCP_TOKEN') && codexCmd.includes('--bearer-token-env-var') && !codexCmd.includes(ISSUED))
 
     // 복사 버튼은 마스킹이 아니라 원문을 클립보드에 넣는다
     await page.locator('.shortcuts-help__token-row .btn-ghost').click()
@@ -267,8 +267,15 @@ async function main() {
     await page.locator('#help-panel button', { hasText: '적용' }).click()
     await page.waitForTimeout(300)
     log('붙여넣기(유효) → 마스킹 갱신', ((await tokenMasked.textContent()) ?? '') === 'sc_CCCC…DDDD')
+    const PASTED = 'sc_CCCCCCCCCCCCCCCCCCCCCC.DDDDDDDDDDDDDDDDDDDDDD'
     const claudeCmd2 = (await page.locator('#help-panel pre').first().textContent()) ?? ''
-    log('붙여넣기(유효) → 복붙 명령 갱신', claudeCmd2.includes('sc_CCCCCCCCCCCCCCCCCCCCCC.DDDDDDDDDDDDDDDDDDDDDD'))
+    log('붙여넣기(유효) → 명령 표시 마스킹 갱신',
+      claudeCmd2.includes('sc_CCCC…DDDD') && !claudeCmd2.includes(PASTED))
+    // 명령 복사는 화면 마스킹이 아니라 원문 토큰 명령을 클립보드에 넣는다(nth(1)=Claude 명령 복사)
+    await page.locator('#help-panel .btn-ghost').nth(1).click()
+    await page.waitForTimeout(200)
+    const cmdClip = await page.evaluate(() => navigator.clipboard.readText().catch(() => ''))
+    log('명령 복사 = 원문 토큰 명령(마스킹 아님)', cmdClip.includes('claude mcp add') && cmdClip.includes(PASTED))
 
     // 형식 위반은 조용히 무시하지 않고 인라인 에러 — 저장도 안 된다
     await pasteInput.fill('notoken')
