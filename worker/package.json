@@ -16,6 +16,9 @@
     "vitest": "^4.1.8",
     "wrangler": "^4.16.0"
   },
+  "overrides": {
+    "@cloudflare/workers-types": "$@cloudflare/workers-types"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "agents": "^0.17.4",

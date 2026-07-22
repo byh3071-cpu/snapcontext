@@ -38,7 +38,7 @@ tags: [prd, mcp, worker, token, multitenant, v0.4.0]
 
 | # | 항목 | 결정 |
 |---|------|------|
-| 1 | 토큰 형식 | 서버 발급 HMAC 서명. `sc_<base64url(rand 16B)>.<base64url(HMAC-SHA256(TOKEN_SIGNING_SECRET, rand) 앞 16B)>`. 검증 = HMAC 재계산(무상태, DB 조회 없음). 자작 형식 토큰 차단(critic H2 해소) |
+| 1 | 토큰 형식 | 서버 발급 HMAC 서명. `sc_<base64url(rand 16B)>.<base64url(HMAC-SHA256(TOKEN_SIGNING_SECRET, rand) 앞 16B)>`. 검증 = HMAC 재계산(무상태, DB 조회 없음). 자작 형식 토큰 차단(critic H2 해소). **base64url 정규형 강제** — 디코드 후 재인코딩이 원본과 다르면 거부(PAT-002: 끝 문자 미사용 비트로 같은 바이트열에 표현이 여럿 생겨 owner 가 파편화됨) |
 | 2 | 발급 | 확장 최초 실행 시 `POST /token` — Origin(chrome-extension) 필터 + rate-limit. `chrome.storage.local`에만 저장(sync 금지, 시크릿) |
 | 3 | owner | `SHA-256(토큰 전문)` hex 64자. 마이그레이션 `0002_captures_owner.sql`: `owner TEXT`(nullable) + `(owner, created_at DESC)` 복합 인덱스. 기존 행 백필 없음(TTL 7일 자연 소멸) |
 | 4 | /upload | **영구 optional**(critic H3). Authorization 있으면 HMAC 검증→owner 스탬프, 없으면 owner NULL(익명 공유 유지). malformed 헤더만 401 |
