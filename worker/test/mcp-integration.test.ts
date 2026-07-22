@@ -459,3 +459,110 @@ describe('snap_pack tool isError (직접 서버)', () => {
     expect(SnapPackError).toBeTruthy()
   })
 })
+
+describe('P4 — MCP 자발 사용 문구 (instructions·description·annotations)', () => {
+  beforeEach(() => {
+    vi.resetModules()
+  })
+
+  async function initResult(): Promise<{
+    instructions?: string
+    serverInfo?: { name?: string; version?: string }
+  }> {
+    const init = await mcpCall(makeEnv(new Map()), {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'test', version: '1.0.0' }
+      }
+    })
+    expect(init.res.status).toBe(200)
+    return (init.json as { result: Record<string, unknown> }).result
+  }
+
+  it('initialize 응답에 서버 instructions 가 실린다', async () => {
+    const result = await initResult()
+    // SDK 는 truthy 가드라 빈 문자열이면 필드를 통째로 뺀다 — 존재 자체가 회귀 방어다
+    expect(typeof result.instructions).toBe('string')
+    expect(result.instructions).toContain('SnapContext')
+  })
+
+  it('instructions 가 툴 호출 흐름을 지시한다 (자발 사용 유도)', async () => {
+    const result = await initResult()
+    const text = result.instructions ?? ''
+    expect(text).toContain('snap_history')
+    expect(text).toContain('snap_analyze')
+    expect(text).toContain('snap_pack')
+    // "붙여넣으라고 하지 말고 도구를 써라" 가 이 문구의 핵심 목적이다
+    expect(text).toContain('instead of asking them to paste an image')
+  })
+
+  it('serverInfo.version 이 0.4.0', async () => {
+    const result = await initResult()
+    expect(result.serverInfo?.version).toBe('0.4.0')
+  })
+
+  it('툴 description 에 트리거 문구가 실린다', async () => {
+    const env = makeEnv(new Map())
+    const init = await mcpCall(env, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'test', version: '1.0.0' }
+      }
+    })
+    const list = await mcpCall(
+      env,
+      { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} },
+      init.sessionId
+    )
+    const tools = (list.json as { result: { tools: Array<{ name: string; description?: string }> } })
+      .result.tools
+    const byName = new Map(tools.map((t) => [t.name, t.description ?? '']))
+    // 검사 조각은 0.3.0 옛 문구에 없는 것으로 고른다 — 'Context Pack' 같은 공통어를 쓰면
+    // 그 툴만 옛 문구로 되돌려도 통과해서 판별력이 0 이 된다
+    expect(byName.get('snap_history')).toContain('recent capture')
+    expect(byName.get('snap_pack')).toContain('Use after snap_history')
+    expect(byName.get('snap_analyze')).toContain('Preferred entry point')
+  })
+
+  it('툴 3종이 읽기 전용으로 광고된다 (annotations)', async () => {
+    const env = makeEnv(new Map())
+    const init = await mcpCall(env, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-11-25',
+        capabilities: {},
+        clientInfo: { name: 'test', version: '1.0.0' }
+      }
+    })
+    const list = await mcpCall(
+      env,
+      { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} },
+      init.sessionId
+    )
+    const tools = (
+      list.json as {
+        result: {
+          tools: Array<{ name: string; annotations?: Record<string, unknown> }>
+        }
+      }
+    ).result.tools
+    expect(tools).toHaveLength(3)
+    for (const tool of tools) {
+      // toEqual 로 통째 비교 — readOnlyHint 만 보면 openWorldHint 가 사라져도 통과한다
+      expect(tool.annotations).toEqual({
+        readOnlyHint: true,
+        openWorldHint: false
+      })
+    }
+  })
+})

@@ -11,6 +11,25 @@ import { listCaptures, DEFAULT_HISTORY_LIMIT } from './history'
 import { getSnapPack, SnapPackError } from './pack'
 import type { Env } from './env'
 
+/**
+ * 서버 instructions — 클라이언트가 시스템 프롬프트에 실어 툴을 자발적으로 꺼내게 하는 힌트.
+ * 원문 SoT = docs/PRD-0.4.0.md. SDK 는 truthy 가드라 빈 문자열이면 필드 자체가 응답에서 빠진다.
+ */
+const SERVER_INSTRUCTIONS =
+  "SnapContext stores the user's annotated web screenshots: page captures with " +
+  'numbered pin memos marking specific UI elements. Whenever the user mentions a ' +
+  "screenshot, capture, snap, pin memo, or refers to something they 'just captured' " +
+  "or 'shared a link to', use these tools instead of asking them to paste an image. " +
+  'Typical flow: call snap_history to find the capture id, then snap_analyze ' +
+  '(preferred, returns an analysis-ready digest) or snap_pack (raw structured ' +
+  'context). Digests include an image URL — fetch it to view the screenshot.'
+
+/** 툴 3종 전부 read-only — 쓰기·부작용이 없음을 클라이언트에 광고한다 */
+const READ_ONLY_ANNOTATIONS = {
+  readOnlyHint: true,
+  openWorldHint: false
+} as const
+
 /** 테스트에서 인스턴스 생성 횟수 검증용 (요청마다 신규) */
 export let mcpServerCreateCount = 0
 
@@ -24,16 +43,23 @@ export function createSnapMcpServer(
   auth: McpAuthResult = { scope: 'admin' }
 ): McpServer {
   mcpServerCreateCount += 1
-  const server = new McpServer({
-    name: 'snapcontext',
-    version: '0.3.0'
-  })
+  const server = new McpServer(
+    {
+      name: 'snapcontext',
+      version: '0.4.0'
+    },
+    { instructions: SERVER_INSTRUCTIONS }
+  )
 
   server.registerTool(
     'snap_history',
     {
       description:
-        'List stored captures newest-first (D1 index). Filters out expired rows.',
+        "List the user's recent SnapContext screenshot captures, newest first. " +
+        'Use this whenever the user refers to a recent capture, screenshot, or snap ' +
+        "(e.g. 'the page I just captured') to find its id before calling snap_pack " +
+        'or snap_analyze.',
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         limit: z
           .number()
@@ -61,7 +87,10 @@ export function createSnapMcpServer(
     'snap_pack',
     {
       description:
-        'Fetch a single Context Pack (SharedContext) by id from R2. Expired/missing ids return an explicit error.',
+        'Fetch the full Context Pack for one capture id: source URL, title, viewport, ' +
+        'and the numbered pin memos exactly as the user annotated them. Use after ' +
+        'snap_history when you need raw structured context rather than a prepared digest.',
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         id: z.string().min(1).describe('Capture id (R2 object key)'),
         includeImage: z
@@ -100,7 +129,11 @@ export function createSnapMcpServer(
     'snap_analyze',
     {
       description:
-        'Build a markdown digest from a capture (meta + pins + mode instructions + image URL). Read-only; no LLM call on the worker — the client agent performs analysis.',
+        'Build an analysis-ready markdown digest (page metadata + pin memos + mode ' +
+        'instructions + image URL) for a capture. Preferred entry point when the user ' +
+        'asks to debug, review, refactor, or implement something from a screenshot. ' +
+        `Modes: ${ANALYZE_MODES.join(' | ')}.`,
+      annotations: READ_ONLY_ANNOTATIONS,
       inputSchema: {
         id: z.string().min(1).describe('Capture id (R2 object key)'),
         mode: z
