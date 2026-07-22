@@ -6,6 +6,36 @@ tags: [changelog]
 
 # Changelog
 
+## 0.4.0 — 미출시 (P3 진행 중)
+
+### 공유 만료 파라미터화 (1/7/30일)
+
+- **`/upload` `expiresInDays` 파라미터:** 보관 기간을 1·7·30일 중에서 선택(allowlist, 미지정 = 기존과 같은 7일). 형식·allowlist 위반은 400 + 부작용 0(R2 put·D1 insert 모두 없음). 빈 문자열도 400 — "부재=7"은 필드가 없을 때의 규칙이라 빈 값을 7로 흡수하지 않는다. `Number()`만 쓰면 통과하는 `'0x7'`·`'7e0'`·`' 7 '`·`'7.0'`은 정규식 `^\d+$`로 차단.
+- **만료 SoT = R2 `customMetadata.expiresAt`(절대시각):** 업로드 시 만료 문자열을 1회 계산해 **이미지 put · `{id}.json` put · D1 `expires_at` 세 곳에 같은 값**으로 배포. 저장소는 합치지 않고 값만 봉인한다. `{id}.json`에도 반드시 심는 이유는 `snap_pack`이 이미지와 컨텍스트를 각각 판정하기 때문(이미지에만 심으면 30일 캡처가 8일째에 MCP 툴만 죽는 split-brain). 메타 없는 기존 객체는 `uploaded + 7일` 레거시 경로로 하위호환, 메타가 깨졌으면 조용히 7일로 되돌리지 않고 만료 처리한다.
+- **`/i/` Cache-Control 잔여초:** 고정 `max-age=604800` → 잔여 수명(`expiresAtMs - now`)만큼만 캐시. 만료 후 클라 캐시가 유령 서빙하는 창을 없앤다. 잔여 1초 미만은 `no-store`. `/i/` 410에도 `Cache-Control: no-store`(RFC 9111 상 410은 heuristic cacheable).
+- **만료 문구 탈-7일:** `/i/` 410 텍스트와 `/s/` 만료 페이지에서 "업로드 후 7일" 제거 → "공유 링크는 선택한 보관 기간이 지나면 자동 삭제됩니다". 만료 문구에 실제 보관일수를 붙이지 않는 이유는 물리 삭제된 객체의 일수를 알 수 없고, 아는 경우에만 붙이면 존재 오라클이 되기 때문.
+
+### 시그니처 변경 (worker 내부 API)
+
+| 심볼 | 이전 | 이후 |
+|---|---|---|
+| `captureRowFromSharedContext` | `(id, ctx, nowMs, owner?)` 위치 인자 | `({ id, ctx, nowMs, expiresAtIso, owner })` 옵션 객체 — `expiresAtIso` **필수**(누락 = 컴파일 에러) |
+| `buildViewerHtml` | `(id, ctx, expiryLabel: string)` | `(id, ctx, expiry: ExpiryInfo)` — 라벨·일수를 구조체에서 함께 생성 |
+| `formatExpiryKST` | `(uploaded: Date)` + 내부 7일 가산 | `(expiresAtMs: number)` — 만료 절대시각을 그대로 포맷 |
+
+`isExpired(uploaded, now)`는 삭제되고 `readExpiry(obj) → ExpiryInfo` + `isExpiredAt(expiresAtMs, now)`로 대체. `MAX_AGE_MS`는 이름을 유지하되 의미가 "레거시 fallback + 기본 보관창"으로 축소되고, `worker/src` 안에서의 참조가 `lib.ts` 한 파일로 좁혀졌다. D1 마이그레이션 추가 없음(`expires_at` 절대시각으로 충분).
+
+### 배포 선행 조건 (사람 게이트)
+
+- **R2 버킷 lifecycle `auto-delete-7d` → 30일 상향이 배포보다 먼저**여야 한다. 안 하면 30일 캡처가 7일에 물리 삭제되고, `max-age`를 길게 내보낸 탓에 클라 캐시가 최대 30일 유령 서빙한다. `/upload`는 공개 엔드포인트라 배포 즉시 누구나 30일을 요청할 수 있으므로 lifecycle 상향과 배포는 같은 창에서 처리한다.
+- **개인정보 문서 갱신도 배포 선행 조건이다.** `docs/PRIVACY.md`가 아직 "7일 후 영구 삭제"를 사실로 단언하고 있어, 30일 옵션이 열리는 순간 공개된 개인정보처리방침이 부정확해진다. `scripts/check-goal-3.mjs`가 PRIVACY에 `'7일'`이 있는지 하드 assert하므로 두 파일과 스토어 카피(`scripts/generate-store-screenshots.mjs`)를 **한 묶음으로** 고쳐야 한다(P6-T6.2).
+- R2 쓰기는 **Workers 바인딩 경유만** — S3 호환 API로 쓰면 커스텀 메타 키가 소문자화(`expiresat`)돼 메타가 없는 것으로 읽힌다.
+
+### 검증
+
+- worker vitest **183 passed** (unit 178 + test-d1 5, 베이스라인 125에서 +58), `tsc --noEmit` 0
+- 확장(`src/**`) 코드 변경 0 — 스토어 재제출 불요. 사이드패널의 "7일 후 삭제" 문구 갱신은 P5 소관
+
 ## 0.3.0 — 2026-07-18
 
 ### 원격 MCP 서버 — 에이전트의 브라우저 지각 계층

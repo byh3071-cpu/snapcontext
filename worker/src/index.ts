@@ -1,8 +1,11 @@
 import {
+  DAY_MS,
+  EXPIRY_DAYS_ALLOWLIST,
   MAX_UPLOAD_BYTES,
   isPngMagic,
-  isExpired,
-  formatExpiryKST,
+  isExpiredAt,
+  parseExpiresInDays,
+  readExpiry,
   buildViewerHtml,
   buildExpiredHtml,
   parseSharedContext,
@@ -27,7 +30,10 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization'
 }
 
-const GONE_MSG = '이 링크는 만료되었거나 존재하지 않습니다. (업로드 후 7일 보관)'
+// 보관 기간이 1/7/30 으로 갈라진 뒤에도 맞는 문구. 일수를 붙이지 않는 이유는
+// 물리 삭제된 객체의 보관일수를 알 수 없고, 아는 경우에만 붙이면 존재 오라클이 되기 때문
+const GONE_MSG =
+  '이 링크는 만료되었거나 존재하지 않습니다. (공유 링크는 선택한 보관 기간이 지나면 자동 삭제됩니다)'
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -36,10 +42,14 @@ function jsonResponse(data: unknown, status = 200): Response {
   })
 }
 
-function textResponse(body: string, status: number): Response {
+function textResponse(
+  body: string,
+  status: number,
+  extra: Record<string, string> = {}
+): Response {
   return new Response(body, {
     status,
-    headers: { 'Content-Type': 'text/plain; charset=utf-8', ...CORS }
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', ...CORS, ...extra }
   })
 }
 
@@ -144,22 +154,36 @@ export default {
       if (image.size > MAX_UPLOAD_BYTES) {
         return textResponse('파일이 너무 큽니다. (최대 10MB)', 413)
       }
+      // 보관 기간 검증은 arrayBuffer() 앞 — 무효 요청에 메모리를 쓰지 않는다
+      const days = parseExpiresInDays(form.get('expiresInDays'))
+      if (days === null) {
+        return textResponse(
+          `보관 기간은 ${EXPIRY_DAYS_ALLOWLIST.join(', ')}일 중에서만 선택할 수 있습니다.`,
+          400
+        )
+      }
       const buf = await image.arrayBuffer()
       if (!isPngMagic(new Uint8Array(buf.slice(0, 8)))) {
         return textResponse('PNG 이미지만 업로드할 수 있습니다.', 415)
       }
       const id = crypto.randomUUID()
       const nowMs = Date.now()
+      // 만료 절대시각은 여기서 1회만 계산 — 이미지 put·{id}.json put·D1 insert 가
+      // 같은 문자열을 공유해야 저장소 간 split-brain 이 물리적으로 불가능해진다
+      const expiresAtIso = new Date(nowMs + days * DAY_MS).toISOString()
+      const expiryMeta = { expiresAt: expiresAtIso }
       const context = form.get('context')
       const hasContext = typeof context === 'string' && context.length > 0
       let wroteJson = false
       try {
         await env.BUCKET.put(id, buf, {
-          httpMetadata: { contentType: 'image/png' }
+          httpMetadata: { contentType: 'image/png' },
+          customMetadata: expiryMeta
         })
         if (hasContext) {
           await env.BUCKET.put(`${id}.json`, context, {
-            httpMetadata: { contentType: 'application/json' }
+            httpMetadata: { contentType: 'application/json' },
+            customMetadata: expiryMeta
           })
           wroteJson = true
         }
@@ -174,7 +198,13 @@ export default {
           try {
             await insertCapture(
               env.DB,
-              captureRowFromSharedContext(id, shared, nowMs, owner)
+              captureRowFromSharedContext({
+                id,
+                ctx: shared,
+                nowMs,
+                expiresAtIso,
+                owner
+              })
             )
           } catch {
             await cleanupUploadObjects(env.BUCKET, id, wroteJson)
@@ -198,19 +228,30 @@ export default {
     // raw 이미지: GET /i/{id}
     if (req.method === 'GET' && url.pathname.startsWith('/i/')) {
       const id = safeDecodeId(url.pathname.slice(3))
+      // now 는 분기당 1회만 — 판정·헤더가 같은 시각을 봐야 한다
+      const now = Date.now()
       let obj: R2ObjectBody | null
       try {
         obj = await env.BUCKET.get(id)
       } catch {
         return textResponse('이미지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 502)
       }
-      if (!obj || isExpired(obj.uploaded, Date.now())) {
-        return textResponse(GONE_MSG, 410)
+      // 410 은 RFC 9111 상 heuristic cacheable — 명시적으로 캐시를 막는다
+      if (!obj) {
+        return textResponse(GONE_MSG, 410, { 'Cache-Control': 'no-store' })
       }
+      const expiry = readExpiry(obj)
+      if (isExpiredAt(expiry.expiresAtMs, now)) {
+        return textResponse(GONE_MSG, 410, { 'Cache-Control': 'no-store' })
+      }
+      // 만료 뒤에도 캐시가 살아 유령 서빙하지 않도록 잔여 수명만큼만 캐시.
+      // 이 지점은 isExpiredAt 가드를 통과한 뒤라 음수가 불가능하다 → Math.max 보정 금지(보정 = fallback)
+      const remainingSec = Math.floor((expiry.expiresAtMs - now) / 1000)
       return new Response(obj.body, {
         headers: {
           'Content-Type': obj.httpMetadata?.contentType ?? 'image/png',
-          'Cache-Control': 'public, max-age=604800',
+          'Cache-Control':
+            remainingSec > 0 ? `public, max-age=${remainingSec}` : 'no-store',
           ...CORS
         }
       })
@@ -219,14 +260,20 @@ export default {
     // 뷰어: GET /s/{id}
     if (req.method === 'GET' && url.pathname.startsWith('/s/')) {
       const id = safeDecodeId(url.pathname.slice(3))
+      // now 는 분기당 1회만 — 판정과 표시가 같은 시각을 봐야 한다
+      const now = Date.now()
       try {
         const head = await env.BUCKET.head(id)
-        if (!head || isExpired(head.uploaded, Date.now())) {
+        if (!head) {
+          return htmlResponse(buildExpiredHtml(), 410)
+        }
+        const expiry = readExpiry(head)
+        if (isExpiredAt(expiry.expiresAtMs, now)) {
           return htmlResponse(buildExpiredHtml(), 410)
         }
         const ctxObj = await env.BUCKET.get(`${id}.json`)
         const shared = ctxObj ? parseSharedContext(await ctxObj.text()) : null
-        const html = buildViewerHtml(id, shared, formatExpiryKST(head.uploaded))
+        const html = buildViewerHtml(id, shared, expiry)
         return htmlResponse(html, 200)
       } catch {
         return textResponse('페이지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 502)

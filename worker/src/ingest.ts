@@ -1,4 +1,4 @@
-import { MAX_AGE_MS, type SharedContext } from './lib'
+import { type SharedContext } from './lib'
 
 export interface CaptureInsertRow {
   id: string
@@ -12,13 +12,27 @@ export interface CaptureInsertRow {
   owner: string | null
 }
 
-/** SharedContext → D1 captures 행. created_at/expires_at = 서버 now 기준 (ADR-009·Phase 2) */
+export interface CaptureRowInput {
+  id: string
+  ctx: SharedContext
+  nowMs: number
+  /** R2 customMetadata.expiresAt 와 동일 문자열 — 호출측에서 1회 계산해 전달 (SoT 봉인) */
+  expiresAtIso: string
+  owner: string | null
+}
+
+/**
+ * SharedContext → D1 captures 행. created_at = 서버 now 기준 (ADR-009·Phase 2).
+ * expires_at 은 여기서 재계산하지 않는다 — R2 customMetadata 와 같은 문자열을
+ * 받아 써야 저장소 두 곳이 갈라지지 않는다.
+ *
+ * 위치 인자 대신 옵션 객체인 이유: owner(string|null)와 expiresAtIso(string)가
+ * 인접해 있어 위치 인자면 오배치가 한 방향으로 타입 통과한다.
+ */
 export function captureRowFromSharedContext(
-  id: string,
-  ctx: SharedContext,
-  nowMs: number,
-  owner: string | null = null
+  input: CaptureRowInput
 ): CaptureInsertRow {
+  const { id, ctx, nowMs, expiresAtIso, owner } = input
   const pins = Array.isArray(ctx.pins) ? ctx.pins : []
   return {
     id,
@@ -27,7 +41,7 @@ export function captureRowFromSharedContext(
     title: typeof ctx.sourceTitle === 'string' ? ctx.sourceTitle : '',
     capture_type: typeof ctx.captureType === 'string' ? ctx.captureType : '',
     pin_count: pins.length,
-    expires_at: new Date(nowMs + MAX_AGE_MS).toISOString(),
+    expires_at: expiresAtIso,
     owner
   }
 }

@@ -1,6 +1,23 @@
-export const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
+export const DAY_MS = 24 * 60 * 60 * 1000
+export const EXPIRY_DAYS_ALLOWLIST = [1, 7, 30] as const
+export type ExpiryDays = (typeof EXPIRY_DAYS_ALLOWLIST)[number]
+export const DEFAULT_EXPIRY_DAYS: ExpiryDays = 7
+/** 레거시 fallback 창(메타 없는 기존 객체) + 기본 보관창. 이름은 하위호환 유지 */
+export const MAX_AGE_MS = DEFAULT_EXPIRY_DAYS * DAY_MS
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 export const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+
+/** R2Object·R2ObjectBody 가 구조적으로 만족 — 테스트가 리터럴로 생성 가능(as 캐스트 회피) */
+export interface ExpiryMetaSource {
+  readonly uploaded: Date
+  readonly customMetadata?: Record<string, string>
+}
+
+export interface ExpiryInfo {
+  readonly expiresAtMs: number
+  readonly retentionDays: number
+  readonly source: 'metadata' | 'legacy' | 'invalid'
+}
 
 export type SharedContext = {
   v: 1
@@ -47,12 +64,58 @@ export function isPngMagic(bytes: Uint8Array): boolean {
   return true
 }
 
-export function isExpired(uploaded: Date, now: number): boolean {
-  return uploaded.getTime() + MAX_AGE_MS < now
+/**
+ * 만료 판정·표시의 단일 소스. customMetadata.expiresAt(절대시각) 이 SoT 이고,
+ * 없으면 레거시 객체로 보고 uploaded + 7일로 되돌린다.
+ */
+export function readExpiry(obj: ExpiryMetaSource): ExpiryInfo {
+  const uploadedMs = obj.uploaded.getTime()
+  const raw = obj.customMetadata?.expiresAt
+  if (raw === undefined) {
+    return {
+      expiresAtMs: uploadedMs + MAX_AGE_MS,
+      retentionDays: DEFAULT_EXPIRY_DAYS,
+      source: 'legacy'
+    }
+  }
+  const parsed = Date.parse(raw)
+  if (!Number.isFinite(parsed)) {
+    // 조용히 7일로 되돌리면 1일 캡처가 7일 산다(과보관) → 만료 처리 (fallback 금지 규칙)
+    console.warn('[expiry] customMetadata.expiresAt 파싱 실패 — 만료 처리', {
+      expiresAt: raw
+    })
+    return { expiresAtMs: uploadedMs, retentionDays: 0, source: 'invalid' }
+  }
+  return {
+    expiresAtMs: parsed,
+    retentionDays: Math.round((parsed - uploadedMs) / DAY_MS),
+    source: 'metadata'
+  }
 }
 
-export function formatExpiryKST(uploaded: Date): string {
-  const expiry = new Date(uploaded.getTime() + MAX_AGE_MS)
+/** 경계는 기존 isExpired 와 동일 strict `<` (만료시각 정각은 아직 유효) */
+export function isExpiredAt(expiresAtMs: number, now: number): boolean {
+  return expiresAtMs < now
+}
+
+/**
+ * 폼 값 → 보관일수. 부재(null·undefined)=기본 7일. 형식·allowlist 위반=null(호출측 400).
+ *
+ * 정규식이 먼저 형식을 막는 이유: Number() 만 쓰면 '0x7'·'7e0'·' 7 '·'7.0'·'+7' 이
+ * 전부 7 로 통과한다. 빈 문자열도 400 이다 — "부재=7" 은 필드가 없을 때의 규칙이지
+ * 빈 값의 규칙이 아니고, 빈 값을 7 로 흡수하면 조용한 우회다.
+ */
+export function parseExpiresInDays(raw: unknown): ExpiryDays | null {
+  if (raw === null || raw === undefined) return DEFAULT_EXPIRY_DAYS
+  if (typeof raw !== 'string') return null
+  if (!/^\d+$/.test(raw)) return null
+  const n = Number(raw)
+  return EXPIRY_DAYS_ALLOWLIST.find((allowed) => allowed === n) ?? null
+}
+
+/** 만료 절대시각(epoch ms)을 그대로 포맷한다 — 보관일수 가산은 readExpiry 소관 */
+export function formatExpiryKST(expiresAtMs: number): string {
+  const expiry = new Date(expiresAtMs)
   return new Intl.DateTimeFormat('ko-KR', {
     timeZone: 'Asia/Seoul',
     year: 'numeric',
@@ -74,15 +137,17 @@ export function parseSharedContext(raw: string): SharedContext | null {
 }
 
 export function buildExpiredHtml(): string {
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>SnapContext 공유</title><style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0f1424;color:#e8eaf0;display:grid;place-items:center;min-height:100vh}div{text-align:center;padding:24px}p{color:#9aa3bd}</style></head><body><div><h1>링크 만료</h1><p>이 링크는 만료되었거나 존재하지 않습니다.<br>(업로드 후 7일간 보관됩니다)</p></div></body></html>`
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>SnapContext 공유</title><style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:#0f1424;color:#e8eaf0;display:grid;place-items:center;min-height:100vh}div{text-align:center;padding:24px}p{color:#9aa3bd}</style></head><body><div><h1>링크 만료</h1><p>이 링크는 만료되었거나 존재하지 않습니다.<br>(공유 링크는 선택한 보관 기간이 지나면 자동 삭제됩니다)</p></div></body></html>`
 }
 
 export function buildViewerHtml(
   id: string,
   ctx: SharedContext | null,
-  expiryLabel: string
+  expiry: ExpiryInfo
 ): string {
-  const notice = `익명 공유 · 업로드 후 7일 자동 삭제 (만료 예정: ${escapeHtml(expiryLabel)})`
+  // 라벨과 일수를 따로 받으면 드리프트(라벨 30일치·문구 7일)가 생기므로 구조체에서 함께 만든다
+  const label = formatExpiryKST(expiry.expiresAtMs)
+  const notice = `익명 공유 · 업로드 후 ${expiry.retentionDays}일 자동 삭제 (만료 예정: ${escapeHtml(label)})`
   let contextBlock = ''
   if (ctx) {
     const urlHref = sanitizeHttpUrl(ctx.sourceUrl)

@@ -1,17 +1,33 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   escapeHtml,
   sanitizeHttpUrl,
   isPngMagic,
-  isExpired,
+  readExpiry,
+  isExpiredAt,
   formatExpiryKST,
   buildViewerHtml,
+  buildExpiredHtml,
   parseSharedContext,
+  parseExpiresInDays,
   safeDecodeId,
+  DAY_MS,
+  DEFAULT_EXPIRY_DAYS,
+  EXPIRY_DAYS_ALLOWLIST,
   MAX_AGE_MS,
   PNG_MAGIC,
+  type ExpiryInfo,
   type SharedContext
 } from '../src/lib'
+
+const T = Date.parse('2026-07-18T00:00:00.000Z')
+
+/** 레거시(메타 없음) 객체와 동일한 만료 정보 — buildViewerHtml 기존 케이스용 */
+const EXPIRY_LEGACY: ExpiryInfo = {
+  expiresAtMs: T + MAX_AGE_MS,
+  retentionDays: DEFAULT_EXPIRY_DAYS,
+  source: 'legacy'
+}
 
 describe('escapeHtml', () => {
   it('escapes &, <, >, ", \'', () => {
@@ -40,21 +56,136 @@ describe('isPngMagic', () => {
   })
 })
 
-describe('isExpired', () => {
-  const now = 1_700_000_000_000
-  it('expired past 7 days', () => {
-    expect(isExpired(new Date(now - MAX_AGE_MS - 1), now)).toBe(true)
+describe('readExpiry', () => {
+  it('메타 없음(레거시): uploaded + 7일 · source=legacy', () => {
+    const info = readExpiry({ uploaded: new Date(T) })
+    expect(info.expiresAtMs).toBe(T + MAX_AGE_MS)
+    expect(info.retentionDays).toBe(DEFAULT_EXPIRY_DAYS)
+    expect(info.source).toBe('legacy')
   })
-  it('not expired within 7 days', () => {
-    expect(isExpired(new Date(now - 1000), now)).toBe(false)
+
+  it('메타 1일: 짧은 쪽이 이긴다 — T+2d 에 만료(레거시였다면 미만료)', () => {
+    const info = readExpiry({
+      uploaded: new Date(T),
+      customMetadata: { expiresAt: new Date(T + DAY_MS).toISOString() }
+    })
+    expect(info.source).toBe('metadata')
+    expect(info.retentionDays).toBe(1)
+    expect(isExpiredAt(info.expiresAtMs, T + 2 * DAY_MS)).toBe(true)
+    // 대조군: 같은 uploaded 라도 메타가 없으면 아직 살아 있다 → 메타를 실제로 읽었다는 증거
+    const legacy = readExpiry({ uploaded: new Date(T) })
+    expect(isExpiredAt(legacy.expiresAtMs, T + 2 * DAY_MS)).toBe(false)
+  })
+
+  it('메타 30일: 긴 쪽이 이긴다 — T+8d 에 미만료(레거시였다면 만료)', () => {
+    const info = readExpiry({
+      uploaded: new Date(T),
+      customMetadata: { expiresAt: new Date(T + 30 * DAY_MS).toISOString() }
+    })
+    expect(info.source).toBe('metadata')
+    expect(info.retentionDays).toBe(30)
+    expect(isExpiredAt(info.expiresAtMs, T + 8 * DAY_MS)).toBe(false)
+    const legacy = readExpiry({ uploaded: new Date(T) })
+    expect(isExpiredAt(legacy.expiresAtMs, T + 8 * DAY_MS)).toBe(true)
+  })
+
+  it('파싱 실패: source=invalid + 즉시 만료 (조용히 7일로 되돌리지 않는다)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const info = readExpiry({
+      uploaded: new Date(T),
+      customMetadata: { expiresAt: 'not-a-date' }
+    })
+    expect(info.source).toBe('invalid')
+    expect(info.retentionDays).toBe(0)
+    expect(info.expiresAtMs).toBe(T)
+    expect(isExpiredAt(info.expiresAtMs, T + 1000)).toBe(true)
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
+})
+
+describe('parseExpiresInDays', () => {
+  it('필드 부재(null·undefined) → 기본 7일', () => {
+    expect(parseExpiresInDays(null)).toBe(DEFAULT_EXPIRY_DAYS)
+    expect(parseExpiresInDays(undefined)).toBe(DEFAULT_EXPIRY_DAYS)
+  })
+
+  it.each([
+    ['1', 1],
+    ['7', 7],
+    ['30', 30],
+    ['07', 7]
+  ])('allowlist 통과: %s → %i', (raw, expected) => {
+    expect(parseExpiresInDays(raw)).toBe(expected)
+  })
+
+  it('allowlist 는 1·7·30 뿐', () => {
+    expect([...EXPIRY_DAYS_ALLOWLIST]).toEqual([1, 7, 30])
+  })
+
+  it.each([
+    '3',
+    '0',
+    '365',
+    '-1',
+    'abc',
+    '7.0',
+    ' 7 ',
+    '0x7',
+    '7e0',
+    '+7',
+    '\n7'
+  ])('형식·allowlist 위반 → null: %j', (raw) => {
+    expect(parseExpiresInDays(raw)).toBeNull()
+  })
+
+  it("빈 문자열은 400 이다 — 부재(=7)로 흡수하지 않는다", () => {
+    expect(parseExpiresInDays('')).toBeNull()
+  })
+
+  it('문자열이 아닌 값(숫자·Blob·객체) → null (부재와 구별)', () => {
+    expect(parseExpiresInDays(7)).toBeNull()
+    expect(parseExpiresInDays(new Blob(['7']))).toBeNull()
+    expect(parseExpiresInDays({ toString: () => '7' })).toBeNull()
+  })
+
+  it("Number() 만으로는 통과하는 값들을 정규식이 막는다 (회귀 앵커)", () => {
+    for (const raw of ['0x7', '7e0', ' 7 ', '7.0', '+7']) {
+      expect(Number(raw)).toBe(7) // Number() 단독이면 전부 7 로 통과한다
+      expect(parseExpiresInDays(raw)).toBeNull()
+    }
+  })
+})
+
+describe('isExpiredAt (경계)', () => {
+  it('(T, T) = false — 만료시각 정각은 아직 유효', () => {
+    expect(isExpiredAt(T, T)).toBe(false)
+  })
+  it('(T, T+1) = true', () => {
+    expect(isExpiredAt(T, T + 1)).toBe(true)
   })
 })
 
 describe('formatExpiryKST', () => {
+  const kst = (ms: number) =>
+    new Intl.DateTimeFormat('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(ms))
+
   it('returns non-empty string', () => {
-    const s = formatExpiryKST(new Date(1_700_000_000_000))
+    const s = formatExpiryKST(1_700_000_000_000)
     expect(typeof s).toBe('string')
     expect(s.length).toBeGreaterThan(0)
+  })
+
+  it('받은 epoch ms 를 그대로 포맷한다 (내부에서 7일을 더하지 않는다)', () => {
+    expect(formatExpiryKST(T)).toBe(kst(T))
+    expect(formatExpiryKST(T)).not.toBe(formatExpiryKST(T + MAX_AGE_MS))
   })
 })
 
@@ -79,22 +210,55 @@ describe('buildViewerHtml', () => {
     pins: [{ id: 1, memo: '<b>memo' }]
   }
   it('escapes title (no raw script)', () => {
-    const html = buildViewerHtml('id1', ctx, '2026-06-11 09:00')
+    const html = buildViewerHtml('id1', ctx, EXPIRY_LEGACY)
     expect(html).not.toContain('<script>x')
     expect(html).toContain('&lt;script&gt;x')
   })
   it('references /i/{id}', () => {
-    expect(buildViewerHtml('id1', ctx, 'x')).toContain('/i/id1')
+    expect(buildViewerHtml('id1', ctx, EXPIRY_LEGACY)).toContain('/i/id1')
   })
   it('does not linkify javascript: url', () => {
     const bad = { ...ctx, sourceUrl: 'javascript:alert(1)' }
-    const html = buildViewerHtml('id2', bad, 'x')
+    const html = buildViewerHtml('id2', bad, EXPIRY_LEGACY)
     expect(html).not.toContain('href="javascript:')
   })
   it('renders image-only when ctx is null', () => {
-    const html = buildViewerHtml('id3', null, 'x')
+    const html = buildViewerHtml('id3', null, EXPIRY_LEGACY)
     expect(html).toContain('/i/id3')
     expect(html).not.toContain('<dl>')
+  })
+  it('notice 는 ExpiryInfo 로 만든다 — 일수·라벨이 같은 값에서 나온다', () => {
+    const html = buildViewerHtml('id4', null, EXPIRY_LEGACY)
+    expect(html).toContain(
+      `익명 공유 · 업로드 후 7일 자동 삭제 (만료 예정: ${formatExpiryKST(EXPIRY_LEGACY.expiresAtMs)})`
+    )
+  })
+  it('retentionDays 가 바뀌면 문구 일수도 따라 바뀐다 (하드코딩 7일 아님)', () => {
+    const expiry1: ExpiryInfo = {
+      expiresAtMs: T + DAY_MS,
+      retentionDays: 1,
+      source: 'metadata'
+    }
+    const html = buildViewerHtml('id5', null, expiry1)
+    expect(html).toContain('업로드 후 1일 자동 삭제')
+    expect(html).not.toContain('업로드 후 7일 자동 삭제')
+    expect(html).toContain(formatExpiryKST(T + DAY_MS))
+  })
+})
+
+describe('buildExpiredHtml (T3.3 — 탈-7일)', () => {
+  it("'7일' 이 없고 보관 기간 문구로 대체된다", () => {
+    const html = buildExpiredHtml()
+    expect(html).not.toContain('7일')
+    expect(html).toContain(
+      '이 링크는 만료되었거나 존재하지 않습니다.<br>(공유 링크는 선택한 보관 기간이 지나면 자동 삭제됩니다)'
+    )
+  })
+
+  it('인자 0개를 유지한다 — 보관일수를 붙이면 존재 오라클이 된다', () => {
+    // 물리 삭제된 객체는 보관일수를 알 수 없고, 아는 경우에만 일수를 붙이면
+    // "이 id 는 실재했다" 가 응답 차이로 새어 나간다
+    expect(buildExpiredHtml.length).toBe(0)
   })
 })
 
@@ -124,7 +288,7 @@ describe('hardening (regression)', () => {
       viewport: { width: 1, height: 2 },
       pins: []
     }
-    const html = buildViewerHtml('idq', ctx, 'x')
+    const html = buildViewerHtml('idq', ctx, EXPIRY_LEGACY)
     expect(html).not.toContain('"><script>alert(1)')
   })
 })

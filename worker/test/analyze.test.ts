@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MAX_AGE_MS } from '../src/lib'
+import { DAY_MS, MAX_AGE_MS } from '../src/lib'
 import {
   ANALYZE_MODES,
   DEFAULT_ANALYZE_MODE,
@@ -11,7 +11,11 @@ import {
 import { SnapPackError } from '../src/pack'
 import type { SharedContext } from '../src/lib'
 
-type StoredObj = { text?: string; uploaded: Date }
+type StoredObj = {
+  text?: string
+  uploaded: Date
+  customMetadata?: Record<string, string>
+}
 
 function makeBucket(objects: Map<string, StoredObj>) {
   return {
@@ -20,6 +24,7 @@ function makeBucket(objects: Map<string, StoredObj>) {
       if (!o) return null
       return {
         uploaded: o.uploaded,
+        customMetadata: o.customMetadata,
         async text() {
           return o.text ?? ''
         }
@@ -28,7 +33,7 @@ function makeBucket(objects: Map<string, StoredObj>) {
     async head(key: string) {
       const o = objects.get(key)
       if (!o) return null
-      return { uploaded: o.uploaded }
+      return { uploaded: o.uploaded, customMetadata: o.customMetadata }
     }
   }
 }
@@ -176,6 +181,26 @@ describe('snapAnalyze (만료/없음 — snap_pack 헬퍼 재사용)', () => {
         now: Date.now()
       })
     ).rejects.toMatchObject({ name: 'SnapPackError', code: 'EXPIRED' })
+  })
+
+  it('메타 30일 id → 8일 경과 조회에도 다이제스트 정상 (레거시였다면 EXPIRED)', async () => {
+    const uploadedAt = Date.now()
+    const meta = { expiresAt: new Date(uploadedAt + 30 * DAY_MS).toISOString() }
+    const bucket = makeBucket(
+      new Map([
+        [
+          'long.json',
+          { text: ctxJson, uploaded: new Date(uploadedAt), customMetadata: meta }
+        ],
+        ['long', { uploaded: new Date(uploadedAt), customMetadata: meta }]
+      ])
+    )
+    const md = await snapAnalyze(bucket as unknown as R2Bucket, {
+      id: 'long',
+      origin: 'https://w.test',
+      now: uploadedAt + 8 * DAY_MS
+    })
+    expect(md).toContain('Page Title')
   })
 
   it('orphan(이미지 없음) → SnapPackError NOT_FOUND', async () => {

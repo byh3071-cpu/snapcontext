@@ -1,4 +1,9 @@
-import { isExpired, parseSharedContext, type SharedContext } from './lib'
+import {
+  isExpiredAt,
+  readExpiry,
+  parseSharedContext,
+  type SharedContext
+} from './lib'
 
 export class SnapPackError extends Error {
   readonly code: 'NOT_FOUND' | 'EXPIRED' | 'INVALID'
@@ -41,7 +46,7 @@ export async function getSnapPack(
   if (!imageHead) {
     throw new SnapPackError('NOT_FOUND', `Capture image not found: ${id}`)
   }
-  if (isExpired(imageHead.uploaded, now)) {
+  if (isExpiredAt(readExpiry(imageHead).expiresAtMs, now)) {
     throw new SnapPackError('EXPIRED', `Capture expired: ${id}`)
   }
 
@@ -59,7 +64,7 @@ export async function getSnapPack(
     throw new SnapPackError('NOT_FOUND', `Capture context not found: ${id}`)
   }
 
-  if (isExpired(obj.uploaded, now)) {
+  if (isExpiredAt(readExpiry(obj).expiresAtMs, now)) {
     throw new SnapPackError('EXPIRED', `Capture context expired: ${id}`)
   }
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import worker from '../src/index'
-import { MAX_AGE_MS } from '../src/lib'
+import { DAY_MS, MAX_AGE_MS } from '../src/lib'
 import { listCaptures } from '../src/history'
 import type { Env } from '../src/env'
 
@@ -24,6 +24,7 @@ type StoredObj = {
   uploaded: Date
   contentType?: string
   text?: string
+  customMetadata?: Record<string, string>
 }
 
 interface CaptureInsert {
@@ -59,6 +60,7 @@ function makeUploadEnv(opts?: {
         return {
           body: o.bytes,
           uploaded: o.uploaded,
+          customMetadata: o.customMetadata,
           httpMetadata: { contentType: o.contentType },
           text: async () => o.text ?? ''
         }
@@ -66,21 +68,25 @@ function makeUploadEnv(opts?: {
       async head(key: string) {
         const o = objects.get(key)
         if (!o) return null
-        return { uploaded: o.uploaded }
+        return { uploaded: o.uploaded, customMetadata: o.customMetadata }
       },
-      async put(key: string, value: ArrayBuffer | string, putOpts?: { httpMetadata?: { contentType?: string } }) {
+      async put(
+        key: string,
+        value: ArrayBuffer | string,
+        putOpts?: {
+          httpMetadata?: { contentType?: string }
+          customMetadata?: Record<string, string>
+        }
+      ) {
+        const common = {
+          uploaded: new Date(now),
+          contentType: putOpts?.httpMetadata?.contentType,
+          customMetadata: putOpts?.customMetadata
+        }
         if (typeof value === 'string') {
-          objects.set(key, {
-            uploaded: new Date(now),
-            text: value,
-            contentType: putOpts?.httpMetadata?.contentType
-          })
+          objects.set(key, { ...common, text: value })
         } else {
-          objects.set(key, {
-            bytes: new Uint8Array(value),
-            uploaded: new Date(now),
-            contentType: putOpts?.httpMetadata?.contentType
-          })
+          objects.set(key, { ...common, bytes: new Uint8Array(value) })
         }
       },
       async delete(key: string) {
@@ -117,7 +123,8 @@ function makeUploadEnv(opts?: {
                 const nowIso = String(args[0])
                 const limit = Number(args[1])
                 const filtered = inserts
-                  .filter((r) => r.expires_at > nowIso)
+                  // 실 SQL 과 같은 경계(WHERE expires_at >= ?) — 다르면 거짓 통과다
+                  .filter((r) => r.expires_at >= nowIso)
                   .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
                   .slice(0, limit)
                 return { results: filtered }
@@ -134,11 +141,14 @@ function makeUploadEnv(opts?: {
 
 async function postUpload(
   env: Env,
-  fields: { image?: Blob; context?: string }
+  fields: { image?: Blob; context?: string; expiresInDays?: string }
 ): Promise<Response> {
   const form = new FormData()
   if (fields.image) form.set('image', fields.image, 'shot.png')
   if (fields.context !== undefined) form.set('context', fields.context)
+  if (fields.expiresInDays !== undefined) {
+    form.set('expiresInDays', fields.expiresInDays)
+  }
   return worker.fetch(
     new Request('https://w.test/upload', { method: 'POST', body: form }),
     env,
@@ -254,6 +264,103 @@ describe('POST /upload — D1 captures INSERT (Phase 2)', () => {
     warn.mockRestore()
     vi.restoreAllMocks()
   })
+})
+
+describe('POST /upload — expiresInDays 파라미터 (0.4.0 P3)', () => {
+  it("expiresInDays='30': R2 이미지·{id}.json·D1 이 같은 만료 문자열 (3자 일치)", async () => {
+    const fixedNow = Date.parse('2026-07-22T09:00:00.000Z')
+    vi.spyOn(Date, 'now').mockReturnValue(fixedNow)
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue('66666666-6666-4666-8666-666666666666')
+
+    const { env, objects, inserts } = makeUploadEnv({ now: fixedNow })
+    const res = await postUpload(env, {
+      image: new Blob([PNG], { type: 'image/png' }),
+      context: JSON.stringify(SHARED_CTX),
+      expiresInDays: '30'
+    })
+
+    expect(res.status).toBe(200)
+    const { id } = (await res.json()) as { id: string }
+    const expected = new Date(fixedNow + 30 * DAY_MS).toISOString()
+
+    expect(objects.get(id)?.customMetadata?.expiresAt).toBe(expected)
+    expect(objects.get(`${id}.json`)?.customMetadata?.expiresAt).toBe(expected)
+    expect(inserts[0]?.expires_at).toBe(expected)
+
+    vi.restoreAllMocks()
+  })
+
+  it("expiresInDays='1': 1일치 메타가 이미지·json 양쪽에 심긴다", async () => {
+    const fixedNow = Date.parse('2026-07-22T09:00:00.000Z')
+    vi.spyOn(Date, 'now').mockReturnValue(fixedNow)
+    const { env, objects, inserts } = makeUploadEnv({ now: fixedNow })
+    const res = await postUpload(env, {
+      image: new Blob([PNG], { type: 'image/png' }),
+      context: JSON.stringify(SHARED_CTX),
+      expiresInDays: '1'
+    })
+    expect(res.status).toBe(200)
+    const { id } = (await res.json()) as { id: string }
+    const expected = new Date(fixedNow + DAY_MS).toISOString()
+    expect(objects.get(id)?.customMetadata?.expiresAt).toBe(expected)
+    expect(objects.get(`${id}.json`)?.customMetadata?.expiresAt).toBe(expected)
+    expect(inserts[0]?.expires_at).toBe(expected)
+    vi.restoreAllMocks()
+  })
+
+  it('미지정 업로드: 기본 7일 메타가 심긴다 (D1 앵커와 동일 값)', async () => {
+    const fixedNow = Date.parse('2026-07-22T09:00:00.000Z')
+    vi.spyOn(Date, 'now').mockReturnValue(fixedNow)
+    const { env, objects, inserts } = makeUploadEnv({ now: fixedNow })
+    const res = await postUpload(env, {
+      image: new Blob([PNG], { type: 'image/png' }),
+      context: JSON.stringify(SHARED_CTX)
+    })
+    expect(res.status).toBe(200)
+    const { id } = (await res.json()) as { id: string }
+    const expected = new Date(fixedNow + MAX_AGE_MS).toISOString()
+    expect(objects.get(id)?.customMetadata?.expiresAt).toBe(expected)
+    expect(objects.get(`${id}.json`)?.customMetadata?.expiresAt).toBe(expected)
+    expect(inserts[0]?.expires_at).toBe(expected)
+    vi.restoreAllMocks()
+  })
+
+  it("allowlist 위반('3'): 400 + R2 put 0건 + D1 insert 0건 (부작용 없음)", async () => {
+    const { env, objects, inserts } = makeUploadEnv()
+    const res = await postUpload(env, {
+      image: new Blob([PNG], { type: 'image/png' }),
+      context: JSON.stringify(SHARED_CTX),
+      expiresInDays: '3'
+    })
+    expect(res.status).toBe(400)
+    expect(await res.text()).toContain('1, 7, 30')
+    expect(objects.size).toBe(0)
+    expect(inserts).toHaveLength(0)
+  })
+
+  it('빈 문자열: 400 (부재=7 로 조용히 흡수하지 않는다)', async () => {
+    const { env, objects, inserts } = makeUploadEnv()
+    const res = await postUpload(env, {
+      image: new Blob([PNG], { type: 'image/png' }),
+      context: JSON.stringify(SHARED_CTX),
+      expiresInDays: ''
+    })
+    expect(res.status).toBe(400)
+    expect(objects.size).toBe(0)
+    expect(inserts).toHaveLength(0)
+  })
+
+  it("Number() 우회값('0x7')도 400", async () => {
+    const { env, objects } = makeUploadEnv()
+    const res = await postUpload(env, {
+      image: new Blob([PNG], { type: 'image/png' }),
+      context: JSON.stringify(SHARED_CTX),
+      expiresInDays: '0x7'
+    })
+    expect(res.status).toBe(400)
+    expect(objects.size).toBe(0)
+  })
+
 })
 
 describe('POST /upload → snap_history 통합 (로컬 D1 mock)', () => {
