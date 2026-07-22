@@ -10,7 +10,7 @@
  */
 import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
-import { MAX_AGE_MS } from '../src/lib'
+import { DAY_MS, MAX_AGE_MS } from '../src/lib'
 import { createSnapMcpServer } from '../src/mcp'
 import type { Env } from '../src/env'
 
@@ -38,7 +38,11 @@ const ctxJson = JSON.stringify({
   pins: []
 })
 
-type Stored = { text?: string; uploaded: Date }
+type Stored = {
+  text?: string
+  uploaded: Date
+  customMetadata?: Record<string, string>
+}
 
 function makeEnv(objects: Map<string, Stored>, historyRows: unknown[] = []): Env {
   return {
@@ -49,6 +53,7 @@ function makeEnv(objects: Map<string, Stored>, historyRows: unknown[] = []): Env
         if (!o) return null
         return {
           uploaded: o.uploaded,
+          customMetadata: o.customMetadata,
           async text() {
             return o.text ?? ''
           }
@@ -57,7 +62,7 @@ function makeEnv(objects: Map<string, Stored>, historyRows: unknown[] = []): Env
       async head(key: string) {
         const o = objects.get(key)
         if (!o) return null
-        return { uploaded: o.uploaded }
+        return { uploaded: o.uploaded, customMetadata: o.customMetadata }
       },
       async put() {
         return undefined
@@ -409,6 +414,29 @@ describe('snap_pack tool isError (직접 서버)', () => {
       expect(toolResult.isError).toBe(true)
     }
     expect(server).toBeTruthy()
+  })
+
+  it('메타 1일 이미지는 uploaded 가 신선해도 T+2d 에 EXPIRED (mock customMetadata 통과 확인)', async () => {
+    const uploadedAt = Date.now()
+    const meta = { expiresAt: new Date(uploadedAt + DAY_MS).toISOString() }
+    const env = makeEnv(
+      new Map([
+        [
+          'short.json',
+          { text: ctxJson, uploaded: new Date(uploadedAt), customMetadata: meta }
+        ],
+        ['short', { uploaded: new Date(uploadedAt), customMetadata: meta }]
+      ])
+    )
+    const { getSnapPack } = await import('../src/pack')
+    await expect(
+      getSnapPack(env.BUCKET, {
+        id: 'short',
+        origin: 'https://w.test',
+        includeImage: false,
+        now: uploadedAt + 2 * DAY_MS
+      })
+    ).rejects.toMatchObject({ name: 'SnapPackError', code: 'EXPIRED' })
   })
 
   it('만료 이미지는 EXPIRED (MAX_AGE 초과)', async () => {

@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { MAX_AGE_MS } from '../src/lib'
+import { DAY_MS, MAX_AGE_MS } from '../src/lib'
 import { getSnapPack, SnapPackError } from '../src/pack'
 
-type StoredObj = { text?: string; uploaded: Date }
+type StoredObj = {
+  text?: string
+  uploaded: Date
+  customMetadata?: Record<string, string>
+}
 
 function makeBucket(objects: Map<string, StoredObj>) {
   return {
@@ -11,6 +15,7 @@ function makeBucket(objects: Map<string, StoredObj>) {
       if (!o) return null
       return {
         uploaded: o.uploaded,
+        customMetadata: o.customMetadata,
         async text() {
           return o.text ?? ''
         }
@@ -19,7 +24,7 @@ function makeBucket(objects: Map<string, StoredObj>) {
     async head(key: string) {
       const o = objects.get(key)
       if (!o) return null
-      return { uploaded: o.uploaded }
+      return { uploaded: o.uploaded, customMetadata: o.customMetadata }
     }
   }
 }
@@ -83,7 +88,7 @@ describe('getSnapPack (snap_pack)', () => {
     ).rejects.toBeInstanceOf(SnapPackError)
   })
 
-  it('만료된 id: SnapPackError (isExpired 재사용)', async () => {
+  it('만료된 id: SnapPackError (readExpiry·isExpiredAt 재사용)', async () => {
     const stale = new Date(Date.now() - MAX_AGE_MS - 1000)
     const bucket = makeBucket(
       new Map([
@@ -99,6 +104,49 @@ describe('getSnapPack (snap_pack)', () => {
         now: Date.now()
       })
     ).rejects.toBeInstanceOf(SnapPackError)
+  })
+
+  it('메타 1일: uploaded 가 신선해도 T+2d 조회는 EXPIRED', async () => {
+    const uploadedAt = Date.now()
+    const meta = { expiresAt: new Date(uploadedAt + DAY_MS).toISOString() }
+    const bucket = makeBucket(
+      new Map([
+        [
+          'short.json',
+          { text: ctxJson, uploaded: new Date(uploadedAt), customMetadata: meta }
+        ],
+        ['short', { uploaded: new Date(uploadedAt), customMetadata: meta }]
+      ])
+    )
+    await expect(
+      getSnapPack(bucket as unknown as R2Bucket, {
+        id: 'short',
+        origin: 'https://w.test',
+        includeImage: false,
+        now: uploadedAt + 2 * DAY_MS
+      })
+    ).rejects.toMatchObject({ name: 'SnapPackError', code: 'EXPIRED' })
+  })
+
+  it('메타 30일: uploaded 가 8일 지나도 정상 반환 (이미지·json 양쪽 메타)', async () => {
+    const uploadedAt = Date.now()
+    const meta = { expiresAt: new Date(uploadedAt + 30 * DAY_MS).toISOString() }
+    const bucket = makeBucket(
+      new Map([
+        [
+          'long.json',
+          { text: ctxJson, uploaded: new Date(uploadedAt), customMetadata: meta }
+        ],
+        ['long', { uploaded: new Date(uploadedAt), customMetadata: meta }]
+      ])
+    )
+    const pack = await getSnapPack(bucket as unknown as R2Bucket, {
+      id: 'long',
+      origin: 'https://w.test',
+      includeImage: false,
+      now: uploadedAt + 8 * DAY_MS
+    })
+    expect(pack.sourceTitle).toBe('T')
   })
 
   it('orphan(JSON만 있고 이미지 없음): NOT_FOUND (MAJOR-3)', async () => {

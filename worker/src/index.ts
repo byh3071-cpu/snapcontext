@@ -1,8 +1,8 @@
 import {
   MAX_UPLOAD_BYTES,
   isPngMagic,
-  isExpired,
-  formatExpiryKST,
+  isExpiredAt,
+  readExpiry,
   buildViewerHtml,
   buildExpiredHtml,
   parseSharedContext,
@@ -198,13 +198,18 @@ export default {
     // raw 이미지: GET /i/{id}
     if (req.method === 'GET' && url.pathname.startsWith('/i/')) {
       const id = safeDecodeId(url.pathname.slice(3))
+      // now 는 분기당 1회만 — 판정·헤더가 같은 시각을 봐야 한다
+      const now = Date.now()
       let obj: R2ObjectBody | null
       try {
         obj = await env.BUCKET.get(id)
       } catch {
         return textResponse('이미지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 502)
       }
-      if (!obj || isExpired(obj.uploaded, Date.now())) {
+      if (!obj) {
+        return textResponse(GONE_MSG, 410)
+      }
+      if (isExpiredAt(readExpiry(obj).expiresAtMs, now)) {
         return textResponse(GONE_MSG, 410)
       }
       return new Response(obj.body, {
@@ -219,14 +224,20 @@ export default {
     // 뷰어: GET /s/{id}
     if (req.method === 'GET' && url.pathname.startsWith('/s/')) {
       const id = safeDecodeId(url.pathname.slice(3))
+      // now 는 분기당 1회만 — 판정과 표시가 같은 시각을 봐야 한다
+      const now = Date.now()
       try {
         const head = await env.BUCKET.head(id)
-        if (!head || isExpired(head.uploaded, Date.now())) {
+        if (!head) {
+          return htmlResponse(buildExpiredHtml(), 410)
+        }
+        const expiry = readExpiry(head)
+        if (isExpiredAt(expiry.expiresAtMs, now)) {
           return htmlResponse(buildExpiredHtml(), 410)
         }
         const ctxObj = await env.BUCKET.get(`${id}.json`)
         const shared = ctxObj ? parseSharedContext(await ctxObj.text()) : null
-        const html = buildViewerHtml(id, shared, formatExpiryKST(head.uploaded))
+        const html = buildViewerHtml(id, shared, expiry)
         return htmlResponse(html, 200)
       } catch {
         return textResponse('페이지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 502)

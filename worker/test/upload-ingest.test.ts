@@ -24,6 +24,7 @@ type StoredObj = {
   uploaded: Date
   contentType?: string
   text?: string
+  customMetadata?: Record<string, string>
 }
 
 interface CaptureInsert {
@@ -59,6 +60,7 @@ function makeUploadEnv(opts?: {
         return {
           body: o.bytes,
           uploaded: o.uploaded,
+          customMetadata: o.customMetadata,
           httpMetadata: { contentType: o.contentType },
           text: async () => o.text ?? ''
         }
@@ -66,21 +68,25 @@ function makeUploadEnv(opts?: {
       async head(key: string) {
         const o = objects.get(key)
         if (!o) return null
-        return { uploaded: o.uploaded }
+        return { uploaded: o.uploaded, customMetadata: o.customMetadata }
       },
-      async put(key: string, value: ArrayBuffer | string, putOpts?: { httpMetadata?: { contentType?: string } }) {
+      async put(
+        key: string,
+        value: ArrayBuffer | string,
+        putOpts?: {
+          httpMetadata?: { contentType?: string }
+          customMetadata?: Record<string, string>
+        }
+      ) {
+        const common = {
+          uploaded: new Date(now),
+          contentType: putOpts?.httpMetadata?.contentType,
+          customMetadata: putOpts?.customMetadata
+        }
         if (typeof value === 'string') {
-          objects.set(key, {
-            uploaded: new Date(now),
-            text: value,
-            contentType: putOpts?.httpMetadata?.contentType
-          })
+          objects.set(key, { ...common, text: value })
         } else {
-          objects.set(key, {
-            bytes: new Uint8Array(value),
-            uploaded: new Date(now),
-            contentType: putOpts?.httpMetadata?.contentType
-          })
+          objects.set(key, { ...common, bytes: new Uint8Array(value) })
         }
       },
       async delete(key: string) {
