@@ -1,4 +1,10 @@
 import { swissIcon } from '../utils/swiss-icons'
+import { EXPIRY_DAYS_ALLOWLIST, isExpiryDays } from '../../utils/upload'
+import {
+  formatExpiryDays,
+  loadShareExpiryDays,
+  saveShareExpiryDays
+} from '../../utils/share-expiry'
 
 /* manifest commands 진실 기준: V/E/M/G만 suggested_key 등록.
    copy-png은 Chrome suggested_key 4개 제한으로 미등록 → '직접 지정' 안내. */
@@ -71,12 +77,63 @@ export function mountShortcutsHelp(
     list.append(rowEl)
   }
 
+  /* ---- 두 번째 그룹: 공유 보관 기간 (storage 키 shareExpiryDays) ---- */
+  const shareGroupLabel = document.createElement('div')
+  shareGroupLabel.className = 'set-group-label shortcuts-help__share-label'
+  shareGroupLabel.textContent = '공유'
+
+  const expiryRow = document.createElement('div')
+  expiryRow.className = 'help-row shortcuts-help__expiry-row'
+  const expiryLabel = document.createElement('label')
+  expiryLabel.className = 'lbl'
+  expiryLabel.htmlFor = 'share-expiry-days'
+  expiryLabel.textContent = '보관 기간'
+  const expirySelectWrap = document.createElement('div')
+  expirySelectWrap.className = 'select-wrap'
+  const expirySelect = document.createElement('select')
+  expirySelect.id = 'share-expiry-days'
+  expirySelect.className = 'shortcuts-help__expiry-select'
+  for (const days of EXPIRY_DAYS_ALLOWLIST) {
+    const option = document.createElement('option')
+    option.value = String(days)
+    option.textContent = formatExpiryDays(days)
+    expirySelect.append(option)
+  }
+  expirySelectWrap.append(expirySelect, swissIcon('chev', 'ic-sm chev'))
+  expiryRow.append(expiryLabel, expirySelectWrap)
+
+  const expiryNote = document.createElement('p')
+  expiryNote.className = 'help-note shortcuts-help__expiry-note'
+  expiryNote.textContent =
+    '새로 만드는 공유 링크에 적용됩니다. 이미 만든 링크의 보관 기간은 바뀌지 않습니다.'
+
+  void (async () => {
+    expirySelect.value = String(await loadShareExpiryDays())
+  })()
+  expirySelect.addEventListener('change', () => {
+    const next = Number(expirySelect.value)
+    if (!isExpiryDays(next)) {
+      // option 을 allowlist 로 만들었으니 도달 불가 — 도달했다면 조용히 넘기지 않고 드러낸다
+      console.warn('[share-expiry] 허용되지 않은 보관 기간 선택값:', expirySelect.value)
+      return
+    }
+    void saveShareExpiryDays(next)
+  })
+
   const note = document.createElement('p')
   note.className = 'help-note shortcuts-help__note'
   note.textContent =
     '브라우저에서 이미 사용 중인 단축키와 충돌하면 자동 등록되지 않을 수 있습니다. 그럴 때는 브라우저의 확장 프로그램 단축키 설정에서 직접 지정하세요.'
 
-  panel.append(headRow, groupLabel, list, note)
+  panel.append(
+    headRow,
+    groupLabel,
+    list,
+    note,
+    shareGroupLabel,
+    expiryRow,
+    expiryNote
+  )
   masthead.append(panel)
 
   const setOpen = (open: boolean): void => {

@@ -4,29 +4,10 @@ import {
   ensureUserToken,
   isValidTokenFormat
 } from '../src/utils/token'
+import { stubChromeStorage } from './helpers/chrome-storage'
 
 const VALID_TOKEN = 'sc_AAAAAAAAAAAAAAAAAAAAAA.BBBBBBBBBBBBBBBBBBBBBB'
 const ISSUED_TOKEN = 'sc_CCCCCCCCCCCCCCCCCCCCCC.DDDDDDDDDDDDDDDDDDDDDD'
-
-/**
- * chrome.storage.local 인메모리 mock.
- * vitest environment 가 'node' 라 chrome 전역이 아예 없다 — 스텁하지 않으면 ReferenceError.
- * T5.2(업로드 bearer)·T5.3(설정 UI) 테스트에서도 그대로 쓰도록 export 한다.
- */
-export function stubChromeStorage(initial: Record<string, unknown> = {}) {
-  const store = new Map<string, unknown>(Object.entries(initial))
-  const get = vi.fn(async (key: string): Promise<Record<string, unknown>> => {
-    return store.has(key) ? { [key]: store.get(key) } : {}
-  })
-  const set = vi.fn(async (items: Record<string, unknown>): Promise<void> => {
-    for (const [k, v] of Object.entries(items)) store.set(k, v)
-  })
-  const remove = vi.fn(async (key: string): Promise<void> => {
-    store.delete(key)
-  })
-  vi.stubGlobal('chrome', { storage: { local: { get, set, remove } } })
-  return { store, get, set, remove }
-}
 
 const tokenJson = (token: unknown) =>
   new Response(JSON.stringify({ token }), {

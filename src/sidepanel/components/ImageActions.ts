@@ -5,7 +5,15 @@ import {
   renderAnnotatedPngBlob
 } from '../../utils/annotated-image'
 import { toKoreanErrorMessage } from '../../utils/messaging'
-import { uploadShare } from '../../utils/upload'
+import { uploadShare, type ExpiryDays } from '../../utils/upload'
+import { ensureUserToken } from '../../utils/token'
+import {
+  DEFAULT_SHARE_EXPIRY_DAYS,
+  SHARE_EXPIRY_CHANGED_EVENT,
+  buildShareConsentMessage,
+  formatExpiryDays,
+  loadShareExpiryDays
+} from '../../utils/share-expiry'
 import { getStorageItem, setStorageItem } from '../../storage'
 import { showConfirm } from '../confirm-dialog'
 import { swissIcon, type SwissIconName } from '../utils/swiss-icons'
@@ -13,10 +21,6 @@ import { mkSecHead } from '../utils/section'
 
 const CONSENT_KEY = 'snapcontext.uploadConsent'
 const INCLUDE_CONTEXT_KEY = 'snapcontext.shareIncludeContext'
-const CONSENT_MESSAGE =
-  '공개 링크로 업로드됩니다. 링크를 아는 누구나 볼 수 있고 7일 후 삭제됩니다. ' +
-  '컨텍스트 포함을 켜면 소스 주소·핀 메모도 함께 공개됩니다(주소에 토큰·쿼리가 있을 수 있으니 주의). ' +
-  '민감한 화면은 주의하세요.'
 
 export type ImageActionsApi = {
   sync: () => void
@@ -68,12 +72,14 @@ export function mountImageActions(
   pngHost.append(row)
 
   /* ---- §04 공유 섹션: 발행 블록 ---- */
-  const { head } = mkSecHead({
+  // 만료 문구 5곳(aside·캡션·버튼 title·버튼 라벨·업로드 후 라벨 복원)이 설정 변경 시
+  // 함께 갱신돼야 해서 asideEl 을 버리지 않고 받는다 (ContextPackPanel 선례)
+  const { head, asideEl } = mkSecHead({
     num: '04',
     eyebrow: '발행',
     title: '공유',
     titleId: 'sec-share-title',
-    asideText: '7일'
+    asideText: formatExpiryDays(DEFAULT_SHARE_EXPIRY_DAYS)
   })
 
   const block = document.createElement('div')
@@ -82,20 +88,38 @@ export function mountImageActions(
   const cap = document.createElement('div')
   cap.className = 'publish-cap'
   cap.setAttribute('aria-hidden', 'true')
-  cap.innerHTML =
-    '<span class="pc-num tnum">04</span><span class="pc-txt">PUBLISH · 공개 · 7일 만료</span>'
+  const capNum = document.createElement('span')
+  capNum.className = 'pc-num tnum'
+  capNum.textContent = '04'
+  // innerHTML 대신 노드로 만든다 — 만료 문구만 따로 갱신하려면 참조가 필요하다
+  const capTxt = document.createElement('span')
+  capTxt.className = 'pc-txt'
+  cap.append(capNum, capTxt)
 
   const shareRow = document.createElement('div')
   shareRow.className = 'image-actions__share-row'
   const btnShare = document.createElement('button')
   btnShare.type = 'button'
   btnShare.className = 'btn-publish'
-  btnShare.title = '공유 링크 생성 (공개·7일)'
   const shareIcon = swissIcon('share')
   const shareLabel = document.createElement('span')
-  shareLabel.textContent = '공유 링크 생성 (공개·7일)'
   btnShare.append(shareIcon, shareLabel)
   shareRow.append(btnShare)
+
+  /* ---- 만료 문구 단일 재렌더 ---- */
+  // 마운트 시점에 값이 정해지고 갱신 훅이 없던 5곳을 여기 한 곳으로 묶는다.
+  // 설정에서 보관 기간을 바꾸면 이 함수만 다시 부르면 된다.
+  let expiryDays: ExpiryDays = DEFAULT_SHARE_EXPIRY_DAYS
+  const renderExpiryTexts = (): void => {
+    const label = formatExpiryDays(expiryDays)
+    asideEl.textContent = label
+    capTxt.textContent = `PUBLISH · 공개 · ${label} 만료`
+    // e2e 로케이터가 '공유 링크' substring 에 결합돼 있다 — 이 접두사는 유지해야 한다
+    const shareText = `공유 링크 생성 (공개·${label})`
+    btnShare.title = shareText
+    shareLabel.textContent = shareText
+  }
+  renderExpiryTexts()
 
   /* 컨텍스트 포함 토글 — 직각 스위치 */
   const toggleLabel = document.createElement('label')
@@ -125,6 +149,17 @@ export function mountImageActions(
   })()
   toggleInput.addEventListener('change', () => {
     void setStorageItem(INCLUDE_CONTEXT_KEY, toggleInput.checked)
+  })
+
+  // 보관 기간 로드 + 설정 패널에서 바뀌면 문구 갱신 (storage/history.ts 의 이벤트 방식 선례)
+  const reloadExpiryDays = async (): Promise<void> => {
+    expiryDays = await loadShareExpiryDays()
+    // 업로드 중이면 라벨은 '업로드 중…' 이어야 한다 — 복원은 onShare 의 finally 가 한다
+    if (!sharing) renderExpiryTexts()
+  }
+  void reloadExpiryDays()
+  window.addEventListener(SHARE_EXPIRY_CHANGED_EVENT, () => {
+    void reloadExpiryDays()
   })
 
   const onCopy = async (): Promise<void> => {
@@ -166,11 +201,14 @@ export function mountImageActions(
       return
     }
     sharing = true
+    // 이 업로드가 쓸 보관 기간을 여기서 한 번 고정한다 — 동의 문구·전송값·성공 토스트가
+    // 같은 값을 봐야 한다(중간에 설정이 바뀌어도 사실과 다른 동의가 되지 않게)
+    const days = expiryDays
     try {
-      // 최초 1회 동의
+      // 최초 1회 동의 — 문구에 선택한 보관 기간이 들어간다
       const consented = (await getStorageItem<boolean>(CONSENT_KEY)) ?? false
       if (!consented) {
-        const ok = await showConfirm(CONSENT_MESSAGE)
+        const ok = await showConfirm(buildShareConsentMessage(days))
         if (!ok) return
         await setStorageItem(CONSENT_KEY, true)
       }
@@ -179,10 +217,15 @@ export function mountImageActions(
       shareLabel.textContent = '업로드 중…'
       const blob = await renderAnnotatedPngBlob(img, deps.getPins())
       const ctx = toggleInput.checked ? deps.getContext() ?? undefined : undefined
-      const url = await uploadShare(blob, ctx)
+      // 토큰 발급은 반드시 업로드 직전에 — 사이드패널 초기화 시점에 부르면
+      // e2e 의 fetch mock 설치(page.goto 후) 이전이라 실제 네트워크로 나간다.
+      // null 이어도 익명 업로드로 그대로 진행된다(uploadShare 가 헤더를 생략).
+      const token = await ensureUserToken()
+      const url = await uploadShare(blob, ctx, { token, expiresInDays: days })
       try {
         await navigator.clipboard.writeText(url)
-        deps.showToast('공유 링크 복사됨 · 7일 후 만료', 'info')
+        // /upload 응답에 expiresAt 이 없다(ADR-013) → 로컬 선택값으로 문구를 만든다
+        deps.showToast(`공유 링크 복사됨 · ${formatExpiryDays(days)} 후 만료`, 'info')
       } catch {
         deps.showToast(`공유 링크: ${url} (복사 실패)`, 'info')
       }
@@ -191,7 +234,8 @@ export function mountImageActions(
     } finally {
       sharing = false
       btnShare.disabled = !deps.hasCapture()
-      shareLabel.textContent = '공유 링크 생성 (공개·7일)'
+      // 라벨 복원도 재렌더로 — 업로드 중 설정이 바뀌었으면 최신 기간이 반영된다
+      renderExpiryTexts()
     }
   }
 
