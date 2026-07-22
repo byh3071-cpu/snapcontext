@@ -8,13 +8,15 @@ import {
   parseSharedContext,
   safeDecodeId
 } from './lib'
-import { gateMcpBearer } from './auth'
+import { resolveMcpAuth } from './auth'
 import { rejectInvalidOrigin } from './origin'
 import {
   captureRowFromSharedContext,
   cleanupUploadObjects,
   insertCapture
 } from './ingest'
+import { generateUserToken, ownerFromToken, verifyUserToken } from './token'
+import { allowTokenRequest } from './token-rate-limit'
 import type { Env } from './env'
 
 export type { Env }
@@ -70,24 +72,65 @@ export default {
         return new Response(null, { headers: CORS })
       }
 
-      const authDenied = await gateMcpBearer(req, env.SNAPCONTEXT_BEARER_TOKEN)
-      if (authDenied) return authDenied
+      const auth = await resolveMcpAuth(req, env)
+      if (auth instanceof Response) return auth
 
       // agents/mcp 는 cloudflare: 워커 모듈 — 게이트 통과 후에만 로드
       const { handleMcpRequest } = await import('./mcp-route')
-      return handleMcpRequest(req, env, ctx)
+      return handleMcpRequest(req, env, ctx, auth)
     }
 
     if (req.method === 'OPTIONS') {
       return new Response(null, { headers: CORS })
     }
 
+    // 토큰 발급: POST /token — chrome-extension Origin 필수 (/upload 에는 Origin 검증 없음)
+    if (req.method === 'POST' && url.pathname === '/token') {
+      const origin = req.headers.get('Origin') ?? ''
+      if (!origin.startsWith('chrome-extension://')) {
+        return textResponse('Forbidden origin', 403)
+      }
+      const secret = env.TOKEN_SIGNING_SECRET
+      if (secret === undefined || secret.length === 0) {
+        return textResponse(
+          'Server misconfigured: TOKEN_SIGNING_SECRET unset',
+          500
+        )
+      }
+      const ip = req.headers.get('CF-Connecting-IP') ?? ''
+      if (!allowTokenRequest(ip)) {
+        return textResponse('Too many token requests', 429)
+      }
+      const token = await generateUserToken(secret)
+      return jsonResponse({ token })
+    }
+
     // 업로드: POST /upload (multipart/form-data: image 필수, context 선택)
+    // Authorization optional — 없음=익명(owner NULL). malformed/HMAC 실패=401. Origin 검증 없음.
     if (req.method === 'POST' && url.pathname === '/upload') {
       const cl = Number(req.headers.get('content-length') ?? '0')
       if (Number.isFinite(cl) && cl > MAX_UPLOAD_BYTES + 1024 * 1024) {
         return textResponse('파일이 너무 큽니다. (최대 10MB)', 413)
       }
+
+      // optional bearer → owner (TOKEN_SIGNING_SECRET 미설정 시 토큰 검증 경로만 비활성)
+      let owner: string | null = null
+      const authHeader = req.headers.get('Authorization')
+      if (authHeader !== null) {
+        const signing = env.TOKEN_SIGNING_SECRET
+        if (signing !== undefined && signing.length > 0) {
+          if (!authHeader.startsWith('Bearer ')) {
+            return textResponse('Unauthorized', 401)
+          }
+          const raw = authHeader.slice('Bearer '.length)
+          if (!(await verifyUserToken(raw, signing))) {
+            return textResponse('Unauthorized', 401)
+          }
+          owner = await ownerFromToken(raw)
+        }
+        // secret 미설정 → 검증 경로 비활성, owner NULL(익명) 유지
+      }
+
       let form: FormData
       try {
         form = await req.formData()
@@ -124,14 +167,14 @@ export default {
         return textResponse('업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.', 502)
       }
 
-      // 수집 = 공유 업로드분(context 있을 때만 D1 인덱스). bearer는 Phase 4 이연(ADR-010).
+      // 수집 = 공유 업로드분(context 있을 때만 D1 인덱스). bearer 있으면 owner 스탬프.
       if (hasContext) {
         const shared = parseSharedContext(context)
         if (shared) {
           try {
             await insertCapture(
               env.DB,
-              captureRowFromSharedContext(id, shared, nowMs)
+              captureRowFromSharedContext(id, shared, nowMs, owner)
             )
           } catch {
             await cleanupUploadObjects(env.BUCKET, id, wroteJson)

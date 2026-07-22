@@ -6,6 +6,7 @@ import {
   snapAnalyze,
   SnapAnalyzeError
 } from './analyze'
+import type { McpAuthResult } from './auth'
 import { listCaptures, DEFAULT_HISTORY_LIMIT } from './history'
 import { getSnapPack, SnapPackError } from './pack'
 import type { Env } from './env'
@@ -17,7 +18,11 @@ export function resetMcpServerCreateCount(): void {
   mcpServerCreateCount = 0
 }
 
-export function createSnapMcpServer(env: Env, requestUrl: URL): McpServer {
+export function createSnapMcpServer(
+  env: Env,
+  requestUrl: URL,
+  auth: McpAuthResult = { scope: 'admin' }
+): McpServer {
   mcpServerCreateCount += 1
   const server = new McpServer({
     name: 'snapcontext',
@@ -40,9 +45,11 @@ export function createSnapMcpServer(env: Env, requestUrl: URL): McpServer {
       }
     },
     async ({ limit }) => {
+      // user 스코프: 본인 owner만. admin: 전체(NULL 레거시 포함). snap_pack/analyze는 owner 무검사.
       const entries = await listCaptures(env.DB, {
         nowIso: new Date().toISOString(),
-        limit
+        limit,
+        ...(auth.scope === 'user' ? { owner: auth.owner } : {})
       })
       return {
         content: [{ type: 'text', text: JSON.stringify(entries) }]
