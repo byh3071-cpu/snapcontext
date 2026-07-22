@@ -200,6 +200,37 @@ async function main() {
     // in-flight 가드 + storage 재사용이 동작하면 업로드를 여러 번 해도 발급은 1회다
     log('토큰 발급은 1회만 (재사용)', tokenReqs === 1)
 
+    // --- 3회차: 설정에서 30일 선택 (N5) — 비기본 기간이 한 번도 안 돌던 구멍 ---
+    await page.locator('[data-role="settings"]').click()
+    await page.waitForTimeout(200)
+    const expirySelect = page.locator('#share-expiry-days')
+    log('설정 패널에 보관 기간 select 노출', (await expirySelect.count()) > 0)
+    await expirySelect.selectOption('30')
+    await page.waitForTimeout(300)
+    await page.locator('.help-close').click()
+    await page.waitForTimeout(200)
+
+    const label30 = (await shareBtn.textContent()) ?? ''
+    log('기간 변경 시 공유 버튼 라벨 갱신', label30.includes('30일'), label30.trim())
+    const cap30 = (await page.locator('.publish-cap').first().textContent()) ?? ''
+    log('기간 변경 시 발행 캡션 갱신', cap30.includes('30일'), cap30.trim())
+
+    await shareBtn.click()
+    await page.waitForTimeout(300)
+    // 7일 → 30일 상향이라 재동의를 받아야 한다 (N3)
+    const dialog3 = page.locator('.snap-confirm')
+    const dialog3Shown = (await dialog3.count()) > 0
+    log('기간 상향 시 재동의 다이얼로그 표시', dialog3Shown)
+    if (dialog3Shown) {
+      const consentText = (await dialog3.first().textContent()) ?? ''
+      log('재동의 문구에 30일 반영(사실과 다른 동의 방지)', consentText.includes('30일'))
+      await page.locator('.snap-confirm__btn--primary').click()
+    }
+    await page.waitForTimeout(800)
+
+    const expiry30 = await page.evaluate(() => window.__lastExpiry ?? null)
+    log('보관 기간 30일 전송', expiry30 === '30', String(expiry30))
+
     await page.screenshot({ path: resolve(SCREENSHOTS_DIR, '07-upload-share.png') })
 
     const failed = results.filter((r) => !r.pass)

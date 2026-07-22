@@ -12,7 +12,9 @@ import {
   SHARE_EXPIRY_CHANGED_EVENT,
   buildShareConsentMessage,
   formatExpiryDays,
-  loadShareExpiryDays
+  loadShareExpiryDays,
+  needsShareConsent,
+  readConsentedDays
 } from '../../utils/share-expiry'
 import { getStorageItem, setStorageItem } from '../../storage'
 import { showConfirm } from '../confirm-dialog'
@@ -205,12 +207,15 @@ export function mountImageActions(
     // 같은 값을 봐야 한다(중간에 설정이 바뀌어도 사실과 다른 동의가 되지 않게)
     const days = expiryDays
     try {
-      // 최초 1회 동의 — 문구에 선택한 보관 기간이 들어간다
-      const consented = (await getStorageItem<boolean>(CONSENT_KEY)) ?? false
-      if (!consented) {
+      // 동의 — 문구에 선택한 보관 기간이 들어가고, 동의한 기간을 함께 저장한다.
+      // 더 긴 기간으로 올리면 다시 받는다(짧게 줄이는 건 불리하지 않으니 안 묻는다).
+      const consentedDays = readConsentedDays(
+        await getStorageItem<unknown>(CONSENT_KEY)
+      )
+      if (needsShareConsent(consentedDays, days)) {
         const ok = await showConfirm(buildShareConsentMessage(days))
         if (!ok) return
-        await setStorageItem(CONSENT_KEY, true)
+        await setStorageItem(CONSENT_KEY, days)
       }
 
       btnShare.disabled = true

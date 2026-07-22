@@ -6,6 +6,8 @@ import {
   buildShareConsentMessage,
   formatExpiryDays,
   loadShareExpiryDays,
+  needsShareConsent,
+  readConsentedDays,
   saveShareExpiryDays
 } from '../src/utils/share-expiry'
 import type { ExpiryDays } from '../src/utils/upload'
@@ -40,6 +42,50 @@ describe('buildShareConsentMessage', () => {
       expect(msg).toContain('공개 링크')
       expect(msg).toContain('컨텍스트')
     }
+  })
+})
+
+describe('동의 기간 추적 (N3)', () => {
+  // 0.3.x 는 boolean 플래그였고 보관 기간이 7일 고정이었다 → true = 7일 동의로 읽는다
+  it('구버전 boolean 동의값을 7일 동의로 마이그레이션한다', () => {
+    expect(readConsentedDays(true)).toBe(7)
+  })
+
+  it('미동의·손상값은 null 이다', () => {
+    for (const value of [false, undefined, null, 3, '7', {}, 0]) {
+      expect(readConsentedDays(value), JSON.stringify(value)).toBeNull()
+    }
+  })
+
+  it('저장된 allowlist 기간을 그대로 읽는다', () => {
+    expect(readConsentedDays(1)).toBe(1)
+    expect(readConsentedDays(7)).toBe(7)
+    expect(readConsentedDays(30)).toBe(30)
+  })
+
+  it('동의 이력이 없으면 물어본다', () => {
+    expect(needsShareConsent(null, 1)).toBe(true)
+    expect(needsShareConsent(null, 7)).toBe(true)
+    expect(needsShareConsent(null, 30)).toBe(true)
+  })
+
+  it('더 긴 기간으로 올릴 때만 재동의를 받는다', () => {
+    expect(needsShareConsent(7, 30)).toBe(true)
+    expect(needsShareConsent(1, 7)).toBe(true)
+    expect(needsShareConsent(1, 30)).toBe(true)
+  })
+
+  it('같거나 짧은 기간은 다시 묻지 않는다 (사용자에게 불리하지 않다)', () => {
+    expect(needsShareConsent(7, 7)).toBe(false)
+    expect(needsShareConsent(30, 7)).toBe(false)
+    expect(needsShareConsent(30, 1)).toBe(false)
+    expect(needsShareConsent(7, 1)).toBe(false)
+  })
+
+  it('구버전 boolean 사용자가 30일로 올리면 재동의를 받는다', () => {
+    expect(needsShareConsent(readConsentedDays(true), 30)).toBe(true)
+    // 7일 유지면 계속 안 묻는다
+    expect(needsShareConsent(readConsentedDays(true), 7)).toBe(false)
   })
 })
 

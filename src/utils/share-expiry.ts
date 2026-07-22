@@ -35,6 +35,33 @@ export function buildShareConsentMessage(days: ExpiryDays): string {
   )
 }
 
+/**
+ * 저장된 업로드 동의값 → 동의한 보관 기간. 동의 이력이 없으면 null.
+ *
+ * 0.3.x 는 boolean 플래그였고 보관 기간이 7일 고정이었으므로 `true` 는 7일 동의로 읽는다
+ * (마이그레이션 스크립트 없이 그대로 호환된다 — 다음 동의 때 자연히 숫자로 덮어써진다).
+ */
+export function readConsentedDays(stored: unknown): ExpiryDays | null {
+  if (stored === true) return 7
+  if (isExpiryDays(stored)) return stored
+  return null
+}
+
+/**
+ * 재동의가 필요한가.
+ *
+ * 동의 이력이 없으면 당연히 필요하고, **더 긴 기간으로 올릴 때만** 다시 받는다.
+ * "7일 후 삭제"로 동의받고 30일로 저장하면 사실과 다른 동의가 되기 때문.
+ * 줄이는 건 사용자에게 불리하지 않으므로 다시 묻지 않는다.
+ */
+export function needsShareConsent(
+  consentedDays: ExpiryDays | null,
+  days: ExpiryDays
+): boolean {
+  if (consentedDays === null) return true
+  return days > consentedDays
+}
+
 /** 저장값이 없거나 손상됐으면 기본 7일. storage 는 JSON 왕복이라 타입 보장이 없다. */
 export async function loadShareExpiryDays(): Promise<ExpiryDays> {
   const stored = await getStorageItem<unknown>(SHARE_EXPIRY_STORAGE_KEY)
