@@ -63,10 +63,25 @@ async function installFetchMock(page) {
   await page.evaluate(() => {
     const w = window
     w.__lastUpload = null
+    w.__tokenRequests = 0
     const real = w.fetch
     w.fetch = async (input, init) => {
       const url = typeof input === 'string' ? input : input.url
+      // 토큰 발급도 가로챈다 — 안 막으면 실제 워커로 나가서 테스트가 네트워크·시크릿
+      // 주입 상태에 의존하게 되고, 왕복 지연이 아래 업로드 대기와 겹쳐 오탐이 난다
+      if (url.includes('/token')) {
+        w.__tokenRequests += 1
+        return new Response(JSON.stringify({ token: 'sc_AAAAAAAAAAAAAAAAAAAAAA.BBBBBBBBBBBBBBBBBBBBBB' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
+      }
       if (url.includes('/upload')) {
+        const headers = (init && init.headers) || null
+        w.__lastAuth = headers ? headers.Authorization ?? null : null
+        const form = init && init.body
+        w.__lastExpiry =
+          form && typeof form.get === 'function' ? form.get('expiresInDays') : null
         const body = init && init.body
         let ctx = null
         if (body && typeof body.get === 'function') {
@@ -175,6 +190,100 @@ async function main() {
     log('토글 ON → context 동봉', !!ctxObj && ctxObj.sourceUrl === FAKE_CAPTURE.sourceUrl)
     log('컨텍스트에 debugLogs 누출 없음', !!ctxObj && !('debugLogs' in ctxObj))
     log('컨텍스트에 project/userAgent 누출 없음', !!ctxObj && !('project' in ctxObj) && !('userAgent' in ctxObj))
+
+    // 0.4.0 P5 — 토큰·보관 기간
+    const auth = await page.evaluate(() => window.__lastAuth ?? null)
+    const expiry = await page.evaluate(() => window.__lastExpiry ?? null)
+    const tokenReqs = await page.evaluate(() => window.__tokenRequests ?? 0)
+    log('업로드에 Bearer 토큰 동봉', typeof auth === 'string' && auth.startsWith('Bearer sc_'))
+    log('보관 기간 기본값 7일 전송', expiry === '7')
+    // in-flight 가드 + storage 재사용이 동작하면 업로드를 여러 번 해도 발급은 1회다
+    log('토큰 발급은 1회만 (재사용)', tokenReqs === 1)
+
+    // --- 3회차: 설정에서 30일 선택 (N5) — 비기본 기간이 한 번도 안 돌던 구멍 ---
+    await page.locator('[data-role="settings"]').click()
+    await page.waitForTimeout(200)
+    const expirySelect = page.locator('#share-expiry-days')
+    log('설정 패널에 보관 기간 select 노출', (await expirySelect.count()) > 0)
+    await expirySelect.selectOption('30')
+    await page.waitForTimeout(300)
+    await page.locator('.help-close').click()
+    await page.waitForTimeout(200)
+
+    const label30 = (await shareBtn.textContent()) ?? ''
+    log('기간 변경 시 공유 버튼 라벨 갱신', label30.includes('30일'), label30.trim())
+    const cap30 = (await page.locator('.publish-cap').first().textContent()) ?? ''
+    log('기간 변경 시 발행 캡션 갱신', cap30.includes('30일'), cap30.trim())
+
+    await shareBtn.click()
+    await page.waitForTimeout(300)
+    // 7일 → 30일 상향이라 재동의를 받아야 한다 (N3)
+    const dialog3 = page.locator('.snap-confirm')
+    const dialog3Shown = (await dialog3.count()) > 0
+    log('기간 상향 시 재동의 다이얼로그 표시', dialog3Shown)
+    if (dialog3Shown) {
+      const consentText = (await dialog3.first().textContent()) ?? ''
+      log('재동의 문구에 30일 반영(사실과 다른 동의 방지)', consentText.includes('30일'))
+      await page.locator('.snap-confirm__btn--primary').click()
+    }
+    await page.waitForTimeout(800)
+
+    const expiry30 = await page.evaluate(() => window.__lastExpiry ?? null)
+    log('보관 기간 30일 전송', expiry30 === '30', String(expiry30))
+
+    // --- 4회차: MCP 연동 온보딩 UI (T6.1) — 업로드로 발급된 토큰이 storage 에 있다 ---
+    const ISSUED = 'sc_AAAAAAAAAAAAAAAAAAAAAA.BBBBBBBBBBBBBBBBBBBBBB' // mock 발급값(installFetchMock)
+    await page.locator('[data-role="settings"]').click()
+    await page.waitForTimeout(300)
+
+    const onboardGroup = page.locator('#help-panel .set-group-label', { hasText: 'MCP 연동' })
+    log('설정 패널에 MCP 연동 그룹 노출', (await onboardGroup.count()) > 0)
+
+    // 내 토큰은 마스킹만 화면에 — 원문 전체가 DOM 텍스트로 새면 안 된다(보안)
+    const tokenMasked = page.locator('.shortcuts-help__token-row code')
+    const maskedText = (await tokenMasked.textContent()) ?? ''
+    log('내 토큰 마스킹 표시', maskedText === 'sc_AAAA…BBBB', maskedText)
+    // 명령 표시까지 포함해 패널 어디에도 원문 토큰이 보이면 안 된다(화면공유·스크린샷 방지)
+    const panelText = (await page.locator('#help-panel').textContent()) ?? ''
+    log('토큰 원문이 패널 어디에도(명령 포함) 노출되지 않음', !panelText.includes(ISSUED))
+
+    // 복붙 명령 표시도 마스킹 토큰 — 원문은 복사 시점에만 생성한다
+    const claudeCmd = (await page.locator('#help-panel pre').first().textContent()) ?? ''
+    log('Claude 명령 표시는 마스킹(원문 노출 없음)',
+      claudeCmd.includes('claude mcp add') && claudeCmd.includes('sc_AAAA…BBBB') && !claudeCmd.includes(ISSUED) && claudeCmd.includes('/mcp'))
+    const codexCmd = (await page.locator('#help-panel pre').nth(1).textContent()) ?? ''
+    log('Codex 명령 표시는 마스킹 2줄 + env var',
+      codexCmd.includes('setx SNAPCONTEXT_MCP_TOKEN') && codexCmd.includes('--bearer-token-env-var') && !codexCmd.includes(ISSUED))
+
+    // 복사 버튼은 마스킹이 아니라 원문을 클립보드에 넣는다
+    await page.locator('.shortcuts-help__token-row .btn-ghost').click()
+    await page.waitForTimeout(200)
+    const tokenClip = await page.evaluate(() => navigator.clipboard.readText().catch(() => ''))
+    log('토큰 복사 = 원문(마스킹 아님)', tokenClip === ISSUED, tokenClip)
+
+    // 다른 기기 토큰 붙여넣기 — 유효값이면 마스킹·명령이 갱신된다
+    const pasteInput = page.locator('#shortcuts-help-token-paste')
+    await pasteInput.fill('sc_CCCCCCCCCCCCCCCCCCCCCC.DDDDDDDDDDDDDDDDDDDDDD')
+    await page.locator('#help-panel button', { hasText: '적용' }).click()
+    await page.waitForTimeout(300)
+    log('붙여넣기(유효) → 마스킹 갱신', ((await tokenMasked.textContent()) ?? '') === 'sc_CCCC…DDDD')
+    const PASTED = 'sc_CCCCCCCCCCCCCCCCCCCCCC.DDDDDDDDDDDDDDDDDDDDDD'
+    const claudeCmd2 = (await page.locator('#help-panel pre').first().textContent()) ?? ''
+    log('붙여넣기(유효) → 명령 표시 마스킹 갱신',
+      claudeCmd2.includes('sc_CCCC…DDDD') && !claudeCmd2.includes(PASTED))
+    // 명령 복사는 화면 마스킹이 아니라 원문 토큰 명령을 클립보드에 넣는다(nth(1)=Claude 명령 복사)
+    await page.locator('#help-panel .btn-ghost').nth(1).click()
+    await page.waitForTimeout(200)
+    const cmdClip = await page.evaluate(() => navigator.clipboard.readText().catch(() => ''))
+    log('명령 복사 = 원문 토큰 명령(마스킹 아님)', cmdClip.includes('claude mcp add') && cmdClip.includes(PASTED))
+
+    // 형식 위반은 조용히 무시하지 않고 인라인 에러 — 저장도 안 된다
+    await pasteInput.fill('notoken')
+    await page.locator('#help-panel button', { hasText: '적용' }).click()
+    await page.waitForTimeout(200)
+    const errShown = await page.locator('#help-panel', { hasText: '토큰 형식이 올바르지 않습니다' }).count()
+    log('붙여넣기(형식 위반) → 인라인 에러 표시', errShown > 0)
+    log('형식 위반은 저장 안 됨(마스킹 불변)', ((await tokenMasked.textContent()) ?? '') === 'sc_CCCC…DDDD')
 
     await page.screenshot({ path: resolve(SCREENSHOTS_DIR, '07-upload-share.png') })
 

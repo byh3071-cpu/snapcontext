@@ -6,7 +6,24 @@ tags: [changelog]
 
 # Changelog
 
-## 0.4.0 — 미출시 (P3 진행 중)
+## 0.4.0 — 미출시 (P6 완료 · 배포 대기)
+
+### 온보딩 UI + 문서 정합 (P6) — 트랙 D 마감
+
+- **온보딩 토큰 UI:** 설정 패널(기어) 셋째 그룹 "MCP 연동" 신설. ①내 토큰 마스킹 표시(`sc_AAAA…BBBB`) + 원문 복사 ②다른 기기 토큰 붙여넣기(형식 위반은 인라인 에러, 조용한 무시 없음) ③Claude/Codex 연결 명령 자동 생성·복사. `token.ts` 에 `getStoredToken`(발급 없는 읽기)·`setUserToken`(붙여넣기 저장) 추가. **원문 토큰은 클로저 변수에만 살고 화면엔 마스킹만** — console·에러·DOM 텍스트 노출 0(복붙 명령 블록 제외, 이건 복사 목적이라 의도). 패널을 열 때마다 토큰을 재조회한다(발급이 첫 공유 시점 lazy 라 mount 1회 읽기로는 '미발급'이 고착).
+- **register-mcp.ps1 sc_ 개정:** admin 토큰 파일 등록 → `-Token sc_` 인자 기본 경로. admin 전체조회는 `-Admin` 예비로 유지(ADR-011·012). 실사용자·요한 모두 sc_ 자기 격리를 실제로 쓴다.
+- **PRIVACY 정합:** "7일 후 삭제" 하드 문구 → "선택한 보관 기간(1·7·30일)" 전수 갱신. "계정·식별자 결부 없음" 단언을 owner(SHA-256 토큰 해시, pseudonymous) 도입에 맞춰 정정하고 '소유자 격리' 절 신설. `check-goal-3.mjs` 도 같은 커밋에서 새 계약으로(7일 존재 assert → 보관 기간·owner 검사).
+- **ADR 신설:** 011(per-user 무상태 HMAC 토큰·발급 게이트) · 012(owner=SHA-256(토큰), admin 우선→user HMAC). worker 구현의 사후 문서화.
+- **버전 0.4.0:** package.json·manifest.json·package-lock.json(2곳) 4값 정렬(check-version-sync). 스토어킷 0.4.0(listing·submit-kit) 신규 — **온보딩 UI = src 변경이라 스토어 재심사 대상**.
+
+### 확장 ↔ worker 배선 (P5) — 사용자가 실제로 쓰는 부분
+
+- **per-user 토큰 자동 발급:** 확장이 공유 업로드 직전에 `POST /token` 으로 토큰을 받아 `chrome.storage.local` 에 저장하고 이후 재사용한다. 토큰은 시크릿이라 **`storage.sync` 에 올리지 않는다**(기기별 토큰 = 계정 없는 제품의 현업 표준). 동시 호출이 발급을 두 번 보내지 않도록 in-flight 가드를 뒀다 — worker 분당 10회 rate-limit 을 아끼고 owner 파편화를 막는다.
+- **업로드에 `Authorization: Bearer` 동봉:** 토큰이 있으면 실어 보내 서버가 owner 를 찍고, `snap_history` 가 본인 캡처만 돌려준다. **토큰이 없으면 헤더 키 자체를 만들지 않는다** — 빈 값을 보내면 worker 가 401 이라 익명 업로드가 깨진다. 발급 실패(시크릿 미주입 500·rate-limit 429·네트워크)는 익명 업로드로 조용히 내려가고, 사유는 `console.warn` 으로 남는다.
+- **보관 기간 선택 UI:** 설정 패널(기어)에서 1·7·30일 선택, `shareExpiryDays` 키에 저장(기본 7). 선택값은 업로드 시 `expiresInDays` 로 전송된다. 미지정 경로도 유지 — 부재는 서버가 기본 7일로 받는다.
+- **만료 문구 동적화:** 사이드패널 7곳("업로드 후 7일" 동의 문구·섹션 aside·발행 캡션·버튼 title/라벨·성공 토스트·복원)이 선택한 기간을 따라간다. **동의 문구가 특히 중요** — "7일 후 삭제"로 동의받고 30일로 저장하면 사실과 다른 동의가 되므로, 업로드 진입 시 기간을 한 번 고정해 동의·전송·토스트가 같은 값을 쓴다.
+
+**신규 storage 키 2종**: `snapcontextToken`(서버 발급 토큰) · `shareExpiryDays`(1|7|30, 기본 7). 둘 다 `chrome.storage.local` 전용.
 
 ### 공유 만료 파라미터화 (1/7/30일)
 
@@ -30,11 +47,14 @@ tags: [changelog]
 - **R2 버킷 lifecycle `auto-delete-7d` → 30일 상향이 배포보다 먼저**여야 한다. 안 하면 30일 캡처가 7일에 물리 삭제되고, `max-age`를 길게 내보낸 탓에 클라 캐시가 최대 30일 유령 서빙한다. `/upload`는 공개 엔드포인트라 배포 즉시 누구나 30일을 요청할 수 있으므로 lifecycle 상향과 배포는 같은 창에서 처리한다.
 - **개인정보 문서 갱신도 배포 선행 조건이다.** `docs/PRIVACY.md`가 아직 "7일 후 영구 삭제"를 사실로 단언하고 있어, 30일 옵션이 열리는 순간 공개된 개인정보처리방침이 부정확해진다. `scripts/check-goal-3.mjs`가 PRIVACY에 `'7일'`이 있는지 하드 assert하므로 두 파일과 스토어 카피(`scripts/generate-store-screenshots.mjs`)를 **한 묶음으로** 고쳐야 한다(P6-T6.2).
 - R2 쓰기는 **Workers 바인딩 경유만** — S3 호환 API로 쓰면 커스텀 메타 키가 소문자화(`expiresat`)돼 메타가 없는 것으로 읽힌다.
+- **`wrangler secret put TOKEN_SIGNING_SECRET`** — 미주입이면 `/token`이 500이라 확장이 전원 익명으로 내려간다(기능은 안 깨지지만 owner 격리가 동작하지 않는다).
+- **시크릿 주입 후 실 워커 스모크 1회** — `POST /token`의 Origin 검증(`chrome-extension://` 아니면 403)은 e2e가 `/token`을 mock하면서 자동 테스트에서 빠졌다. 실패 증상이 "조용히 전원 익명"이라 아무 테스트도 red가 되지 않는다.
 
 ### 검증
 
-- worker vitest **183 passed** (unit 178 + test-d1 5, 베이스라인 125에서 +58), `tsc --noEmit` 0
-- 확장(`src/**`) 코드 변경 0 — 스토어 재제출 불요. 사이드패널의 "7일 후 삭제" 문구 갱신은 P5 소관
+- worker vitest **192 passed** (unit 186 + test-d1 6), 확장 vitest **48 passed**(14 → 48), `tsc --noEmit` 0, `pnpm build` 통과
+- **e2e upload-share 13/13** — 토큰 동봉·보관 기간 전송·발급 1회를 실제 브라우저에서 검증
+- 적대 검증 뮤테이션 12/12 killed(P5 구간)
 
 ## 0.3.0 — 2026-07-18
 

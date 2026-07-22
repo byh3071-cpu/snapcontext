@@ -549,6 +549,13 @@ select {
   margin-bottom: var(--s-2);
   word-break: keep-all;
 }
+/* 설정 패널 두 번째 그룹(공유) — 단축키 note 바로 뒤라 위 여백이 필요하다 */
+.shortcuts-help__share-label {
+  margin-top: var(--s-4);
+}
+.shortcuts-help__expiry-select {
+  min-width: 84px;
+}
 
 /* ========================= 섹션 헤딩 (번호 인덱스 01~05) ========================= */
 .sec {

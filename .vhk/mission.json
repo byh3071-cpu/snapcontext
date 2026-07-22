@@ -1,7 +1,9 @@
 {
   "schemaVersion": 1,
-  "objective": "0.4.0 트랙 D P4 — MCP 자발 사용 문구 (T4.1 서버 instructions·툴 트리거 description·annotations·version 0.4.0 = 구현 완료 / T4.2-b Claude Code 실주입 스모크 = 사람, 미실행이라 P4 아직 미완). P1~P3 머지 완료(9c15d1b). 다음 = P5 확장(토큰 클라·upload bearer·만료 select, src/** 는 그때 forbidden 해제). 배포·시크릿 주입·R2 lifecycle 30일 상향·PRIVACY 7일 문구 갱신 = 사람 게이트",
+  "objective": "0.4.0 트랙 D P6 — 온보딩 UI + 문서 정합 (T6.1 온보딩 토큰 UI: getStoredToken·setUserToken + ShortcutsHelp 셋째 그룹[토큰 마스킹+복사·다른 기기 붙여넣기·Claude/Codex 복붙 명령] / T6.2 PRIVACY 개정+7일 전수+check-goal-3 / T6.3 ADR 011·012 + register-mcp sc_ 개정 / T6.4 스토어킷 0.4.0 + 버전 4값 bump). P5(PR #22) 미머지 위에 쌓아 트랙 D 일괄 머지 단위 구성. src/**·docs/**·scripts/** 스코프 유지. 미해결(사람 게이트): 머지·배포·TOKEN_SIGNING_SECRET 주입·R2 lifecycle 30일 상향·Origin 실워커 스모크·스토어 재제출",
   "scope": [
+    "src/**",
+    "tests/**",
     "worker/**",
     "docs/**",
     "scripts/**",
@@ -10,11 +12,10 @@
     "pnpm-workspace.yaml"
   ],
   "forbidden": [
-    "src/**",
     "worker/node_modules/**",
     "**/*.env",
     "docs/ui-audit/**"
   ],
   "createdAt": "2026-06-04T13:32:15.559Z",
-  "updatedAt": "2026-07-22T05:30:00.000Z"
+  "updatedAt": "2026-07-23T00:00:00.000Z"
 }
