@@ -4,6 +4,7 @@ import {
   SHARE_EXPIRY_CHANGED_EVENT,
   SHARE_EXPIRY_STORAGE_KEY,
   buildShareConsentMessage,
+  buildShareSuccessMessage,
   formatExpiryDays,
   loadShareExpiryDays,
   needsShareConsent,
@@ -42,6 +43,29 @@ describe('buildShareConsentMessage', () => {
       expect(msg).toContain('공개 링크')
       expect(msg).toContain('컨텍스트')
     }
+  })
+})
+
+describe('buildShareSuccessMessage', () => {
+  it('토큰이 붙은 업로드는 만료 안내만 한다', () => {
+    expect(buildShareSuccessMessage(7, false)).toBe('공유 링크 복사됨 · 7일 후 만료')
+    expect(buildShareSuccessMessage(30, false)).toBe('공유 링크 복사됨 · 30일 후 만료')
+  })
+
+  // CodeRabbit(Major) — console.warn 은 개발자만 본다. 익명으로 올라가면 사용자는
+  // 자기 캡처가 왜 MCP 목록에 안 뜨는지 알 방법이 없다.
+  it('익명 업로드는 무엇이 안 되는지 알려준다', () => {
+    const msg = buildShareSuccessMessage(7, true)
+    expect(msg).toContain('7일 후 만료')
+    expect(msg).toContain('익명')
+    // "익명"만으로는 뭐가 안 되는지 모른다 — 내 캡처 목록에 안 뜬다는 걸 명시해야 한다
+    expect(msg).toContain('내 캡처 목록')
+  })
+
+  it('익명 여부가 문구를 실제로 가른다', () => {
+    expect(buildShareSuccessMessage(30, true)).not.toBe(
+      buildShareSuccessMessage(30, false)
+    )
   })
 })
 

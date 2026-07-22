@@ -118,11 +118,17 @@ async function requestUserToken(): Promise<string | null> {
     return null
   }
 
-  let data: { token?: unknown }
+  // unknown 으로 받는다 — 본문이 JSON `null`(또는 배열·숫자)이면 res.json() 은 성공하므로
+  // 위 catch 에 안 걸리고, 바로 .token 을 읽으면 TypeError 로 계약(Promise<string|null>)이 깨진다
+  let data: unknown
   try {
-    data = (await res.json()) as { token?: unknown }
+    data = await res.json()
   } catch {
     console.warn('[token] 발급 응답을 해석할 수 없습니다. (익명 업로드로 진행)')
+    return null
+  }
+  if (typeof data !== 'object' || data === null || !('token' in data)) {
+    console.warn('[token] 발급 응답에 token 이 없습니다. (익명 업로드로 진행)')
     return null
   }
   if (!isValidTokenFormat(data.token)) {

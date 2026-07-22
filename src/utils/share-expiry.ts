@@ -36,6 +36,22 @@ export function buildShareConsentMessage(days: ExpiryDays): string {
 }
 
 /**
+ * 업로드 성공 토스트.
+ *
+ * 익명(=토큰 발급 실패 또는 서버가 토큰 거부)으로 올라갔으면 반드시 알린다.
+ * console.warn 은 개발자만 본다 — 사용자는 owner 스탬프가 조용히 미동작한 걸 모른 채
+ * 자기 캡처가 왜 MCP 목록에 안 뜨는지 알 방법이 없다.
+ * "익명"만 쓰면 무엇이 안 되는지 모르므로 결과("내 캡처 목록에 안 뜸")를 함께 말한다.
+ */
+export function buildShareSuccessMessage(
+  days: ExpiryDays,
+  anonymous: boolean
+): string {
+  const base = `공유 링크 복사됨 · ${formatExpiryDays(days)} 후 만료`
+  return anonymous ? `${base} · 익명 업로드라 내 캡처 목록(MCP)에 안 뜹니다` : base
+}
+
+/**
  * 저장된 업로드 동의값 → 동의한 보관 기간. 동의 이력이 없으면 null.
  *
  * 0.3.x 는 boolean 플래그였고 보관 기간이 7일 고정이었으므로 `true` 는 7일 동의로 읽는다

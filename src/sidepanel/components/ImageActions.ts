@@ -11,6 +11,7 @@ import {
   DEFAULT_SHARE_EXPIRY_DAYS,
   SHARE_EXPIRY_CHANGED_EVENT,
   buildShareConsentMessage,
+  buildShareSuccessMessage,
   formatExpiryDays,
   loadShareExpiryDays,
   needsShareConsent,
@@ -225,13 +226,16 @@ export function mountImageActions(
       // 토큰 발급은 반드시 업로드 직전에 — 사이드패널 초기화 시점에 부르면
       // e2e 의 fetch mock 설치(page.goto 후) 이전이라 실제 네트워크로 나간다.
       // 발급 실패(null)면 익명 업로드, 서버가 토큰을 거부(401)하면 폐기 후 익명 재시도.
-      const url = await uploadShareWithToken(blob, ctx, days)
+      const { url, anonymous } = await uploadShareWithToken(blob, ctx, days)
       try {
         await navigator.clipboard.writeText(url)
-        // /upload 응답에 expiresAt 이 없다(ADR-013) → 로컬 선택값으로 문구를 만든다
-        deps.showToast(`공유 링크 복사됨 · ${formatExpiryDays(days)} 후 만료`, 'info')
+        // /upload 응답에 expiresAt 이 없다(ADR-013) → 로컬 선택값으로 문구를 만든다.
+        // 익명으로 올라갔으면 성공이어도 그 사실을 알린다(owner 미스탬프 = MCP 목록 누락).
+        // 레벨이 error 가 아닌 이유: 업로드는 실제로 성공했고 링크도 유효하다.
+        deps.showToast(buildShareSuccessMessage(days, anonymous), 'info')
       } catch {
-        deps.showToast(`공유 링크: ${url} (복사 실패)`, 'info')
+        const anonNote = anonymous ? ' · 익명 업로드라 내 캡처 목록(MCP)에 안 뜹니다' : ''
+        deps.showToast(`공유 링크: ${url} (복사 실패)${anonNote}`, 'info')
       }
     } catch (e) {
       deps.showToast(toKoreanErrorMessage(e), 'error')

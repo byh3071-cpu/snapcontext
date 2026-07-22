@@ -48,9 +48,11 @@ describe('uploadShareWithToken', () => {
     stubChromeStorage({ [TOKEN_STORAGE_KEY]: STORED_TOKEN })
     const { uploads } = stubFetch([okUpload()])
 
-    await expect(uploadShareWithToken(pngBlob(), undefined, 7)).resolves.toBe(
-      'https://w.example.dev/s/x'
-    )
+    // 토큰이 실린 업로드 = owner 스탬프됨 → anonymous false
+    await expect(uploadShareWithToken(pngBlob(), undefined, 7)).resolves.toEqual({
+      url: 'https://w.example.dev/s/x',
+      anonymous: false
+    })
     expect(uploads).toHaveLength(1)
     expect(uploads[0].headers).toEqual({ Authorization: `Bearer ${STORED_TOKEN}` })
   })
@@ -64,9 +66,11 @@ describe('uploadShareWithToken', () => {
       okUpload()
     ])
 
-    await expect(uploadShareWithToken(pngBlob(), undefined, 30)).resolves.toBe(
-      'https://w.example.dev/s/x'
-    )
+    // 401 폐기 후 익명으로 성공한 경우도 사용자에게 알려야 한다
+    await expect(uploadShareWithToken(pngBlob(), undefined, 30)).resolves.toEqual({
+      url: 'https://w.example.dev/s/x',
+      anonymous: true
+    })
 
     expect(uploads).toHaveLength(2)
     expect(uploads[0].headers).toEqual({ Authorization: `Bearer ${STORED_TOKEN}` })
@@ -112,6 +116,29 @@ describe('uploadShareWithToken', () => {
     )
     expect(uploads).toHaveLength(1)
     expect(storage.store.get(TOKEN_STORAGE_KEY)).toBe(STORED_TOKEN)
+  })
+
+  // 토큰 발급 자체가 실패한 경로(현재 프로덕션 상태 — 시크릿 미주입이라 /token 이 500)
+  it('토큰 발급이 실패하면 익명으로 업로드하고 anonymous 를 알린다', async () => {
+    stubChromeStorage()
+    const uploads: Array<{ headers: unknown }> = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init: RequestInit) => {
+        if (url.endsWith('/token')) {
+          return new Response('Server misconfigured', { status: 500 })
+        }
+        uploads.push({ headers: init.headers })
+        return okUpload()
+      })
+    )
+
+    await expect(uploadShareWithToken(pngBlob(), undefined, 7)).resolves.toEqual({
+      url: 'https://w.example.dev/s/x',
+      anonymous: true
+    })
+    expect(uploads).toHaveLength(1)
+    expect(uploads[0].headers).toBeUndefined()
   })
 
   it('컨텍스트를 그대로 전달한다', async () => {

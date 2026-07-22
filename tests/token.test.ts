@@ -152,6 +152,56 @@ describe('ensureUserToken', () => {
     expect(console.warn).toHaveBeenCalled()
   })
 
+  // CodeRabbit — res.json() 이 null 을 돌려주면 data.token 접근이 TypeError 다.
+  // json() 자체는 성공하므로 catch 에 안 걸리고 Promise<string|null> 계약이 깨진다.
+  it('본문이 JSON null 인 200 응답이면 던지지 않고 null 을 반환한다', async () => {
+    const storage = stubChromeStorage()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response('null', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
+      )
+    )
+
+    await expect(ensureUserToken()).resolves.toBeNull()
+    expect(storage.set).not.toHaveBeenCalled()
+    expect(console.warn).toHaveBeenCalled()
+  })
+
+  it('token 키가 없는 객체 응답이면 null 을 반환한다', async () => {
+    const storage = stubChromeStorage()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response('{}', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
+      )
+    )
+
+    await expect(ensureUserToken()).resolves.toBeNull()
+    expect(storage.set).not.toHaveBeenCalled()
+  })
+
+  it('배열 응답처럼 객체가 아닌 JSON 도 null 로 떨어진다', async () => {
+    stubChromeStorage()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response('[1,2]', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
+      )
+    )
+
+    await expect(ensureUserToken()).resolves.toBeNull()
+  })
+
   it('JSON 이 아닌 200 응답이면 null 을 반환한다', async () => {
     stubChromeStorage()
     vi.stubGlobal(
