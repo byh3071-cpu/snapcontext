@@ -63,6 +63,57 @@ export async function clearUserToken(): Promise<void> {
   }
 }
 
+/**
+ * 저장된 토큰을 발급 없이 읽는다 (설정 화면 표시·복사용).
+ *
+ * ensureUserToken 을 쓰면 안 된다 — 그건 없으면 발급까지 해버려서 설정 화면을 열 때마다
+ * rate-limit 슬롯을 쓰고 owner 파편화를 유발한다. 여기는 순수 조회만 한다.
+ * 없거나 손상됐으면 null — "실패하면 null" 계약은 resolveUserToken 과 동일하다.
+ */
+export async function getStoredToken(): Promise<string | null> {
+  let stored: unknown
+  try {
+    stored = await getStorageItem<unknown>(TOKEN_STORAGE_KEY)
+  } catch (e) {
+    console.warn('[token] 저장된 토큰을 읽지 못했습니다.', e)
+    return null
+  }
+  return isValidTokenFormat(stored) ? stored : null
+}
+
+/**
+ * 다른 기기에서 쓰던 토큰을 붙여넣어 저장한다 (P6 — 멀티기기 통합).
+ *
+ * 서버 발급(POST /token)을 우회하고 사용자가 가져온 값을 그대로 owner 로 쓴다.
+ * 형식 위반은 저장하지 않고 false — 손상값을 owner 로 앉히면 이후 모든 업로드가
+ * 조용히 401 로 실패하고, 그 원인을 사용자가 알 방법이 없다.
+ */
+export async function setUserToken(value: string): Promise<boolean> {
+  if (!isValidTokenFormat(value)) return false
+  try {
+    await setStorageItem(TOKEN_STORAGE_KEY, value)
+  } catch (e) {
+    console.warn('[token] 토큰을 저장하지 못했습니다.', e)
+    return false
+  }
+  return true
+}
+
+/**
+ * 토큰을 화면 표시용으로 마스킹한다 — `sc_<body 앞4>…<sig 뒤4>`.
+ *
+ * 원문 토큰을 화면 텍스트 노드로 노출하지 않기 위한 것(복사만 원문을 쓴다).
+ * isValidTokenFormat 통과분이 전제지만, 짧거나 비정상 입력도 slice 로 안전하게
+ * 처리한다(범위 밖 slice 는 throw 하지 않고, 점이 항상 …로 바뀌어 원문과 달라진다).
+ */
+export function maskToken(token: string): string {
+  const rest = token.slice(3)
+  const dot = rest.indexOf('.')
+  const body = dot >= 0 ? rest.slice(0, dot) : rest
+  const sig = dot >= 0 ? rest.slice(dot + 1) : ''
+  return `sc_${body.slice(0, 4)}…${sig.slice(-4)}`
+}
+
 async function resolveUserToken(): Promise<string | null> {
   // storage I/O 도 "실패하면 null" 계약 안에 둔다 — 여기서 예외가 새면 호출측 catch 가
   // 잡아 업로드 자체가 안 나가고, 선택 기능인 토큰이 필수 기능을 죽이게 된다

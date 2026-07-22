@@ -231,6 +231,53 @@ async function main() {
     const expiry30 = await page.evaluate(() => window.__lastExpiry ?? null)
     log('보관 기간 30일 전송', expiry30 === '30', String(expiry30))
 
+    // --- 4회차: MCP 연동 온보딩 UI (T6.1) — 업로드로 발급된 토큰이 storage 에 있다 ---
+    const ISSUED = 'sc_AAAAAAAAAAAAAAAAAAAAAA.BBBBBBBBBBBBBBBBBBBBBB' // mock 발급값(installFetchMock)
+    await page.locator('[data-role="settings"]').click()
+    await page.waitForTimeout(300)
+
+    const onboardGroup = page.locator('#help-panel .set-group-label', { hasText: 'MCP 연동' })
+    log('설정 패널에 MCP 연동 그룹 노출', (await onboardGroup.count()) > 0)
+
+    // 내 토큰은 마스킹만 화면에 — 원문 전체가 DOM 텍스트로 새면 안 된다(보안)
+    const tokenMasked = page.locator('.shortcuts-help__token-row code')
+    const maskedText = (await tokenMasked.textContent()) ?? ''
+    log('내 토큰 마스킹 표시', maskedText === 'sc_AAAA…BBBB', maskedText)
+    const panelText = (await page.locator('#help-panel').textContent()) ?? ''
+    log('마스킹이 토큰 원문을 DOM 에 노출하지 않음(명령 블록 제외)',
+      // 원문은 복붙 명령 pre 안에서만 보여야 한다 — code 태그(마스킹)엔 없다
+      !maskedText.includes(ISSUED))
+
+    // 복붙 명령엔 원문 토큰·URL 이 치환돼 있다(사용자가 복사해야 하므로 평문 노출은 의도됨)
+    const claudeCmd = (await page.locator('#help-panel pre').first().textContent()) ?? ''
+    log('Claude 복붙 명령에 토큰·URL 치환',
+      claudeCmd.includes('claude mcp add') && claudeCmd.includes(ISSUED) && claudeCmd.includes('/mcp'))
+    const codexCmd = (await page.locator('#help-panel pre').nth(1).textContent()) ?? ''
+    log('Codex 복붙 명령 2줄 + env var', codexCmd.includes('setx SNAPCONTEXT_MCP_TOKEN') && codexCmd.includes('--bearer-token-env-var'))
+
+    // 복사 버튼은 마스킹이 아니라 원문을 클립보드에 넣는다
+    await page.locator('.shortcuts-help__token-row .btn-ghost').click()
+    await page.waitForTimeout(200)
+    const tokenClip = await page.evaluate(() => navigator.clipboard.readText().catch(() => ''))
+    log('토큰 복사 = 원문(마스킹 아님)', tokenClip === ISSUED, tokenClip)
+
+    // 다른 기기 토큰 붙여넣기 — 유효값이면 마스킹·명령이 갱신된다
+    const pasteInput = page.locator('#shortcuts-help-token-paste')
+    await pasteInput.fill('sc_CCCCCCCCCCCCCCCCCCCCCC.DDDDDDDDDDDDDDDDDDDDDD')
+    await page.locator('#help-panel button', { hasText: '적용' }).click()
+    await page.waitForTimeout(300)
+    log('붙여넣기(유효) → 마스킹 갱신', ((await tokenMasked.textContent()) ?? '') === 'sc_CCCC…DDDD')
+    const claudeCmd2 = (await page.locator('#help-panel pre').first().textContent()) ?? ''
+    log('붙여넣기(유효) → 복붙 명령 갱신', claudeCmd2.includes('sc_CCCCCCCCCCCCCCCCCCCCCC.DDDDDDDDDDDDDDDDDDDDDD'))
+
+    // 형식 위반은 조용히 무시하지 않고 인라인 에러 — 저장도 안 된다
+    await pasteInput.fill('notoken')
+    await page.locator('#help-panel button', { hasText: '적용' }).click()
+    await page.waitForTimeout(200)
+    const errShown = await page.locator('#help-panel', { hasText: '토큰 형식이 올바르지 않습니다' }).count()
+    log('붙여넣기(형식 위반) → 인라인 에러 표시', errShown > 0)
+    log('형식 위반은 저장 안 됨(마스킹 불변)', ((await tokenMasked.textContent()) ?? '') === 'sc_CCCC…DDDD')
+
     await page.screenshot({ path: resolve(SCREENSHOTS_DIR, '07-upload-share.png') })
 
     const failed = results.filter((r) => !r.pass)

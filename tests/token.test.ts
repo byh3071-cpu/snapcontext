@@ -3,7 +3,10 @@ import {
   TOKEN_STORAGE_KEY,
   clearUserToken,
   ensureUserToken,
-  isValidTokenFormat
+  getStoredToken,
+  isValidTokenFormat,
+  maskToken,
+  setUserToken
 } from '../src/utils/token'
 import { stubChromeStorage } from './helpers/chrome-storage'
 
@@ -293,5 +296,108 @@ describe('clearUserToken', () => {
     await expect(ensureUserToken()).resolves.toBe(ISSUED_TOKEN)
     expect(fetchMock).toHaveBeenCalledTimes(1)
     vi.unstubAllEnvs()
+  })
+})
+
+describe('getStoredToken', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('정상 저장값이 있으면 발급 없이 그대로 반환한다', async () => {
+    const storage = stubChromeStorage({ [TOKEN_STORAGE_KEY]: VALID_TOKEN })
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(getStoredToken()).resolves.toBe(VALID_TOKEN)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(storage.set).not.toHaveBeenCalled()
+  })
+
+  it('저장된 값이 없으면 null 을 반환한다 (발급하지 않는다)', async () => {
+    const storage = stubChromeStorage()
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(getStoredToken()).resolves.toBeNull()
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(storage.set).not.toHaveBeenCalled()
+  })
+
+  it('손상된 저장값이면 null 을 반환한다 (폐기·재발급하지 않는다)', async () => {
+    const storage = stubChromeStorage({ [TOKEN_STORAGE_KEY]: 'bad' })
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(getStoredToken()).resolves.toBeNull()
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(storage.remove).not.toHaveBeenCalled()
+  })
+
+  it('storage 읽기가 실패하면 warn 후 null 을 반환한다', async () => {
+    const storage = stubChromeStorage()
+    storage.get.mockRejectedValueOnce(new Error('storage unavailable'))
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await expect(getStoredToken()).resolves.toBeNull()
+    expect(console.warn).toHaveBeenCalled()
+  })
+})
+
+describe('setUserToken', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('유효한 토큰이면 저장하고 true 를 반환한다', async () => {
+    const storage = stubChromeStorage()
+
+    await expect(setUserToken(VALID_TOKEN)).resolves.toBe(true)
+    expect(storage.store.get(TOKEN_STORAGE_KEY)).toBe(VALID_TOKEN)
+  })
+
+  it('형식 위반이면 저장하지 않고 false 를 반환한다', async () => {
+    const storage = stubChromeStorage()
+
+    await expect(setUserToken('nope')).resolves.toBe(false)
+    expect(storage.set).not.toHaveBeenCalled()
+    expect(storage.store.has(TOKEN_STORAGE_KEY)).toBe(false)
+  })
+
+  it('저장 후 getStoredToken 과 왕복 일치한다', async () => {
+    stubChromeStorage()
+
+    await expect(setUserToken(VALID_TOKEN)).resolves.toBe(true)
+    await expect(getStoredToken()).resolves.toBe(VALID_TOKEN)
+  })
+
+  it('저장이 실패하면 warn 후 false 를 반환한다', async () => {
+    const storage = stubChromeStorage()
+    storage.set.mockRejectedValueOnce(new Error('QUOTA_BYTES quota exceeded'))
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    await expect(setUserToken(VALID_TOKEN)).resolves.toBe(false)
+    expect(console.warn).toHaveBeenCalled()
+  })
+})
+
+describe('maskToken', () => {
+  it('정상 토큰은 sc_<body앞4>…<sig뒤4> 로 마스킹한다', () => {
+    expect(maskToken(VALID_TOKEN)).toBe('sc_AAAA…BBBB')
+  })
+
+  it('마스킹은 원문 전체를 절대 포함하지 않는다 (노출 회귀 그물)', () => {
+    const masked = maskToken(VALID_TOKEN)
+    expect(masked).not.toContain('.')          // 점이 …로 바뀌므로 원문 형태와 다르다
+    expect(VALID_TOKEN.startsWith(masked)).toBe(false)
+    expect(masked.length).toBeLessThan(VALID_TOKEN.length)
+  })
+
+  it('짧거나 비정상 입력도 throw 없이 안전하게 처리한다', () => {
+    expect(() => maskToken('sc_a.b')).not.toThrow()
+    expect(maskToken('sc_a.b')).toBe('sc_a…b')
+    expect(() => maskToken('sc_')).not.toThrow()   // 방어적 — 게이트 통과분 전제지만
   })
 })
