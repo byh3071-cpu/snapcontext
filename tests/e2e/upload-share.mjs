@@ -63,10 +63,25 @@ async function installFetchMock(page) {
   await page.evaluate(() => {
     const w = window
     w.__lastUpload = null
+    w.__tokenRequests = 0
     const real = w.fetch
     w.fetch = async (input, init) => {
       const url = typeof input === 'string' ? input : input.url
+      // 토큰 발급도 가로챈다 — 안 막으면 실제 워커로 나가서 테스트가 네트워크·시크릿
+      // 주입 상태에 의존하게 되고, 왕복 지연이 아래 업로드 대기와 겹쳐 오탐이 난다
+      if (url.includes('/token')) {
+        w.__tokenRequests += 1
+        return new Response(JSON.stringify({ token: 'sc_AAAAAAAAAAAAAAAAAAAAAA.BBBBBBBBBBBBBBBBBBBBBB' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        })
+      }
       if (url.includes('/upload')) {
+        const headers = (init && init.headers) || null
+        w.__lastAuth = headers ? headers.Authorization ?? null : null
+        const form = init && init.body
+        w.__lastExpiry =
+          form && typeof form.get === 'function' ? form.get('expiresInDays') : null
         const body = init && init.body
         let ctx = null
         if (body && typeof body.get === 'function') {
@@ -175,6 +190,15 @@ async function main() {
     log('토글 ON → context 동봉', !!ctxObj && ctxObj.sourceUrl === FAKE_CAPTURE.sourceUrl)
     log('컨텍스트에 debugLogs 누출 없음', !!ctxObj && !('debugLogs' in ctxObj))
     log('컨텍스트에 project/userAgent 누출 없음', !!ctxObj && !('project' in ctxObj) && !('userAgent' in ctxObj))
+
+    // 0.4.0 P5 — 토큰·보관 기간
+    const auth = await page.evaluate(() => window.__lastAuth ?? null)
+    const expiry = await page.evaluate(() => window.__lastExpiry ?? null)
+    const tokenReqs = await page.evaluate(() => window.__tokenRequests ?? 0)
+    log('업로드에 Bearer 토큰 동봉', typeof auth === 'string' && auth.startsWith('Bearer sc_'))
+    log('보관 기간 기본값 7일 전송', expiry === '7')
+    // in-flight 가드 + storage 재사용이 동작하면 업로드를 여러 번 해도 발급은 1회다
+    log('토큰 발급은 1회만 (재사용)', tokenReqs === 1)
 
     await page.screenshot({ path: resolve(SCREENSHOTS_DIR, '07-upload-share.png') })
 
