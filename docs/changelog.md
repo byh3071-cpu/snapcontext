@@ -28,6 +28,7 @@ tags: [changelog]
 ### 배포 선행 조건 (사람 게이트)
 
 - **R2 버킷 lifecycle `auto-delete-7d` → 30일 상향이 배포보다 먼저**여야 한다. 안 하면 30일 캡처가 7일에 물리 삭제되고, `max-age`를 길게 내보낸 탓에 클라 캐시가 최대 30일 유령 서빙한다. `/upload`는 공개 엔드포인트라 배포 즉시 누구나 30일을 요청할 수 있으므로 lifecycle 상향과 배포는 같은 창에서 처리한다.
+- **개인정보 문서 갱신도 배포 선행 조건이다.** `docs/PRIVACY.md`가 아직 "7일 후 영구 삭제"를 사실로 단언하고 있어, 30일 옵션이 열리는 순간 공개된 개인정보처리방침이 부정확해진다. `scripts/check-goal-3.mjs`가 PRIVACY에 `'7일'`이 있는지 하드 assert하므로 두 파일과 스토어 카피(`scripts/generate-store-screenshots.mjs`)를 **한 묶음으로** 고쳐야 한다(P6-T6.2).
 - R2 쓰기는 **Workers 바인딩 경유만** — S3 호환 API로 쓰면 커스텀 메타 키가 소문자화(`expiresat`)돼 메타가 없는 것으로 읽힌다.
 
 ### 검증
