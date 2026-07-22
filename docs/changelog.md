@@ -6,7 +6,15 @@ tags: [changelog]
 
 # Changelog
 
-## 0.4.0 — 미출시 (P5 진행 중)
+## 0.4.0 — 미출시 (P6 완료 · 배포 대기)
+
+### 온보딩 UI + 문서 정합 (P6) — 트랙 D 마감
+
+- **온보딩 토큰 UI:** 설정 패널(기어) 셋째 그룹 "MCP 연동" 신설. ①내 토큰 마스킹 표시(`sc_AAAA…BBBB`) + 원문 복사 ②다른 기기 토큰 붙여넣기(형식 위반은 인라인 에러, 조용한 무시 없음) ③Claude/Codex 연결 명령 자동 생성·복사. `token.ts` 에 `getStoredToken`(발급 없는 읽기)·`setUserToken`(붙여넣기 저장) 추가. **원문 토큰은 클로저 변수에만 살고 화면엔 마스킹만** — console·에러·DOM 텍스트 노출 0(복붙 명령 블록 제외, 이건 복사 목적이라 의도). 패널을 열 때마다 토큰을 재조회한다(발급이 첫 공유 시점 lazy 라 mount 1회 읽기로는 '미발급'이 고착).
+- **register-mcp.ps1 sc_ 개정:** admin 토큰 파일 등록 → `-Token sc_` 인자 기본 경로. admin 전체조회는 `-Admin` 예비로 유지(ADR-011·012). 실사용자·요한 모두 sc_ 자기 격리를 실제로 쓴다.
+- **PRIVACY 정합:** "7일 후 삭제" 하드 문구 → "선택한 보관 기간(1·7·30일)" 전수 갱신. "계정·식별자 결부 없음" 단언을 owner(SHA-256 토큰 해시, pseudonymous) 도입에 맞춰 정정하고 '소유자 격리' 절 신설. `check-goal-3.mjs` 도 같은 커밋에서 새 계약으로(7일 존재 assert → 보관 기간·owner 검사).
+- **ADR 신설:** 011(per-user 무상태 HMAC 토큰·발급 게이트) · 012(owner=SHA-256(토큰), admin 우선→user HMAC). worker 구현의 사후 문서화.
+- **버전 0.4.0:** package.json·manifest.json·package-lock.json(2곳) 4값 정렬(check-version-sync). 스토어킷 0.4.0(listing·submit-kit) 신규 — **온보딩 UI = src 변경이라 스토어 재심사 대상**.
 
 ### 확장 ↔ worker 배선 (P5) — 사용자가 실제로 쓰는 부분
 
