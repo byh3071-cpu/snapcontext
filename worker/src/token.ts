@@ -57,7 +57,11 @@ function base64UrlDecode(s: string): Uint8Array | null {
     if (cChar !== '=') out.push((triple >> 8) & 255)
     if (dChar !== '=') out.push(triple & 255)
   }
-  return new Uint8Array(out)
+  const bytes = new Uint8Array(out)
+  // base64url 끝 문자에는 미사용 비트가 남아 같은 바이트열에 표현이 여럿 존재한다.
+  // 재인코딩이 원본과 다르면 non-canonical — owner 파편화의 원인이라 거부 (PAT-002)
+  if (base64UrlEncode(bytes) !== s) return null
+  return bytes
 }
 
 function bytesToHex(bytes: Uint8Array): string {

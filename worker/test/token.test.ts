@@ -38,7 +38,6 @@ describe('generateUserToken / verifyUserToken', () => {
   it('위조 서명(sig 변조) 거부', async () => {
     const token = await generateUserToken(SECRET, FIXED_RAND)
     const [body, sig] = token.slice(3).split('.')
-    // 첫 글자 변조 — 끝 글자는 base64url 패딩 비트라 디코드가 동일할 수 있음
     const first = sig![0]!
     const flippedFirst = first === 'A' ? 'B' : 'A'
     const forged = `sc_${body}.${flippedFirst}${sig!.slice(1)}`
@@ -71,6 +70,40 @@ describe('verifyUserToken 형식 경계', () => {
 
   it('빈 문자열 거부', async () => {
     expect(await verifyUserToken('', SECRET)).toBe(false)
+  })
+})
+
+describe('non-canonical base64url 거부 (PAT-002)', () => {
+  const B64URL =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+
+  /** 지정 위치 문자를 알파벳 전체로 치환한 변형 중 verify 를 통과하는 것들 */
+  async function acceptedVariantsAt(
+    token: string,
+    index: number
+  ): Promise<string[]> {
+    const accepted: string[] = []
+    for (const ch of B64URL) {
+      const mutated = token.slice(0, index) + ch + token.slice(index + 1)
+      if (mutated === token) continue
+      if (await verifyUserToken(mutated, SECRET)) accepted.push(mutated)
+    }
+    return accepted
+  }
+
+  it('sig 끝 글자의 미사용 비트를 바꾼 변형을 전부 거부', async () => {
+    const token = await generateUserToken(SECRET, FIXED_RAND)
+    expect(await acceptedVariantsAt(token, token.length - 1)).toEqual([])
+  })
+
+  it('body 끝 글자의 미사용 비트를 바꾼 변형을 전부 거부', async () => {
+    const token = await generateUserToken(SECRET, FIXED_RAND)
+    expect(await acceptedVariantsAt(token, token.indexOf('.') - 1)).toEqual([])
+  })
+
+  it('발급 토큰 자신은 정규형이라 통과', async () => {
+    const token = await generateUserToken(SECRET, FIXED_RAND)
+    expect(await verifyUserToken(token, SECRET)).toBe(true)
   })
 })
 
