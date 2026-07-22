@@ -1,7 +1,9 @@
 {
   "schemaVersion": 1,
-  "objective": "0.4.0 트랙 D P4 — MCP 자발 사용 문구 (T4.1 서버 instructions·툴 트리거 description·annotations·version 0.4.0 = 구현 완료 / T4.2-b Claude Code 실주입 스모크 = 사람, 미실행이라 P4 아직 미완). P1~P3 머지 완료(9c15d1b). 다음 = P5 확장(토큰 클라·upload bearer·만료 select, src/** 는 그때 forbidden 해제). 배포·시크릿 주입·R2 lifecycle 30일 상향·PRIVACY 7일 문구 갱신 = 사람 게이트",
+  "objective": "0.4.0 트랙 D P5 — 확장이 worker 신기능을 실제로 쓰게 (T5.1 토큰 클라: 사이드패널 lazy 발급·storage.local 저장·in-flight 가드 / T5.2 upload.ts bearer + expiresInDays / T5.3 만료 문구 동적화 + 설정 패널 select). P1~P4 머지 완료(e6c0c32). src/** 를 이번 Phase 에 한해 해제한다. 미해결: P4 실주입 스모크(사람) · 배포·시크릿 주입·R2 lifecycle 30일 상향·PRIVACY 7일 문구 갱신 = 사람 게이트",
   "scope": [
+    "src/**",
+    "tests/**",
     "worker/**",
     "docs/**",
     "scripts/**",
@@ -10,11 +12,10 @@
     "pnpm-workspace.yaml"
   ],
   "forbidden": [
-    "src/**",
     "worker/node_modules/**",
     "**/*.env",
     "docs/ui-audit/**"
   ],
   "createdAt": "2026-06-04T13:32:15.559Z",
-  "updatedAt": "2026-07-22T05:30:00.000Z"
+  "updatedAt": "2026-07-22T05:45:00.000Z"
 }
