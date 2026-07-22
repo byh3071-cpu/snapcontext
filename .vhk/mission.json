@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "objective": "0.3.0 트랙 B — Worker 원격 MCP 서버 (Phase 3 완료: snap_analyze 다이제스트 툴 · 다음 = Phase 4 릴리즈 게이트: D1 생성→backfill→secret→deploy→E2E→v0.3.0 태그)",
+  "objective": "0.4.0 트랙 D P3 — 공유 만료 파라미터화 1/7/30일 (T3.1 readExpiry 단일 헬퍼 · T3.2 expiresInDays allowlist + R2 customMetadata SoT · T3.3 /i/ Cache-Control 잔여초 + 만료 문구 탈-7일 · T3.4 세션로그·changelog). P1+P2 머지 완료(896345e). 다음 = P4 MCP 문구. 배포·시크릿 주입·R2 lifecycle 30일 상향 = 사람 게이트",
   "scope": [
     "worker/**",
     "docs/**",
@@ -16,5 +16,5 @@
     "docs/ui-audit/**"
   ],
   "createdAt": "2026-06-04T13:32:15.559Z",
-  "updatedAt": "2026-07-18T02:00:00.000Z"
+  "updatedAt": "2026-07-22T03:30:00.000Z"
 }
