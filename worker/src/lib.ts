@@ -98,6 +98,21 @@ export function isExpiredAt(expiresAtMs: number, now: number): boolean {
   return expiresAtMs < now
 }
 
+/**
+ * 폼 값 → 보관일수. 부재(null·undefined)=기본 7일. 형식·allowlist 위반=null(호출측 400).
+ *
+ * 정규식이 먼저 형식을 막는 이유: Number() 만 쓰면 '0x7'·'7e0'·' 7 '·'7.0'·'+7' 이
+ * 전부 7 로 통과한다. 빈 문자열도 400 이다 — "부재=7" 은 필드가 없을 때의 규칙이지
+ * 빈 값의 규칙이 아니고, 빈 값을 7 로 흡수하면 조용한 우회다.
+ */
+export function parseExpiresInDays(raw: unknown): ExpiryDays | null {
+  if (raw === null || raw === undefined) return DEFAULT_EXPIRY_DAYS
+  if (typeof raw !== 'string') return null
+  if (!/^\d+$/.test(raw)) return null
+  const n = Number(raw)
+  return EXPIRY_DAYS_ALLOWLIST.find((allowed) => allowed === n) ?? null
+}
+
 /** 만료 절대시각(epoch ms)을 그대로 포맷한다 — 보관일수 가산은 readExpiry 소관 */
 export function formatExpiryKST(expiresAtMs: number): string {
   const expiry = new Date(expiresAtMs)

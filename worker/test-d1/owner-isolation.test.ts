@@ -8,7 +8,7 @@ import {
   insertCapture
 } from '../src/ingest'
 import { listCaptures } from '../src/history'
-import type { SharedContext } from '../src/lib'
+import { MAX_AGE_MS, type SharedContext } from '../src/lib'
 
 type TestEnv = { DB: D1Database }
 
@@ -41,27 +41,37 @@ describe('D1 owner migration + isolation (0.4.0)', () => {
     const nowMs = Date.parse('2026-07-18T12:00:00.000Z')
     const nowIso = new Date(nowMs).toISOString()
 
+    const expiresAtIso = new Date(nowMs + MAX_AGE_MS).toISOString()
+
     await insertCapture(
       db,
-      captureRowFromSharedContext('cap-a', ctx, nowMs, 'owner-a-hex')
+      captureRowFromSharedContext({
+        id: 'cap-a',
+        ctx,
+        nowMs,
+        expiresAtIso,
+        owner: 'owner-a-hex'
+      })
     )
     await insertCapture(
       db,
-      captureRowFromSharedContext(
-        'cap-b',
-        { ...ctx, sourceTitle: 'B' },
+      captureRowFromSharedContext({
+        id: 'cap-b',
+        ctx: { ...ctx, sourceTitle: 'B' },
         nowMs,
-        'owner-b-hex'
-      )
+        expiresAtIso,
+        owner: 'owner-b-hex'
+      })
     )
     await insertCapture(
       db,
-      captureRowFromSharedContext(
-        'cap-anon',
-        { ...ctx, sourceTitle: 'Anon' },
+      captureRowFromSharedContext({
+        id: 'cap-anon',
+        ctx: { ...ctx, sourceTitle: 'Anon' },
         nowMs,
-        null
-      )
+        expiresAtIso,
+        owner: null
+      })
     )
 
     const forA = await listCaptures(db, {
@@ -86,16 +96,23 @@ describe('D1 owner migration + isolation (0.4.0)', () => {
 
     await insertCapture(
       db,
-      captureRowFromSharedContext('admin-a', ctx, nowMs, 'owner-x')
+      captureRowFromSharedContext({
+        id: 'admin-a',
+        ctx,
+        nowMs,
+        expiresAtIso: new Date(nowMs + MAX_AGE_MS).toISOString(),
+        owner: 'owner-x'
+      })
     )
     await insertCapture(
       db,
-      captureRowFromSharedContext(
-        'admin-null',
-        { ...ctx, sourceTitle: 'Null' },
-        nowMs - 1000,
-        null
-      )
+      captureRowFromSharedContext({
+        id: 'admin-null',
+        ctx: { ...ctx, sourceTitle: 'Null' },
+        nowMs: nowMs - 1000,
+        expiresAtIso: new Date(nowMs - 1000 + MAX_AGE_MS).toISOString(),
+        owner: null
+      })
     )
 
     const all = await listCaptures(db, { nowIso, limit: 50 })

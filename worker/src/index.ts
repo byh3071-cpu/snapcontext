@@ -1,7 +1,10 @@
 import {
+  DAY_MS,
+  EXPIRY_DAYS_ALLOWLIST,
   MAX_UPLOAD_BYTES,
   isPngMagic,
   isExpiredAt,
+  parseExpiresInDays,
   readExpiry,
   buildViewerHtml,
   buildExpiredHtml,
@@ -144,22 +147,36 @@ export default {
       if (image.size > MAX_UPLOAD_BYTES) {
         return textResponse('파일이 너무 큽니다. (최대 10MB)', 413)
       }
+      // 보관 기간 검증은 arrayBuffer() 앞 — 무효 요청에 메모리를 쓰지 않는다
+      const days = parseExpiresInDays(form.get('expiresInDays'))
+      if (days === null) {
+        return textResponse(
+          `보관 기간은 ${EXPIRY_DAYS_ALLOWLIST.join(', ')}일 중에서만 선택할 수 있습니다.`,
+          400
+        )
+      }
       const buf = await image.arrayBuffer()
       if (!isPngMagic(new Uint8Array(buf.slice(0, 8)))) {
         return textResponse('PNG 이미지만 업로드할 수 있습니다.', 415)
       }
       const id = crypto.randomUUID()
       const nowMs = Date.now()
+      // 만료 절대시각은 여기서 1회만 계산 — 이미지 put·{id}.json put·D1 insert 가
+      // 같은 문자열을 공유해야 저장소 간 split-brain 이 물리적으로 불가능해진다
+      const expiresAtIso = new Date(nowMs + days * DAY_MS).toISOString()
+      const expiryMeta = { expiresAt: expiresAtIso }
       const context = form.get('context')
       const hasContext = typeof context === 'string' && context.length > 0
       let wroteJson = false
       try {
         await env.BUCKET.put(id, buf, {
-          httpMetadata: { contentType: 'image/png' }
+          httpMetadata: { contentType: 'image/png' },
+          customMetadata: expiryMeta
         })
         if (hasContext) {
           await env.BUCKET.put(`${id}.json`, context, {
-            httpMetadata: { contentType: 'application/json' }
+            httpMetadata: { contentType: 'application/json' },
+            customMetadata: expiryMeta
           })
           wroteJson = true
         }
@@ -174,7 +191,13 @@ export default {
           try {
             await insertCapture(
               env.DB,
-              captureRowFromSharedContext(id, shared, nowMs, owner)
+              captureRowFromSharedContext({
+                id,
+                ctx: shared,
+                nowMs,
+                expiresAtIso,
+                owner
+              })
             )
           } catch {
             await cleanupUploadObjects(env.BUCKET, id, wroteJson)

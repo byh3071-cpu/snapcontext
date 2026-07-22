@@ -149,6 +149,33 @@ describe('getSnapPack (snap_pack)', () => {
     expect(pack.sourceTitle).toBe('T')
   })
 
+  it('split-brain 방지: 이미지=30일 메타 · json=메타 없음 + 8일 경과 → EXPIRED (fail-closed)', async () => {
+    const uploadedAt = Date.now()
+    const bucket = makeBucket(
+      new Map([
+        // 이미지에만 메타가 심긴 상태(= {id}.json put 에서 메타를 빠뜨린 회귀)
+        [
+          'split',
+          {
+            uploaded: new Date(uploadedAt),
+            customMetadata: {
+              expiresAt: new Date(uploadedAt + 30 * DAY_MS).toISOString()
+            }
+          }
+        ],
+        ['split.json', { text: ctxJson, uploaded: new Date(uploadedAt) }]
+      ])
+    )
+    await expect(
+      getSnapPack(bucket as unknown as R2Bucket, {
+        id: 'split',
+        origin: 'https://w.test',
+        includeImage: false,
+        now: uploadedAt + 8 * DAY_MS
+      })
+    ).rejects.toMatchObject({ name: 'SnapPackError', code: 'EXPIRED' })
+  })
+
   it('orphan(JSON만 있고 이미지 없음): NOT_FOUND (MAJOR-3)', async () => {
     const bucket = makeBucket(
       new Map([['orphan.json', { text: ctxJson, uploaded: new Date() }]])

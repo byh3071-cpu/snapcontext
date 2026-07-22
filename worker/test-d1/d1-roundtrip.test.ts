@@ -9,7 +9,7 @@ import {
   insertCapture
 } from '../src/ingest'
 import { listCaptures } from '../src/history'
-import type { SharedContext } from '../src/lib'
+import { DAY_MS, MAX_AGE_MS, type SharedContext } from '../src/lib'
 
 type TestEnv = { DB: D1Database }
 
@@ -31,20 +31,34 @@ describe('D1 roundtrip (vitest-pool-workers)', () => {
 
     await insertCapture(
       db,
-      captureRowFromSharedContext('alive-new', ctx, nowMs)
+      captureRowFromSharedContext({
+        id: 'alive-new',
+        ctx,
+        nowMs,
+        expiresAtIso: new Date(nowMs + MAX_AGE_MS).toISOString(),
+        owner: null
+      })
     )
     await insertCapture(
       db,
-      captureRowFromSharedContext(
-        'alive-old',
-        { ...ctx, sourceTitle: 'Older' },
-        nowMs - 60_000
-      )
+      captureRowFromSharedContext({
+        id: 'alive-old',
+        ctx: { ...ctx, sourceTitle: 'Older' },
+        nowMs: nowMs - 60_000,
+        expiresAtIso: new Date(nowMs - 60_000 + MAX_AGE_MS).toISOString(),
+        owner: null
+      })
     )
     // 이미 만료된 행 — WHERE expires_at > now 에서 제외되어야 함
     await insertCapture(
       db,
-      captureRowFromSharedContext('expired', ctx, nowMs - 8 * 24 * 60 * 60 * 1000)
+      captureRowFromSharedContext({
+        id: 'expired',
+        ctx,
+        nowMs: nowMs - 8 * DAY_MS,
+        expiresAtIso: new Date(nowMs - 8 * DAY_MS + MAX_AGE_MS).toISOString(),
+        owner: null
+      })
     )
 
     const rows = await listCaptures(db, { nowIso, limit: 10 })
@@ -52,5 +66,46 @@ describe('D1 roundtrip (vitest-pool-workers)', () => {
     expect(rows[0]?.title).toBe('D1 Roundtrip')
     expect(rows[1]?.title).toBe('Older')
     expect(rows.every((r) => r.id !== 'expired')).toBe(true)
+  })
+
+  it('1일 보관 행은 T+2d 조회에서 빠지고 30일 행은 남는다 (파라미터화 만료)', async () => {
+    const db = (env as unknown as TestEnv).DB
+    const nowMs = Date.parse('2026-07-22T09:00:00.000Z')
+    const owner = 'expiry-param-owner'
+
+    await insertCapture(
+      db,
+      captureRowFromSharedContext({
+        id: 'one-day',
+        ctx: { ...ctx, sourceTitle: 'OneDay' },
+        nowMs,
+        expiresAtIso: new Date(nowMs + DAY_MS).toISOString(),
+        owner
+      })
+    )
+    await insertCapture(
+      db,
+      captureRowFromSharedContext({
+        id: 'thirty-day',
+        ctx: { ...ctx, sourceTitle: 'ThirtyDay' },
+        nowMs,
+        expiresAtIso: new Date(nowMs + 30 * DAY_MS).toISOString(),
+        owner
+      })
+    )
+
+    const atUpload = await listCaptures(db, {
+      nowIso: new Date(nowMs).toISOString(),
+      limit: 50,
+      owner
+    })
+    expect(atUpload.map((r) => r.id).sort()).toEqual(['one-day', 'thirty-day'])
+
+    const after2Days = await listCaptures(db, {
+      nowIso: new Date(nowMs + 2 * DAY_MS).toISOString(),
+      limit: 50,
+      owner
+    })
+    expect(after2Days.map((r) => r.id)).toEqual(['thirty-day'])
   })
 })

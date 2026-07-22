@@ -8,9 +8,11 @@ import {
   formatExpiryKST,
   buildViewerHtml,
   parseSharedContext,
+  parseExpiresInDays,
   safeDecodeId,
   DAY_MS,
   DEFAULT_EXPIRY_DAYS,
+  EXPIRY_DAYS_ALLOWLIST,
   MAX_AGE_MS,
   PNG_MAGIC,
   type ExpiryInfo,
@@ -98,6 +100,59 @@ describe('readExpiry', () => {
     expect(isExpiredAt(info.expiresAtMs, T + 1000)).toBe(true)
     expect(warn).toHaveBeenCalled()
     warn.mockRestore()
+  })
+})
+
+describe('parseExpiresInDays', () => {
+  it('필드 부재(null·undefined) → 기본 7일', () => {
+    expect(parseExpiresInDays(null)).toBe(DEFAULT_EXPIRY_DAYS)
+    expect(parseExpiresInDays(undefined)).toBe(DEFAULT_EXPIRY_DAYS)
+  })
+
+  it.each([
+    ['1', 1],
+    ['7', 7],
+    ['30', 30],
+    ['07', 7]
+  ])('allowlist 통과: %s → %i', (raw, expected) => {
+    expect(parseExpiresInDays(raw)).toBe(expected)
+  })
+
+  it('allowlist 는 1·7·30 뿐', () => {
+    expect([...EXPIRY_DAYS_ALLOWLIST]).toEqual([1, 7, 30])
+  })
+
+  it.each([
+    '3',
+    '0',
+    '365',
+    '-1',
+    'abc',
+    '7.0',
+    ' 7 ',
+    '0x7',
+    '7e0',
+    '+7',
+    '\n7'
+  ])('형식·allowlist 위반 → null: %j', (raw) => {
+    expect(parseExpiresInDays(raw)).toBeNull()
+  })
+
+  it("빈 문자열은 400 이다 — 부재(=7)로 흡수하지 않는다", () => {
+    expect(parseExpiresInDays('')).toBeNull()
+  })
+
+  it('문자열이 아닌 값(숫자·Blob·객체) → null (부재와 구별)', () => {
+    expect(parseExpiresInDays(7)).toBeNull()
+    expect(parseExpiresInDays(new Blob(['7']))).toBeNull()
+    expect(parseExpiresInDays({ toString: () => '7' })).toBeNull()
+  })
+
+  it("Number() 만으로는 통과하는 값들을 정규식이 막는다 (회귀 앵커)", () => {
+    for (const raw of ['0x7', '7e0', ' 7 ', '7.0', '+7']) {
+      expect(Number(raw)).toBe(7) // Number() 단독이면 전부 7 로 통과한다
+      expect(parseExpiresInDays(raw)).toBeNull()
+    }
   })
 })
 
