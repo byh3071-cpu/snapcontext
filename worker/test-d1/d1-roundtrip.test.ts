@@ -1,5 +1,5 @@
 /**
- * 실 D1(miniflare) 왕복 — INSERT → SELECT WHERE expires_at > ? ORDER BY created_at DESC
+ * 실 D1(miniflare) 왕복 — INSERT → SELECT WHERE expires_at >= ? ORDER BY created_at DESC
  * mock이 필터/정렬을 재구현하던 Phase 2 공백(MINOR-4c) 보강.
  */
 import { env } from 'cloudflare:workers'
@@ -49,7 +49,7 @@ describe('D1 roundtrip (vitest-pool-workers)', () => {
         owner: null
       })
     )
-    // 이미 만료된 행 — WHERE expires_at > now 에서 제외되어야 함
+    // 이미 만료된 행 — WHERE expires_at >= now 에서 제외되어야 함
     await insertCapture(
       db,
       captureRowFromSharedContext({
@@ -66,6 +66,40 @@ describe('D1 roundtrip (vitest-pool-workers)', () => {
     expect(rows[0]?.title).toBe('D1 Roundtrip')
     expect(rows[1]?.title).toBe('Older')
     expect(rows.every((r) => r.id !== 'expired')).toBe(true)
+  })
+
+  it('만료 정각(expires_at === nowIso)은 아직 유효 — R2 isExpiredAt 과 같은 경계 (실 SQL)', async () => {
+    const db = (env as unknown as TestEnv).DB
+    const nowMs = Date.parse('2026-07-25T00:00:00.000Z')
+    const expiresAtIso = new Date(nowMs + DAY_MS).toISOString()
+    const owner = 'boundary-owner'
+
+    await insertCapture(
+      db,
+      captureRowFromSharedContext({
+        id: 'exact-boundary',
+        ctx: { ...ctx, sourceTitle: 'Boundary' },
+        nowMs,
+        expiresAtIso,
+        owner
+      })
+    )
+
+    // 정각: R2 경로(/i/·/s/·snap_pack)가 200 을 주는 순간이므로 D1 도 살아 있어야 한다
+    const atExact = await listCaptures(db, {
+      nowIso: expiresAtIso,
+      limit: 10,
+      owner
+    })
+    expect(atExact.map((r) => r.id)).toEqual(['exact-boundary'])
+
+    // 1ms 뒤: 양쪽 다 만료
+    const after1ms = await listCaptures(db, {
+      nowIso: new Date(nowMs + DAY_MS + 1).toISOString(),
+      limit: 10,
+      owner
+    })
+    expect(after1ms).toEqual([])
   })
 
   it('1일 보관 행은 T+2d 조회에서 빠지고 30일 행은 남는다 (파라미터화 만료)', async () => {

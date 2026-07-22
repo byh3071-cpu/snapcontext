@@ -123,7 +123,8 @@ function makeUploadEnv(opts?: {
                 const nowIso = String(args[0])
                 const limit = Number(args[1])
                 const filtered = inserts
-                  .filter((r) => r.expires_at > nowIso)
+                  // 실 SQL 과 같은 경계(WHERE expires_at >= ?) — 다르면 거짓 통과다
+                  .filter((r) => r.expires_at >= nowIso)
                   .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
                   .slice(0, limit)
                 return { results: filtered }

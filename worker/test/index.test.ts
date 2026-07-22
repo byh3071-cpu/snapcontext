@@ -230,6 +230,55 @@ describe('/i/ Cache-Control — 잔여 수명만큼만 캐시 (T3.3)', () => {
   })
 })
 
+describe('만료 정각 경계 — R2 경로 (D1 과 통일)', () => {
+  const T = Date.parse('2026-07-25T00:00:00.000Z')
+  const expiresAt = T + DAY_MS
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('now === expiresAt 정각: /i/ 200 · /s/ 200 (아직 유효)', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(expiresAt)
+    const meta = { expiresAt: new Date(expiresAt).toISOString() }
+    const env = makeEnv(
+      new Map([
+        [
+          'b1',
+          {
+            bytes: PNG,
+            uploaded: new Date(T),
+            contentType: 'image/png',
+            customMetadata: meta
+          }
+        ]
+      ])
+    )
+    expect((await worker.fetch(req('/i/b1'), env)).status).toBe(200)
+    expect((await worker.fetch(req('/s/b1'), env)).status).toBe(200)
+  })
+
+  it('1ms 뒤: /i/ 410 · /s/ 410', async () => {
+    vi.spyOn(Date, 'now').mockReturnValue(expiresAt + 1)
+    const meta = { expiresAt: new Date(expiresAt).toISOString() }
+    const env = makeEnv(
+      new Map([
+        [
+          'b2',
+          {
+            bytes: PNG,
+            uploaded: new Date(T),
+            contentType: 'image/png',
+            customMetadata: meta
+          }
+        ]
+      ])
+    )
+    expect((await worker.fetch(req('/i/b2'), env)).status).toBe(410)
+    expect((await worker.fetch(req('/s/b2'), env)).status).toBe(410)
+  })
+})
+
 describe('만료 문구 탈-7일 (T3.3)', () => {
   it("/i/ 410 본문에 '7일' 이 없고 보관 기간 문구로 대체", async () => {
     const res = await worker.fetch(req('/i/nope'), makeEnv(new Map()))

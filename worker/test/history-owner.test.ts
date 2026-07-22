@@ -30,7 +30,8 @@ function makeDb(rows: Row[]) {
           return {
             async all() {
               const nowIso = String(args[0])
-              let filtered = rows.filter((r) => r.expires_at > nowIso)
+              // 실 SQL 과 같은 경계(WHERE expires_at >= ?) — 다르면 이 테스트는 거짓 통과다
+              let filtered = rows.filter((r) => r.expires_at >= nowIso)
               let limit: number
               if (args.length === 3) {
                 const owner = String(args[1])
