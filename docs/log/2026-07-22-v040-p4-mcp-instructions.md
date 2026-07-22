@@ -30,7 +30,7 @@ tags: [v0.4.0, mcp, instructions, P4]
 - `ServerOptions.instructions?: string` — `dist/esm/server/index.d.ts:15` 의 정식 필드
 - `McpServer(serverInfo, options)` 가 options 를 가공 없이 하위 `Server` 로 전달 — `server/mcp.js` 의 constructor
 - `Server` 가 저장해 initialize 응답에 삽입 — `server/index.js:50`, `:279`
-- `agents@0.17.4` 의 `createMcpHandler` 는 이 경로를 건드리지 않는다. SDK 를 캐럿 없이 `1.29.0` 정확 핀 → 버전 스큐 없음
+- `agents@0.17.4` 의 `createMcpHandler` 는 이 경로를 건드리지 않는다. `agents` 가 SDK 를 캐럿 없이 `1.29.0` 으로 의존하고 `worker/package.json` 은 `^1.29.0` 이라, 실제 고정은 `package-lock.json`(1.29.0)이 한다 — 결과적으로 단일 인스턴스라 버전 스큐는 없지만 **잠금은 lockfile 에 달려 있다**
 - 툴 `description` 은 `tools/list` 에 가공·절삭 없이 실린다
 
 **함정**: 삽입이 truthy 가드(`...(this._instructions && { instructions: this._instructions })`)라 **빈 문자열이면 필드가 통째로 빠진다.** 그래서 테스트가 값 내용이 아니라 *존재*부터 검증한다.
@@ -56,7 +56,11 @@ claude mcp add --transport http snapcontext-local http://localhost:8787/mcp \
 
 ### 판정
 
-3개 중 **1회 이상** `snap_history`/`snap_analyze`/`snap_pack` 을 자발 호출하면 `효능 확인`, 0회면 `효능 미확인`. 어느 쪽이든 결과를 이 문서에 追記한다.
+3개 중 **1회 이상** `snap_history`/`snap_analyze`/`snap_pack` 을 자발 호출하면 `효능 확인`, 0회면 `효능 미확인`. 어느 쪽이든 결과를 이 문서에 덧붙인다.
+
+자발 호출률만 보지 말고 **오발동률도 같이 기록**한다. instructions 의 트리거 단어("screenshot, capture, snap, pin memo")가 코딩 세션에서 흔해서, 무관한 맥락에서 `snap_history` 를 부를 여지가 있다. 툴 3종이 전부 read-only 라 피해는 없지만 문구를 좁힐 근거가 된다.
+
+**이 스모크 전까지 P4 는 완료가 아니다.** PRD 의 P4 완료 기준이 「mcp-integration assert **+ 스모크 기록**」이고, PRD 리스크 표의 해당 행도 아직 `UNVERIFIED` 다. 스모크를 돌린 뒤 그 행까지 같이 갱신해야 P4 가 닫힌다.
 
 **효능이 없어도 P4 코드는 롤백하지 않는다.** instructions 는 무해하고 스펙상 클라이언트 재량이라 "안 먹었다"가 곧 결함은 아니다. 미확인이면 P6 온보딩에서 사용자 규칙 안내를 보강하는 쪽으로 넘긴다.
 

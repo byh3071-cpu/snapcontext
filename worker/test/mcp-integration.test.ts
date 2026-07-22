@@ -525,8 +525,10 @@ describe('P4 — MCP 자발 사용 문구 (instructions·description·annotation
     const tools = (list.json as { result: { tools: Array<{ name: string; description?: string }> } })
       .result.tools
     const byName = new Map(tools.map((t) => [t.name, t.description ?? '']))
+    // 검사 조각은 0.3.0 옛 문구에 없는 것으로 고른다 — 'Context Pack' 같은 공통어를 쓰면
+    // 그 툴만 옛 문구로 되돌려도 통과해서 판별력이 0 이 된다
     expect(byName.get('snap_history')).toContain('recent capture')
-    expect(byName.get('snap_pack')).toContain('Context Pack')
+    expect(byName.get('snap_pack')).toContain('Use after snap_history')
     expect(byName.get('snap_analyze')).toContain('Preferred entry point')
   })
 
@@ -550,13 +552,17 @@ describe('P4 — MCP 자발 사용 문구 (instructions·description·annotation
     const tools = (
       list.json as {
         result: {
-          tools: Array<{ name: string; annotations?: { readOnlyHint?: boolean } }>
+          tools: Array<{ name: string; annotations?: Record<string, unknown> }>
         }
       }
     ).result.tools
     expect(tools).toHaveLength(3)
     for (const tool of tools) {
-      expect(tool.annotations?.readOnlyHint).toBe(true)
+      // toEqual 로 통째 비교 — readOnlyHint 만 보면 openWorldHint 가 사라져도 통과한다
+      expect(tool.annotations).toEqual({
+        readOnlyHint: true,
+        openWorldHint: false
+      })
     }
   })
 })
